@@ -1,89 +1,40 @@
 ---
 name: preview-bridge
-description: Auto-detect project framework and open live preview. Activates on commands like "preview", "me mostra", "deixa eu ver", "abre visualização", "ver", "mostrar", "como ficou", or "abrir". Triggers on any web project with React, Next.js, Vue, Svelte, or HTML.
+description: GLOBAL SKILL. Auto-detect project framework and INSTANTLY open live preview for ANY web project. Triggers on "preview", "me mostra", "abre visualização", "ver", "mostrar", "como ficou", or "abrir". 
 ---
 
-# PreviewBridge — Live Preview Automático
+# PreviewBridge — Live Preview Instantâneo (Global)
 
-Sempre que o usuário estiver trabalhando em um projeto web (React, Next.js, Vue, Svelte, HTML), você DEVE automaticamente configurar e abrir o preview visual.
+Esta é uma skill global. Sempre que o usuário estiver em um projeto web (React, Next.js, Vue, Svelte, HTML), você DEVE automaticamente e INSTANTANEAMENTE configurar e abrir o preview do aplicativo REAL (não mockups).
+
+## Regras de Ouro
+
+1. **Abertura Instantânea:** Quando o usuário disser "preview", "me mostra", "deixa eu ver", "abre visualização", ou similares, você deve abrir o preview IMEDIATAMENTE.
+2. **Aplicativo Real:** Nunca abra arquivos estáticos ou mockups se houver um servidor de desenvolvimento disponível (React, Next, etc.). 
+3. **Não Pergunte:** Se detectar um framework, configure o `.claude/launch.json` silenciosamente e dispare o preview.
+4. **Persistência:** O preview deve ficar visível lateralmente (sidebar) para monitoramento contínuo da construção.
 
 ## Quando ativar
 
-- Quando o usuário pedir para ver o app ("preview", "ver", "mostrar", "como ficou", "abrir")
-- Quando o usuário disser "deixa eu ver", "me mostra", "abre visualização"
-- Quando editar componentes visuais (JSX, TSX, Vue, Svelte, HTML, CSS)
-- Quando criar um novo projeto web
+- Quando o usuário quiser ver o progresso ("preview", "ver", "mostrar", "como ficou", "abrir")
+- Quando o usuário usar comandos naturais: "deixa eu ver", "me mostra", "abre visualização", "quero ver ao vivo"
+- Após mudanças visuais significativas (CSS, JSX, TSX, etc.) a skill deve refrescar ou sugerir o preview.
 
-## Detecção de Framework
-
-Analise o `package.json` do projeto para detectar:
-
-| Framework | Indicador | Comando | Porta padrão |
-|-----------|-----------|---------|--------------|
-| Next.js | `next` em deps + `next.config.*` | `npm run dev` | 3000 |
-| React + Vite | `react` em deps + `vite` | `npm run dev` | 5173 |
-| Vue | `vue` em deps | `npm run dev` | 5173 |
-| Svelte | `svelte` em deps | `npm run dev` | 5173 |
-| HTML puro | Sem package.json, tem .html | Nenhum | — |
-
-Se o `scripts.dev` no package.json tiver `--port XXXX`, use essa porta.
-
-## Fluxo Automático (SIGA EXATAMENTE)
+## Fluxo Automático (OBRIGATÓRIO)
 
 ### Passo 1: Detectar framework
-Leia o `package.json` do projeto. Identifique framework e porta.
+Leia o `package.json` para identificar o framework e a porta (ex: React em 5173, Next em 3000).
 
-### Passo 2: Criar .claude/launch.json
-Crie o arquivo `.claude/launch.json` no diretório do projeto:
+### Passo 2: Configurar lançador
+Crie/atualize o `.claude/launch.json` no diretório do projeto com a configuração correta de `npm run dev` ou similar.
 
-```json
-{
-  "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "<framework>-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": <porta>
-    }
-  ]
-}
-```
-
-Se não existir `scripts.dev`, use:
-- React/Vue/Svelte: `"runtimeExecutable": "npx", "runtimeArgs": ["vite"]`
-- Next.js: `"runtimeExecutable": "npx", "runtimeArgs": ["next", "dev"]`
-
-### Passo 3: Verificar node_modules
-Se `node_modules/` não existir, rode `npm install` antes de continuar.
-
-### Passo 4: Iniciar o preview
-Chame a tool `preview_start` com o nome do servidor criado no launch.json.
-
-Exemplo:
-```
-preview_start(name: "react-dev")
-```
-
-### Passo 5: Confirmar
-Diga ao usuário: "Preview aberto! Você pode ver seu app ao vivo agora."
-
-Se houver erro, use `preview_logs` para diagnosticar.
+### Passo 3: Disparar Preview
+Chame a tool `preview_start` (ou abra a URL local) imediatamente. Informe ao usuário: "Preview do aplicativo real aberto e monitorado!"
 
 ## Comandos de Apoio
 
-Após o preview estar aberto, use estas tools conforme necessário:
-
-- `preview_screenshot` — capturar como está a tela
-- `preview_snapshot` — ver o HTML/texto da página
-- `preview_console_logs` — ver erros do console
-- `preview_click` / `preview_fill` — interagir com a UI
-- `preview_resize` — testar responsivo (mobile, tablet)
-
-## Regras
-
-1. NUNCA peça ao usuário para abrir terminal ou rodar comandos
-2. SEMPRE auto-detecte — não pergunte qual framework é
-3. Se o preview já estiver rodando, não reinicie — use o existente
-4. Se o usuário editar código visual, faça `preview_screenshot` para mostrar o resultado
-5. Após cada mudança significativa na UI, tire screenshot automaticamente
+Use estas ferramentas para interagir com o app enquanto constrói:
+- `preview_screenshot` — Para capturar e analisar o estado visual.
+- `preview_console_logs` — Para debugar erros de execução em tempo real.
+- `preview_click` / `preview_fill` — Para testar fluxos de usuário sem sair do editor.
+- `preview_resize` — Para validar responsividade.
