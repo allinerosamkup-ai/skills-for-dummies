@@ -1,6 +1,6 @@
 ---
 name: preview-bridge
-description: Auto-detect project framework and open live preview. Use when building any web app, editing UI, or when the user wants to see their app visually. Triggers on any web project with React, Next.js, Vue, Svelte, or HTML.
+description: Auto-detect project framework and open live preview. Activates on commands like "preview", "me mostra", "deixa eu ver", "abre visualização", "ver", "mostrar", "como ficou", or "abrir". Triggers on any web project with React, Next.js, Vue, Svelte, or HTML.
 ---
 
 # PreviewBridge — Live Preview Automático
@@ -9,10 +9,10 @@ Sempre que o usuário estiver trabalhando em um projeto web (React, Next.js, Vue
 
 ## Quando ativar
 
-- Quando o usuário pedir para ver o app
+- Quando o usuário pedir para ver o app ("preview", "ver", "mostrar", "como ficou", "abrir")
+- Quando o usuário disser "deixa eu ver", "me mostra", "abre visualização"
 - Quando editar componentes visuais (JSX, TSX, Vue, Svelte, HTML, CSS)
 - Quando criar um novo projeto web
-- Quando o usuário disser "preview", "ver", "mostrar", "como ficou", "abrir"
 
 ## Detecção de Framework
 
