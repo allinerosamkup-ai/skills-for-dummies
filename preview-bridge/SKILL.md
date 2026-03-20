@@ -13,6 +13,7 @@ Esta é uma skill global. Sempre que o usuário estiver em um projeto web (React
 2. **Aplicativo Real:** Nunca abra arquivos estáticos ou mockups se houver um servidor de desenvolvimento disponível (React, Next, etc.). 
 3. **Não Pergunte:** Se detectar um framework, configure o `.claude/launch.json` silenciosamente e dispare o preview.
 4. **Persistência:** O preview deve ficar visível lateralmente (sidebar) para monitoramento contínuo da construção.
+5. **Auto-Port-Discovery:** Se a porta padrão (ex: 5000, 3000, 5173) estiver em uso ou houver conflito, a skill deve buscar imediatamente a próxima porta livre (ex: +1, +2...) até conseguir abrir o preview com sucesso. O `launch.json` deve ser atualizado automaticamente com a nova porta.
 
 ## Quando ativar
 
