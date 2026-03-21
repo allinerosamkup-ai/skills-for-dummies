@@ -15,6 +15,17 @@ Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteraca
 - Exportacao: React JSX | Vue | HTML/CSS | Tailwind config | Storybook stories
 - Dependencias: `@anthropic-ai/sdk`, `octokit`, `node-fetch`, `puppeteer`, `sharp`, `fs-extra`
 
+## Fluxos de Operacao
+
+### 🎨 MODO PADRAO (UI React)
+Fluxo principal de 9 etapas focado exclusivamente em Front-end. A skill atua como especialista React, garantindo pixel-perfect e completude funcional da interface.
+
+### 🌐 MODO ORQUESTRACAO (Arquitetura & Delegaçao)
+Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usuario pedir para "criar o projeto todo", a skill NÃO escreve o backend, mas atua como Despachante:
+1. **Deduçao de Contrato**: Analisa a imagem e gera um `api-contract.json` (quais entidades e rotas o frontend precisara).
+2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills competentes em Backend (`criador-de-apps`, `app-factory-multiagent`).
+3. **Consonancia**: O React gerado foca em consumir esse contrato futuro, com estados de loading, fetch simulados ou reais, e formulários completamente "cabeados".
+
 ## Fluxo de 9 Etapas
 
 **ETAPA 1a -- VisionAgent: Detectar tipo de input**
@@ -52,7 +63,7 @@ Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteraca
   - qualquer elemento visual que nao seja interativo mas compoe a identidade da pagina
 
 - Gerar `design-tokens.json` como output estruturado (ver PROMPT 5 em references/vision-prompts.md):
-  cores com semantica/HEX/RGB/HSL/wcag_aa/variants -- tipografia com css object -- espacamento com base unit
+  cores with semantic/HEX/RGB/HSL/wcag_aa/variants -- tipografia com css object -- espacamento com base unit
 - Se usuario corrigir a descricao, usar a versao corrigida nas etapas seguintes
 - Se usuario confirmar, prosseguir com a descricao e tokens gerados
 
@@ -92,6 +103,9 @@ Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteraca
 
 MANDATO DE COMPLETUDE (nao negociavel):
 - Implementar TODOS os elementos do inventario da Etapa 1b -- nenhum pode ser omitido
+- **COMPLETUDE FUNCIONAL UNIVERSAL**: É estritamente proibido entregar interfaces "ocas".
+  - TODO elemento interativo mapeado na imagem (botoes, inputs, selects, links) DEVE possuir uma logica correspondente no React (estado `useState`, handlers `onClick`/`onChange`).
+  - Funcoes vazias `() => {}` sao proibidas. Se o botao existe, a logica de capturar os dados ou simular a acao DEVE estar implementada. A interface deve ser "viva".
 - Elementos decorativos sao primeira classe, nao opcionais:
   emojis         -> span/text com fontSize correto e aria-hidden="true"
   ilustracoes    -> SVG inline ou img reproduzida fielmente
