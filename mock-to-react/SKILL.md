@@ -3,23 +3,17 @@ name: mock-to-react
 description: "Converte mocks visuais (HTML ou imagem) em componentes React pixel-perfect usando sistema multiagente com 6 agentes especializados. Use quando o usuario mostrar um mockup, design, screenshot, wireframe, imagem ou HTML e quiser gerar codigo React/Next.js com Tailwind CSS fiel ao visual. Busca automaticamente pacotes NPM relevantes, icones de 5+ bibliotecas e componentes similares no GitHub. Triggers: converta esse design, gere o codigo desse mockup, transforme essa imagem em React, pixel-perfect, codigo igual ao design, clone esse layout, copie esse visual, mock to code, gerar componente, replicar interface."
 ---
 
-# Mock-to-React: Design Visual para Codigo (UI & Fullstack)
+# Mock-to-React: Design Visual para Codigo
 
 Sistema multiagente (V2 + V3) que converte qualquer mock visual em componentes React pixel-perfect.
-Possui dois modos de operacao:
-1. **Modo UI (Padrao)**: Gera apenas o front-end React.
-2. **Modo Fullstack (Engenharia Reversa)**: A partir de um mock, infere a logica de negocios e coordena com skills de backend para construir o sistema completo.
+Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
 
-## Fluxos de Operacao
+## Stack Padrao
 
-### 🎨 MODO PADRAO (UI React)
-Fluxo principal de 9 etapas focado exclusivamente em Front-end. A skill atua como especialista React, garantindo pixel-perfect e completude funcional da interface.
-
-### 🌐 MODO ORQUESTRACAO (Arquitetura & Delegaçao)
-Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usuario pedir para "criar o projeto todo", a skill NÃO escreve o backend, mas atua como Despachante:
-1. **Deduçao de Contrato**: Analisa a imagem e gera um `api-contract.json` (quais entidades e rotas o frontend precisara).
-2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills competentes em Backend (`criador-de-apps`, `app-factory-multiagent`).
-3. **Consonancia**: O React gerado foca em consumir esse contrato futuro, com estados de loading, fetch simulados ou reais, e formulários completamente "cabeados".
+- React JSX + Tailwind CSS
+- Detecta automaticamente o design system do projeto (shadcn, MUI, etc.) -- se nao houver, usa Tailwind puro
+- Exportacao: React JSX | Vue | HTML/CSS | Tailwind config | Storybook stories
+- Dependencias: `@anthropic-ai/sdk`, `octokit`, `node-fetch`, `puppeteer`, `sharp`, `fs-extra`
 
 ## Fluxo de 9 Etapas
 
@@ -58,7 +52,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
   - qualquer elemento visual que nao seja interativo mas compoe a identidade da pagina
 
 - Gerar `design-tokens.json` como output estruturado (ver PROMPT 5 em references/vision-prompts.md):
-  cores com semantica/HEX/RGB/HSL/wcag_aa/variants -- tipografia com css object -- espacamento com base unit
+  cores with semantic/HEX/RGB/HSL/wcag_aa/variants -- tipografia com css object -- espacamento com base unit
 - Se usuario corrigir a descricao, usar a versao corrigida nas etapas seguintes
 - Se usuario confirmar, prosseguir com a descricao e tokens gerados
 
@@ -98,17 +92,6 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 
 MANDATO DE COMPLETUDE (nao negociavel):
 - Implementar TODOS os elementos do inventario da Etapa 1b -- nenhum pode ser omitido
-- **COMPLETUDE FUNCIONAL UNIVERSAL**: É estritamente proibido entregar interfaces "ocas".
-  - TODO elemento interativo mapeado na imagem (botoes, inputs, selects, links) DEVE possuir uma logica correspondente no React (estado `useState`, handlers `onClick`/`onChange`).
-  - Funcoes vazias `() => {}` sao proibidas. Se o botao existe, a logica de capturar os dados ou simular a acao DEVE estar implementada. A interface deve ser "viva".
-- **ACESSIBILIDADE (WCAG AA/AAA)**: Todo componente gerado deve incluir:
-  - `aria-label` em icones e botoes sem texto.
-  - Contraste minimo verificado via design-tokens.json.
-  - Foco visivel (`focus-visible:ring-*`) em todos os elementos interativos.
-- **PERFORMANCE (Modern Web)**: 
-  - Usar `loading="lazy"` em todas as imagens fora do viewport inicial.
-  - Priorizar SVGs inline para icones e shapes decorativos.
-  - Implementar esqueletos de carregamento (`animate-pulse`) se detectado estado de loading.
 - Elementos decorativos sao primeira classe, nao opcionais:
   emojis         -> span/text com fontSize correto e aria-hidden="true"
   ilustracoes    -> SVG inline ou img reproduzida fielmente
