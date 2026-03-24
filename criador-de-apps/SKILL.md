@@ -5,6 +5,17 @@ description: |
   construir um app, sistema, ferramenta ou projeto de software — independente da linguagem
   ou plataforma (web, mobile, desktop, CLI, API, etc). Ativado por pedidos como:
   "cria um app de...", "quero construir um...", "faz um sistema de...", "me ajuda a montar...".
+version: "2.0"
+ecosystem: skill4dummies
+role: construção MVP
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
+handoff_targets:
+  - skill: ConnectPro
+    when: app precisar de integração externa antes de construir
+  - skill: preview-bridge
+    when: app gerado e pronto para visualização
+  - skill: surge-core
+    when: execução produzir erros observáveis
 ---
 
 # Criador de Apps

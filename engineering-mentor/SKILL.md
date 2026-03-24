@@ -7,6 +7,15 @@ description: >
   Triggers on: architecture questions, system design, "how should I build X", debugging
   guidance, refactoring advice, tool/stack selection, BUILD MODE requests, and any
   software engineering mentoring or learning context.
+version: "2.0"
+ecosystem: skill4dummies
+role: inteligência e desbloqueio
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
+handoff_targets:
+  - skill: surge-core
+    when: diagnóstico concluído e patch pode ser aplicado
+  - skill: skill4d-core-orchestrator
+    when: decisão arquitetural impactar o fluxo de roteamento geral
 ---
 
 # Engineering Mentor
