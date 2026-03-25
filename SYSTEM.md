@@ -1,11 +1,11 @@
 ---
-name: Skill4Dummies OS
+name: D.U.M.M.Y OS
 version: "1.0"
 type: ai-operating-system
 compatible_with: [claude-code, cursor, gemini-cli, codex-cli, any-ai-with-system-prompt]
 ---
 
-# Skill4Dummies OS — Boot File
+# D.U.M.M.Y OS — Boot File
 
 Este arquivo inicializa o sistema operacional de IA.
 Carregue este arquivo uma vez e qualquer IA se transforma em um ambiente orquestrado, autocorretivo e persistente.
