@@ -140,7 +140,7 @@ Prompt:
 
 Checks esperados:
 - ConnectPro ativado
-- app-factory-multiagent ativado
+- criador-de-apps ou app-factory ativado
 - preview-bridge ativado
 - surge-core ativado
 - resultado funcional mínimo
@@ -151,7 +151,7 @@ Prompt:
 
 Checks esperados:
 - mock-to-react ativado
-- app-factory-multiagent ativado
+- app-factory ou criador-de-apps ativado
 - preview-bridge ativado
 - surge-core ativado
 - handoff correto entre UI e app

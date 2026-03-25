@@ -1,10 +1,12 @@
 ---
 name: app-factory-multiagent
-description: Use when a user wants to build a full application with a coordinated multi-agent factory that preserves a fixed web, mobile, backend, auth, and database contract instead of a generic one-agent scaffold.
+description: "Builds complete, production-ready apps using a coordinated multi-agent factory: product-planner, system-architect, backend-builder, web-builder, mobile-builder, integration-finisher, and qa-reviewer in a review loop until PASS. Fixed contracts for web (Next.js), mobile (Expo), backend, auth, and database. No placeholders, no pseudo-code. Triggers: build full app, complete application, auth + database + mobile, robust app, full-stack, monorepo."
 version: "2.0"
+category: app-development
+tags: [full-stack, nextjs, expo, react-native, backend, auth, database, monorepo, multi-agent, production]
 ecosystem: skill4dummies
 role: construção robusta
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 handoff_targets:
   - skill: ConnectPro
     when: app exige integração externa (OAuth, banco, API key)
@@ -130,4 +132,154 @@ Do not allow "first pass is good enough" rationalization. The review loop is par
 
 ## Baseline Reminder
 
-The old `criador-de-apps` skill is not enough for this use case. It is generic, single-agent, and does not preserve the runtime, template, prompt, or review discipline of the Anything builder. Use this skill when fidelity to that model matters.
+Use this skill when fidelity to the Anything builder model matters — opinionated factory, fixed contracts, multi-agent specialization, and review loop until PASS.
+
+---
+
+## Interface CLI (para invocação pelo ConnectPro e core-orchestrator)
+
+App-Factory expõe uma interface JSON padronizada consumível como conector:
+
+```bash
+# Interface canônica
+app-factory --brief path/to/brief.json --stack "nextjs+expo+supabase" --complexity medium --json
+
+# Saída esperada
+{
+  "status": "success | partial | failed",
+  "repo_path": "/caminho/do/projeto/gerado",
+  "structure": ["apps/web", "apps/mobile", "packages/database"],
+  "entities": ["users", "task_lists", "tasks"],
+  "qa_status": "PASS | FAIL",
+  "issues": [],
+  "next_step": "preview-bridge",
+  "meta": {
+    "agents_used": ["product-planner", "system-architect", "backend-builder", "web-builder", "mobile-builder", "integration-finisher", "qa-reviewer"],
+    "factory_mode": "contract-only | embedded-template",
+    "loop_count": 1
+  }
+}
+```
+
+**Como usar este contrato:**
+- O `orchestrator` interno monta o `brief.json` a partir do input do usuário
+- O fluxo multi-agente existente executa normalmente
+- Ao final, o output é serializado neste formato JSON
+- Qualquer skill pode consumir este output sem conhecer os internos da factory
+
+**brief.json mínimo:**
+```json
+{
+  "product_name": "string",
+  "description": "string",
+  "platforms": ["web", "mobile"],
+  "auth": "supabase | none",
+  "database": "postgres | sqlite | none",
+  "entities": ["entidade1", "entidade2"],
+  "complexity": "low | medium | high"
+}
+```
+
+---
+
+## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.4)
+
+```yaml
+name: app-factory-multiagent
+role: construção robusta
+objective: construir app completo e coordenado com maior rigor usando sistema multi-agente especializado
+
+activation_rules:
+  - rule: usuário quer app completo com web, mobile, backend, auth e banco
+    priority: high
+  - rule: app exige CRUD completo, validação e tratamento de erros em todas as fronteiras
+    priority: high
+  - rule: fidelidade ao modelo Anything builder é necessária (sem scaffold genérico)
+    priority: high
+  - rule: uma skill single-agent seria insuficiente para a robustez exigida
+    priority: medium
+
+minimum_inputs:
+  - name: product_brief
+    type: string
+    required: true
+    description: descrição do produto com plataformas, entidades e fluxos principais
+
+optional_inputs:
+  - name: factory_mode
+    type: string
+    required: false
+    description: "contract-only (padrão) ou embedded-template"
+  - name: integration_context
+    type: object
+    required: false
+    description: contexto de integrações já resolvidas pelo ConnectPro (env_vars, services)
+  - name: design_contract
+    type: object
+    required: false
+    description: contrato de API gerado pelo mock-to-react para cabear o frontend
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: false
+  auto_observe_if_possible: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: string
+  artifacts:
+    - repo_structure
+    - file_contract
+    - generated_modules
+    - crud_contracts
+    - qa_status
+  issues:
+    - unresolved_dependencies
+    - architecture_conflicts
+    - quality_gaps
+    - failed_review_pass
+  next_step: string
+  confidence_score: number
+
+failure_policy:
+  recoverable: true
+  ask_user_only_if_blocked: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: ConnectPro
+    when: app exige integração externa ainda não resolvida
+    payload: required_services, integration_gaps
+  - skill_name: preview-bridge
+    when: build gerado e pronto para visualização
+    payload: project_path, run_command
+  - skill_name: surge-core
+    when: execução produzir erros observáveis durante build ou runtime
+    payload: build_log, error_signals
+  - skill_name: engineering-mentor
+    when: decisão arquitetural ambígua bloquear o avanço do fluxo
+    payload: architecture_question, current_context
+
+success_criteria:
+  - qa-reviewer retornou PASS após loop de revisão
+  - todos os módulos (backend, web, mobile) implementados e integrados sem conflitos
+  - CRUD completo para cada entidade core definida no product_brief
+  - auth e banco configurados e funcionais
+  - zero placeholders, pseudo-código ou "rest of code here" no output
+
+observability_signals:
+  - signal: contract_fixed
+    description: contrato de arquivo e arquitetura definido antes do início do build
+  - signal: parallel_build_complete
+    description: todos os builders concluíram sua parte da primeira passagem
+  - signal: qa_pass
+    description: qa-reviewer retornou PASS — entrega liberada
+  - signal: qa_fail_loop
+    description: qa-reviewer retornou FAIL — iniciando loop de correção
+  - signal: architecture_escalated
+    description: falha arquitetural detectada — retornando ao system-architect antes de mais código
+```

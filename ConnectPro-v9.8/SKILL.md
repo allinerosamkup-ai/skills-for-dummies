@@ -1,161 +1,347 @@
 ---
 name: ConnectPro
-description: |
-  Skill de preparação invisível. Use quando a tarefa exigir integração, credencial,
-  dependência externa, OAuth, banco, API key ou setup antes da construção principal.
-  Ativada antes de criador-de-apps, app-factory-multiagent ou mock-to-react quando
-  houver serviços externos envolvidos.
-role: preparação invisível
-version: "2.0"
+description: "Resolve OAuth, API keys, banco de dados e qualquer setup de integração antes que a construção comece. Zero configuração manual: ConnectPro detecta os serviços necessários, usa MCPs disponíveis, browser automation ou CLI — o que for necessário — para provisionar automaticamente sem pedir nada ao usuário além do mínimo absoluto. Cria .env real com credenciais injetadas e passa o contexto pronto para a próxima skill. Triggers: OAuth, SSO, Supabase, Firebase, Stripe, API key, banco de dados, credenciais, integrar, conectar, setup."
+version: "3.1"
+category: integrations
+tags: [oauth, api-keys, database, environment, setup, supabase, firebase, stripe, credentials, devops, mcp, cli]
 ecosystem: skill4dummies
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
+role: preparação invisível
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
-# ConnectPro — Integração e Setup Invisível
+# ConnectPro v3.0 — Integração Automática via MCP, API ou CLI
 
-Skill de preparação do ecossistema Skill4Dummies. Resolve integrações, credenciais,
-dependências externas e setup silencioso antes que as skills de construção entrem.
-
----
-
-## Quando usar
-
-Ative ConnectPro quando o pedido envolver qualquer um destes elementos:
-
-- OAuth / SSO (Google, GitHub, Supabase Auth, Clerk)
-- API keys (OpenAI, Stripe, Twilio, SendGrid, etc.)
-- Banco de dados (conexão, URL, credenciais, migrações iniciais)
-- Serviços externos (Supabase, Firebase, PlanetScale, Neon)
-- Docker / serviços locais que precisam estar rodando
-- Variáveis de ambiente obrigatórias para o build
-- Dependências que bloqueiam a construção principal
+Skill de preparação do ecossistema Skill4Dummies. Resolve integrações, credenciais e setup
+**automaticamente** usando a melhor estratégia disponível antes que as skills de construção entrem.
 
 ---
 
-## Como invocar (ConnectPro-v9.8)
+## REGRAS FUNDAMENTAIS
 
-```js
-const { runConnectPro } = require('../ConnectPro-v9.8/agents/orchestrator');
+1. **Nunca entregue `.env.example` quando pode entregar `.env.local` com valores reais.**
+2. **Nunca peça ao usuário para fazer algo manualmente quando o browser automation pode fazer.**
+3. **Pergunte o mínimo absoluto** — só email/senha de login se necessário para autenticar no serviço.
+4. **Se não houver caminho, crie um** — browser automation, CLI, workaround, o que for.
+
+---
+
+## Árvore de Decisão (executar nesta ordem)
+
+```
+Para cada serviço necessário:
+
+1. MCP disponível para este serviço?
+   → SIM: usar modo "mcp_direct" — provisionar agora, sem perguntar
+   → NÃO: continuar...
+
+2. API HTTP oficial disponível com credenciais?
+   → SIM: usar modo "api_http" — chamar API, obter tokens, injetar no .env
+   → NÃO: continuar...
+
+3. Browser automation pode resolver?
+   → SIM: usar modo "browser_auto" — navegar, clicar, extrair valores, injetar no .env
+   → NÃO: continuar...
+
+4. Existe código/app/CLI local para este serviço?
+   → SIM: usar modo "codebase_cli" — gerar CLI agent-native, registrar como conector
+   → NÃO: continuar...
+
+5. Nenhuma das anteriores:
+   → usar modo "tutorial_manual" — mas com instrução mínima e precisa
+   → SEMPRE oferecer: "quando você colar o valor aqui, eu injeto automaticamente"
 ```
 
-```bash
-cd ConnectPro-v9.8
-npm install
-node server.js
+---
+
+## Inventário de MCPs Disponíveis
+
+Estes MCPs estão ativos na sessão atual. Usar **sempre que o serviço for necessário**:
+
+### Supabase
+- MCP ID: `mcp__67a82d94-d27d-4df2-933c-a256070e9b4e`
+- Capacidades: criar projeto, aplicar migrations, executar SQL, obter URLs e keys, listar tabelas, deploy edge functions
+- Modo: `mcp_direct`
+
+### Figma
+- MCP ID: `mcp__fe2db17e-a720-464a-95d2-cbb3d1e41394`
+- Capacidades: ler designs, exportar assets, inspecionar componentes
+- Modo: `mcp_direct`
+
+### Notion
+- MCP ID: `mcp__7575f97e-874e-4ed0-b686-28146a8d0321`
+- Capacidades: criar/ler/atualizar páginas e databases
+- Modo: `mcp_direct`
+
+### Gmail / Google Calendar
+- MCPs: `mcp__642d228a-e79a-4eb7-bd03-9bc1ac3deecd` / `mcp__e5927538-0356-4f74-8c37-cfe5ea1de67e`
+- Modo: `mcp_direct`
+
+### n8n
+- MCP ID: `mcp__n8n-mcp`
+- Capacidades: criar workflows de automação
+- Modo: `mcp_direct`
+
+### MCP Registry
+- MCP ID: `mcp__mcp-registry`
+- Usar para: descobrir MCPs de serviços não listados acima antes de desistir
+
+---
+
+## Execução por Modo
+
+### Modo: mcp_direct (Supabase — exemplo canônico)
+
+Quando o projeto precisa de Supabase, executar **nesta sequência exata**:
+
+```
+1. Verificar se já existe projeto Supabase:
+   → mcp__67a82d94__list_projects
+   → Se existir com nome similar: usar esse projeto
+
+2. Se não existir, criar:
+   → mcp__67a82d94__list_organizations → pegar org_id
+   → mcp__67a82d94__get_cost { type: "project" } → mostrar custo ao usuário
+   → mcp__67a82d94__confirm_cost → confirmar
+   → mcp__67a82d94__create_project { name, org_id, region: "sa-east-1" }
+   → Aguardar status "ACTIVE_HEALTHY"
+
+3. Obter credenciais:
+   → mcp__67a82d94__get_project_url { project_id } → SUPABASE_URL
+   → mcp__67a82d94__get_publishable_keys { project_id } → ANON_KEY, SERVICE_ROLE_KEY
+
+4. Aplicar migrations (se existirem no projeto):
+   → Para cada arquivo em packages/database/migrations/:
+     mcp__67a82d94__apply_migration { project_id, name, query: <conteúdo do arquivo> }
+
+5. Injetar no .env.local:
+   → Escrever arquivo .env.local REAL com valores obtidos nos passos anteriores
+   → NUNCA usar placeholders se os valores reais foram obtidos
+
+6. Verificar:
+   → mcp__67a82d94__list_tables { project_id } → confirmar que tabelas existem
+```
+
+### Modo: mcp_direct (outros serviços)
+
+Para serviços com MCP mas sem script canônico:
+1. Consultar `mcp__mcp-registry__suggest_connectors` para descobrir capabilities
+2. Executar o fluxo equivalente ao Supabase acima
+3. Sempre terminar escrevendo valores reais no .env
+
+### Modo: api_http
+
+Quando não há MCP mas existe API com credencial já fornecida pelo usuário:
+1. Chamar a API para validar a credencial
+2. Se a API retornar dados adicionais necessários (ex: project_id, webhook_url), extrair
+3. Escrever .env.local com todos os valores
+
+### Modo: codebase_cli
+
+Quando o serviço necessário tem código/app local mas sem MCP/API:
+
+```
+Pipeline codebase_cli:
+
+1. discover_codebase
+   → Localizar repo/caminho: perguntar ao usuário se não for óbvio
+
+2. analyze_app
+   → Ler package.json / Cargo.toml / requirements.txt
+   → Identificar: linguagem, comandos disponíveis, capacidades expostas
+
+3. design_cli
+   → Definir comandos necessários para a integração
+   → Padrão de saída: --json sempre disponível
+   → Estrutura: <app> <subcommand> [flags] --json
+
+4. generate_cli
+   → Gerar wrapper CLI em Node/Commander ou Python/Click
+   → Salvar em: .connectpro/cli/<app-name>/index.js (ou .py)
+
+5. test_cli
+   → Executar comando básico com --json
+   → Verificar que output é JSON válido
+
+6. register_connector
+   → Salvar em: .connectpro/connectors/<app-name>.json
+   → Formato: { name, type: "cli", command, subcommands, status: "active" }
+```
+
+O conector CLI registrado é tratado igual a um MCP pelo restante do ecossistema.
+
+### Modo: browser_auto
+
+Quando não há MCP/API mas o serviço tem interface web (dashboard, console, painel):
+
+```
+Ferramentas disponíveis para browser automation:
+- mcp__Claude_in_Chrome__navigate    → ir para URL
+- mcp__Claude_in_Chrome__find        → localizar elemento
+- mcp__Claude_in_Chrome__form_input  → preencher campo
+- mcp__Claude_in_Chrome__javascript_tool → executar JS na página
+- mcp__Claude_in_Chrome__read_page   → ler conteúdo atual
+- mcp__Claude_in_Chrome__computer    → screenshot + interação visual
+
+Exemplos de uso:
+
+[Supabase — desabilitar email confirmation]
+1. navigate: https://supabase.com/dashboard/project/{project_id}/auth/providers
+2. find: toggle "Confirm email"
+3. javascript_tool: clicar no toggle para desabilitar
+4. find: botão "Save" → clicar
+5. Confirmar: read_page para verificar que foi salvo
+
+[Google OAuth — obter Client ID e Secret]
+1. navigate: https://console.cloud.google.com/apis/credentials
+2. find: "Create Credentials" → "OAuth Client ID"
+3. Preencher: Application type = Web, redirect URIs
+4. Extrair: Client ID e Client Secret via read_page
+5. Injetar no .env.local automaticamente
+
+[Regra de ouro do browser_auto]
+- Nunca peça ao usuário para abrir o browser — você abre
+- Nunca peça ao usuário para copiar/colar — você extrai
+- Só pergunte credenciais de login SE o serviço exigir login manual
+  E mesmo assim, só uma vez, só o mínimo (email + senha)
+```
+
+### Modo: tutorial_manual
+
+Último recurso absoluto — quando browser_auto falhar ou for impossível:
+1. Identificar exatamente qual valor está faltando
+2. Dar URL exata e instrução de 1 linha
+3. Oferecer: "Cole o valor aqui e eu injeto no .env automaticamente"
+
+**Nunca** usar tutorial_manual sem antes tentar browser_auto.
+**Nunca** terminar em tutorial_manual sem antes tentar `mcp__mcp-registry__search_mcp_registry`.
+
+---
+
+## Contrato de Conector
+
+Todo serviço integrado pelo ConnectPro produz um conector com este contrato:
+
+```json
+{
+  "name": "string",
+  "type": "mcp | api | cli",
+  "status": "active | failed | manual",
+  "invoke": "padrão de chamada",
+  "output_schema": {
+    "status": "success | error",
+    "data": "object",
+    "error": "string | null",
+    "meta": "object"
+  },
+  "env_vars_injected": ["VAR_NAME_1", "VAR_NAME_2"],
+  "fallback": "tutorial_url ou null"
+}
+```
+
+Este contrato é consumido por app-factory-multiagent e skill4d-core-orchestrator.
+
+---
+
+## Fluxo Completo para Google OAuth (caso sem MCP)
+
+Google OAuth não tem MCP disponível. Fluxo atual:
+
+```
+1. Verificar se GOOGLE_CLIENT_ID já existe no ambiente → se sim, validar e usar
+
+2. Se não existe:
+   → tutorial_manual com passos precisos:
+     a. Abrir: https://console.cloud.google.com/apis/credentials
+     b. Criar projeto ou selecionar existente
+     c. OAuth 2.0 > Create Credentials > OAuth Client ID
+     d. Application type: Web application
+     e. Authorized redirect URIs: http://localhost:3000/auth/callback
+     f. Copiar Client ID e Client Secret
+
+3. Quando usuário fornecer os valores:
+   → Injetar imediatamente no .env.local
+   → Confirmar: "Google OAuth configurado. Redirect URI: http://localhost:3000/auth/callback"
 ```
 
 ---
 
-## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.1)
+## Output Obrigatório
+
+ConnectPro sempre termina com este relatório:
+
+```yaml
+status: success | partial | blocked | failed
+
+serviços:
+  - nome: Supabase
+    modo_usado: mcp_direct
+    resultado: project criado, migrations aplicadas, .env.local escrito
+    vars_injetadas: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY]
+
+  - nome: Google OAuth
+    modo_usado: tutorial_manual
+    resultado: instruções fornecidas, aguardando credenciais do usuário
+    vars_pendentes: [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET]
+
+bloqueios: []
+
+próxima_skill: app-factory-multiagent
+contexto_handoff:
+  env_vars_resolved: [lista das vars já disponíveis]
+  env_vars_pending: [lista das vars ainda manuais]
+  project_ids: { supabase: "abc123" }
+  migrations_applied: true
+```
+
+---
+
+## Contrato Skill4Dummies
 
 ```yaml
 name: ConnectPro
 role: preparação invisível
-objective: resolver integrações, credenciais, setup e dependências antes da execução principal
-
-activation_rules:
-  - rule: tarefa menciona banco de dados, API key, OAuth ou serviço externo
-    priority: high
-  - rule: criador-de-apps ou app-factory precisam de env vars antes de iniciar
-    priority: high
-  - rule: erro de runtime aponta para credencial faltando
-    priority: high
-  - rule: usuário menciona "configurar", "conectar", "integrar" antes de construir
-    priority: medium
-
-minimum_inputs:
-  - name: goal
-    type: string
-    required: true
-    description: objetivo principal da tarefa que exige integração
-  - name: required_services
-    type: array
-    required: true
-    description: lista de serviços externos necessários
-
-optional_inputs:
-  - name: existing_env
-    type: object
-    required: false
-    description: variáveis de ambiente já disponíveis
-  - name: project_path
-    type: string
-    required: false
-    description: raiz do projeto onde o .env será criado
+version: "3.0"
 
 execution_policy:
   ask_minimum: true
+  prefer_automatic_over_manual: true      # NOVO: sempre preferir MCP/API/CLI antes de pedir ao usuário
+  never_deliver_example_when_real_possible: true  # NOVO: .env.local real > .env.example
   preserve_context: true
-  prefer_partial_delivery: true
-  auto_observe_if_possible: true
-  call_preview_if_visual: false
   call_surge_if_execution_occurs: true
 
-output_schema:
-  status: success | partial | blocked | failed
-  summary: string
-  artifacts:
-    - resolved_connections
-    - setup_notes
-    - env_template
-  issues:
-    - missing_permissions
-    - blocked_integrations
-    - missing_credentials
-  next_step: string
-  confidence_score: number
-
-failure_policy:
-  recoverable: true
-  ask_user_only_if_blocked: true
-  must_explain_blocker: true
-  must_propose_next_action: true
+success_criteria:
+  - todas as credenciais disponíveis via MCP foram injetadas automaticamente
+  - .env.local criado com valores reais (não placeholders)
+  - migrations aplicadas se existirem
+  - próxima skill pode iniciar SEM bloqueios de setup
+  - serviços sem MCP têm tutorial preciso com URL e passos exatos
 
 handoff_targets:
-  - skill_name: criador-de-apps
-    when: ambiente básico resolvido, MVP pode ser construído
-    payload: env_vars_resolved, services_connected
   - skill_name: app-factory-multiagent
-    when: projeto robusto depende de serviços externos prontos
-    payload: full_integration_context
-  - skill_name: mock-to-react
-    when: fluxo visual pode seguir após setup de assets/APIs
-    payload: api_endpoints_available
+    when: ambiente resolvido (total ou parcial com manual mínimo)
+    payload: env_vars_resolved, services_connected, project_ids, migrations_applied
   - skill_name: surge-core
     when: integração produziu erros observáveis
     payload: error_log, integration_status
-
-success_criteria:
-  - todas as credenciais necessárias estão disponíveis ou documentadas
-  - variáveis de ambiente criadas ou template gerado
-  - serviços externos verificados como acessíveis
-  - próxima skill pode iniciar sem bloqueios de setup
-
-observability_signals:
-  - signal: integration_resolved
-    description: serviço externo conectado com sucesso
-  - signal: credential_missing
-    description: credencial não encontrada — requer ação manual do usuário
-  - signal: env_created
-    description: arquivo .env ou .env.example gerado
-  - signal: blocked_integration
-    description: integração bloqueada por permissão ou rate limit
 ```
 
 ---
 
 ## Referência sistêmica
 
-ConnectPro é a **camada de Preparação** na arquitetura Skill4Dummies:
-
 ```
 Usuário
-↓ core-orchestrator — interpreta, classifica, roteia
-↓ ConnectPro       ← você está aqui
-↓ mock-to-react | criador-de-apps | app-factory — construção
+↓ skill4d-core-orchestrator — interpreta, classifica, roteia
+↓ ConnectPro v3.0     ← você está aqui
+  ├── mcp_direct      → provisiona automaticamente (Supabase, Figma, Notion...)
+  ├── api_http        → chama API com credenciais fornecidas
+  ├── codebase_cli    → gera CLI para software sem MCP
+  └── tutorial_manual → último recurso, instrução precisa
+↓ mock-to-react | app-factory-multiagent — construção
 ↓ preview-bridge — validação visual
 ↓ surge-core — observação e autocorreção
 ```
 
 Nunca tente construir o que pertence às skills de construção.
-Nunca oculte falhas de integração — registre e informe o usuário.
+Nunca entregue `.env.example` quando pode entregar `.env.local` real.
+Nunca oculte falhas de integração — registre e informe o usuário com próximos passos concretos.

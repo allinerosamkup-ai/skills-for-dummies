@@ -1,10 +1,12 @@
 ---
 name: mock-to-react
-description: "Converte mocks visuais (HTML ou imagem) em componentes React pixel-perfect usando sistema multiagente com 6 agentes especializados. Use quando o usuario mostrar um mockup, design, screenshot, wireframe, imagem ou HTML e quiser gerar codigo React/Next.js com Tailwind CSS fiel ao visual. Busca automaticamente pacotes NPM relevantes, icones de 5+ bibliotecas e componentes similares no GitHub. Triggers: converta esse design, gere o codigo desse mockup, transforme essa imagem em React, pixel-perfect, codigo igual ao design, clone esse layout, copie esse visual, mock to code, gerar componente, replicar interface."
+description: "Transforms any visual mock (image or HTML) into a pixel-perfect React component with 98% similarity threshold. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching (5+ libraries), GitHub component research, and iterative refinement. Triggers: convert this design, generate code from mockup, transform image to React, pixel-perfect, clone this layout, mock to code, replicate interface, design to component."
 version: "2.0"
+category: ui-development
+tags: [react, tailwind, design-to-code, pixel-perfect, mockup, wireframe, frontend, component, figma, ui]
 ecosystem: skill4dummies
 role: construção visual
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 handoff_targets:
   - skill: preview-bridge
     when: componente React gerado e pronto para visualização
@@ -170,3 +172,102 @@ Ver formato completo em `references/output-format.md`
 - `references/agents.md` -- codigo completo dos 6 agentes (VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent) + orquestradores V2 e V3
 - `references/vision-prompts.md` -- 4 prompts especializados para analise pixel-perfect via Claude Vision
 - `references/output-format.md` -- estrutura JSON completa do output + quality metrics + sugestoes de melhoria
+
+---
+
+## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.2)
+
+```yaml
+name: mock-to-react
+role: construção visual
+objective: converter imagem, mock ou layout em componente React pixel-perfect fiel ao design original
+
+activation_rules:
+  - rule: usuário mostra imagem, screenshot, wireframe ou mockup
+    priority: high
+  - rule: usuário pede "converta esse design", "gere o código desse mockup", "transforme em React"
+    priority: high
+  - rule: usuário quer replicar, clonar ou copiar um layout visual existente
+    priority: high
+  - rule: orquestrador identifica input visual como ponto de entrada do fluxo
+    priority: medium
+
+minimum_inputs:
+  - name: visual_input
+    type: file | string
+    required: true
+    description: imagem (PNG/JPG/WebP) ou HTML do mockup a converter
+
+optional_inputs:
+  - name: target_framework
+    type: string
+    required: false
+    description: framework alvo (padrão React/Tailwind; aceita Vue, HTML/CSS)
+  - name: design_system
+    type: string
+    required: false
+    description: design system existente no projeto (shadcn, MUI, etc.)
+  - name: backend_contract
+    type: object
+    required: false
+    description: contrato de API já definido para cabear o frontend gerado
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  auto_observe_if_possible: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: string
+  artifacts:
+    - ui_code
+    - design_tokens
+    - tailwind_config
+    - assets_needed
+  issues:
+    - missing_visual_context
+    - mismatch_risk
+    - incomplete_elements
+  next_step: string
+  confidence_score: number
+
+failure_policy:
+  recoverable: true
+  ask_user_only_if_blocked: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: preview-bridge
+    when: componente React gerado e pronto para visualização
+    payload: generated_code, project_path
+  - skill_name: surge-core
+    when: resultado visual divergir do mock original após iteração
+    payload: comparison_result, diff_analysis
+  - skill_name: app-factory-multiagent
+    when: interface precisa virar app completo com backend
+    payload: ui_code, api_contract
+
+success_criteria:
+  - componente gerado cobre 100% dos elementos do inventário visual
+  - similaridade com o mock original >= 98%
+  - todos os elementos interativos possuem handlers implementados (sem funções vazias)
+  - design tokens extraídos e aplicados corretamente
+  - código pronto para uso em projeto real sem modificações manuais
+
+observability_signals:
+  - signal: vision_analysis_complete
+    description: mock analisado e descrição estruturada gerada
+  - signal: design_tokens_extracted
+    description: tokens de cor, tipografia e espaçamento extraídos
+  - signal: component_generated
+    description: componente React gerado com estrutura completa
+  - signal: similarity_threshold_reached
+    description: similaridade >= 98% atingida após iterações
+  - signal: mismatch_detected
+    description: divergência visual detectada — escalando para surge-core
+```

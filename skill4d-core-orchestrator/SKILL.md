@@ -1,6 +1,12 @@
 ---
 name: skill4d-core-orchestrator
-description: Meta-skill orquestradora do ecossistema Skill4Dummies. Use quando a tarefa exigir coordenação entre múltiplas skills já instaladas — ConnectPro, mock-to-react, criador-de-apps, app-factory-multiagent, preview-bridge, surge-core e engineering-mentor — para entregar resultado com o mínimo possível de prompts extras, handoff estruturado e autocorreção sistêmica.
+description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, and engineering-mentor into a one-shot flow: classifies intent, selects the minimum skill sequence, passes structured handoff envelopes between skills, and closes the loop with preview validation and self-correction. Triggers: build me an app, image to app, full workflow, complete project, multi-skill task."
+version: "2.0"
+category: orchestration
+tags: [orchestrator, workflow, multi-agent, automation, full-stack, one-shot, skill4dummies, ai-os, end-to-end]
+ecosystem: skill4dummies
+role: orquestração sistêmica
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
 # Skill4Dummies Core Orchestrator
@@ -45,11 +51,117 @@ Skills disponíveis no ecossistema, desde que instaladas:
 
 - ConnectPro
 - mock-to-react
-- criador-de-apps
 - app-factory-multiagent
 - preview-bridge
 - surge-core
 - engineering-mentor
+
+---
+
+## Contrato (Skill4Dummies SKILL_CONTRACT.md — Orquestrador)
+
+```yaml
+name: skill4d-core-orchestrator
+role: orquestração sistêmica
+objective: coordenar o ecossistema de skills para entregar valor máximo com o mínimo de prompts extras
+
+activation_rules:
+  - rule: pedido exige mais de uma skill para ser resolvido
+    priority: high
+  - rule: usuário quer app completo ou quase completo em um pedido
+    priority: high
+  - rule: fluxo começa com imagem, layout, mock ou ideia ampla
+    priority: high
+  - rule: fluxo envolve construção + integração + preview + correção
+    priority: medium
+  - rule: necessidade de coordenação com mínimo de prompts extras ao usuário
+    priority: medium
+
+minimum_inputs:
+  - name: user_intent
+    type: string
+    required: true
+    description: pedido ou intenção do usuário a ser resolvido como sistema
+
+optional_inputs:
+  - name: visual_input
+    type: file
+    required: false
+    description: imagem ou mock se o ponto de entrada do fluxo for visual
+  - name: available_skills
+    type: array
+    required: false
+    description: lista de skills instaladas no ambiente (para roteamento condicional)
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  auto_observe_if_possible: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: string
+  artifacts:
+    - flow_decisions
+    - skill_sequence
+    - handoff_envelopes
+    - final_deliverable
+  issues:
+    - missing_skill
+    - ambiguous_intent
+    - handoff_failure
+  next_step: string
+  confidence_score: number
+
+failure_policy:
+  recoverable: true
+  ask_user_only_if_blocked: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: ConnectPro
+    when: integração externa necessária antes da construção
+    payload: goal, required_services
+  - skill_name: mock-to-react
+    when: input visual detectado como ponto de entrada
+    payload: visual_input, target_framework
+  - skill_name: app-factory-multiagent
+    when: app robusto e coordenado necessário
+    payload: product_brief, integration_context
+  - skill_name: preview-bridge
+    when: resultado web gerado e precisa ser validado visualmente
+    payload: project_path, run_command
+  - skill_name: surge-core
+    when: execução produziu erros ou falhas observáveis
+    payload: error_signals, execution_context
+  - skill_name: engineering-mentor
+    when: ambiguidade conceitual ou decisão arquitetural bloqueia o fluxo
+    payload: current_context, blocking_question
+
+success_criteria:
+  - pedido resolvido com um prompt ou quase isso (≤1 prompt adicional)
+  - combinação de skills faz sentido para o contexto detectado
+  - contexto preservado entre todas as etapas via envelope de handoff
+  - artefato utilizável entregue ao final do fluxo
+  - preview disponível quando houver resultado visual
+  - surge-core detectou e tratou falhas relevantes
+
+observability_signals:
+  - signal: intent_classified
+    description: intenção classificada (visual/construtivo/integracional/arquitetural/corretivo/combinado)
+  - signal: skill_sequence_defined
+    description: sequência mínima de skills definida para o fluxo
+  - signal: handoff_executed
+    description: contexto passado para próxima skill via envelope padrão
+  - signal: flow_complete
+    description: fluxo completo com artefato entregue e ciclo fechado
+  - signal: reroute_needed
+    description: surge-core ou engineering-mentor sinalizou necessidade de reroteamento
+```
 
 ---
 
@@ -89,19 +201,76 @@ Classifique o pedido como:
 Não acione todas as skills por padrão.
 Ative apenas as necessárias.
 
-### 3. Decida qual skill entra primeiro
+### 3. Inventário de MCPs — Passar para ConnectPro
 
-Use esta lógica:
+Antes de acionar ConnectPro, injetar no handoff os MCPs disponíveis na sessão:
+
+```yaml
+mcps_available:
+  - name: Supabase
+    id: mcp__67a82d94-d27d-4df2-933c-a256070e9b4e
+    capabilities: [create_project, apply_migration, get_keys, execute_sql]
+  - name: Figma
+    id: mcp__fe2db17e-a720-464a-95d2-cbb3d1e41394
+  - name: Notion
+    id: mcp__7575f97e-874e-4ed0-b686-28146a8d0321
+  - name: Gmail
+    id: mcp__642d228a-e79a-4eb7-bd03-9bc1ac3deecd
+  - name: Google Calendar
+    id: mcp__e5927538-0356-4f74-8c37-cfe5ea1de67e
+  - name: PreviewBridge
+    id: mcp__previewbridge__*
+    capabilities: [detect, setup, check]
+  - name: MCP Registry
+    id: mcp__mcp-registry
+    use: descobrir MCPs não listados acima
+```
+
+Isso garante que ConnectPro usa MCPs automáticos em vez de cair em tutorial manual.
+
+### 4. Decida qual skill entra primeiro e se podem rodar em paralelo
+
+Use esta lógica de roteamento:
 
 - Se houver integração, setup, credencial, serviço externo ou dependência → **ConnectPro**
 - Se houver imagem, mock, layout ou referência visual → **mock-to-react**
-- Se o objetivo for MVP rápido com baixo overhead → **criador-de-apps**
-- Se o objetivo for app mais completo e robusto → **app-factory-multiagent**
+- Se o objetivo for construir um app (MVP ou robusto) → **app-factory-multiagent**
 - Se houver interface web, necessidade de ver resultado → **preview-bridge**
 - Se houver erro, falha de runtime, inconsistência → **surge-core**
 - Se houver ambiguidade conceitual ou decisão arquitetural → **engineering-mentor**
 
-### 4. Preserve contexto entre as skills
+**Execução Paralela — quando possível:**
+
+```
+Paralelo PERMITIDO:
+├── ConnectPro + engineering-mentor
+│   (credenciais sendo resolvidas enquanto arquitetura é decidida)
+├── web-builder + mobile-builder + backend-builder
+│   (dentro do app-factory — já implementado)
+└── surge-core + preview-bridge
+    (observação enquanto validação visual acontece)
+
+Paralelo PROIBIDO:
+├── ConnectPro → app-factory (app-factory precisa das credenciais)
+├── app-factory → preview-bridge (preview precisa do build)
+└── qualquer skill que depende do output da anterior
+```
+
+### 5. Reporting de Progresso
+
+Para fluxos com 3+ skills, reportar ao usuário a cada skill concluída:
+
+```
+[ConnectPro ✓] Supabase provisionado, .env.local criado com credenciais reais
+[app-factory → buildando...] web + mobile em paralelo
+[app-factory ✓] QA passou — 3 entidades, CRUD completo
+[preview-bridge ✓] http://localhost:3000 — screenshot capturado
+[surge-core ✓] zero erros críticos
+```
+
+Nunca deixar o usuário sem feedback por mais de uma skill de distância.
+
+### 6. Preserve contexto entre as skills
 
 Use sempre o envelope de handoff definido em `HANDOFF_SCHEMA.md`.
 
@@ -115,7 +284,7 @@ Carregue sempre:
 
 Nunca faça a próxima skill recomeçar do zero sem necessidade.
 
-### 5. Priorize fechamento de ciclo
+### 7. Priorize fechamento de ciclo
 
 Sempre que houver resultado visual → favoreça validação via preview-bridge.
 Sempre que houver execução real → favoreça observação via surge-core.
@@ -185,8 +354,8 @@ Use o envelope de resposta padrão definido em `SKILL_CONTRACT.md`.
 ### Cenário 1 — Imagem para app
 Fluxo provável: mock-to-react → preview-bridge → surge-core
 
-### Cenário 2 — MVP com login, banco e dashboard
-Fluxo provável: ConnectPro → criador-de-apps ou app-factory-multiagent → preview-bridge → surge-core
+### Cenário 2 — MVP ou app com login, banco e dashboard
+Fluxo provável: ConnectPro → app-factory-multiagent → preview-bridge → surge-core
 
 ### Cenário 3 — Ideia bagunçada para execução prática
 Fluxo provável: core-orchestrator interpreta → engineering-mentor (se necessário) → skill produtiva → preview-bridge → surge-core

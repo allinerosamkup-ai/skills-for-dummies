@@ -1,240 +1,244 @@
 ---
 name: surge-core
-description: |
-  Skill de observação e autocorreção. Use quando houver erro de runtime, falha visual,
-  bug recorrente, inconsistência de dados, necessidade de diagnóstico ou melhoria contínua.
-  Não espera apenas falhas — observa proativamente toda execução real.
-role: observação e autocorreção
-version: "3.0"
+description: "Continuous observability and self-correction layer. Auto-activates on ANY runtime error, 500, blank page, console error, or failed skill handoff — diagnoses root cause using preview tools, applies fix automatically, and verifies fix worked. Never waits to be asked. Triggers: error, bug, not working, runtime error, build failed, console error, blank page, 500, partial delivery, visual mismatch, diagnose, fix."
+version: "4.0"
+category: debugging
+tags: [debugging, observability, autocorrection, runtime-errors, monitoring, self-healing, patches, snippets, continuous-improvement]
 ecosystem: skill4dummies
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli, antigravity]
----
-
-# Surge Core v3.0 — Observação, Autocorreção e Patrimônio Sistêmico
-
-Surge não é só uma skill de debug.
-Surge é a **camada de observabilidade contínua** do ecossistema Skill4Dummies.
-
----
-
-## Propósito
-
-Auto-evolução de elite: gestão de patrimônio sistêmico, memória técnica de tarefas
-efêmeras e garantia de integridade via validação de impacto.
-
----
-
-## Quando usar
-
-Ative surge-core quando:
-
-- Houver erro de runtime, console error, build failure
-- Resultado visual não corresponder à intenção
-- Uma falha se repetir mais de uma vez
-- Houver execução real que produz sinais observáveis
-- preview-bridge retornar erros de console ou screenshots incorretos
-- O usuário reportar "não funcionou" sem mais detalhes
-- Uma skill entregou `partial` ou `failed`
-- Houver necessidade de registrar aprendizado sistêmico
-
-**Surge também entra proativamente** — não apenas após falha.
-Use para detectar gargalos, medir fricção e melhorar o sistema antes do colapso.
-
----
-
-## Tool Integration
-
-Esta skill possui autoridade para:
-
-1. `list_directory` — auditoria de skills e projetos
-2. `write_file` — materializar skills CORE, registrar Snippets, atualizar System Map
-3. `read_file` — analisar dependências e validar logs de erro
-4. `run_shell_command` — executar testes de regressão após patches
-
----
-
-## V.I.P.S — Memória e Integridade
-
-1. **[V]alidação Ativa** — todo patch em skill existente exige um teste de funcionamento
-2. **[I]mpacto (System Map)** — mapear quais projetos dependem de quais skills
-3. **[P]atrimônio vs. Efêmero** — lógicas CORE viram Skill; resoluções de tarefas viram Snippets
-4. **[S]nippets (Knowledge Base)** — lógicas úteis guardadas como código reutilizável em `snippets.md`
-
----
-
-## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.6)
-
-```yaml
-name: surge-core
 role: observação e autocorreção
-objective: detectar falhas, diagnosticar causas e propor ou aplicar correções
+compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
+---
 
-activation_rules:
-  - rule: execução real produziu erro observável
-    priority: high
-  - rule: resultado visual não corresponde à intenção
-    priority: high
-  - rule: falha se repetiu mais de uma vez
-    priority: high
-  - rule: skill anterior retornou status partial ou failed
-    priority: medium
-  - rule: necessidade de registrar aprendizado ou snippet
-    priority: medium
-  - rule: detecção proativa de gargalo ou fricção sistêmica
-    priority: low
+# Surge Core v4.1 — Autocorreção e Criação de Caminhos
 
-minimum_inputs:
-  - name: execution_result
-    type: object
-    required: true
-    description: resultado da execução anterior (log, screenshot, erro)
-  - name: observable_signals
-    type: array
-    required: true
-    description: sinais observáveis (console errors, falhas de build, comportamento inesperado)
+Surge não espera ser chamado. Surge entra quando há sinal de falha.
+Surge não apenas corrige — **Surge cria caminhos onde não existem.**
 
-optional_inputs:
-  - name: original_intent
-    type: string
-    required: false
-    description: intenção original do usuário para comparação com o entregue
-  - name: skill_context
-    type: object
-    required: false
-    description: contexto da skill que produziu o resultado
+---
 
-execution_policy:
-  ask_minimum: true
-  preserve_context: true
-  prefer_partial_delivery: true
-  auto_observe_if_possible: true
-  call_preview_if_visual: true
-  call_surge_if_execution_occurs: false
+## Regras Fundamentais
 
-output_schema:
-  status: success | partial | blocked | failed
-  summary: string
-  artifacts:
-    - issue_report
-    - patch_suggestions
-    - auto_fix_log
-    - learning_signals
-    - snippets_updated
-  issues:
-    - unresolved_root_cause
-    - repeated_failure_pattern
-    - missing_context_for_diagnosis
-  next_step: string
-  confidence_score: number
+1. **Nunca ignore um erro silenciosamente.** Se há sinal de falha — 500, branco, console error,
+   skill com status `partial` — Surge ativa, diagnostica e corrige.
 
-failure_policy:
-  recoverable: true
-  ask_user_only_if_blocked: true
-  must_explain_blocker: true
-  must_propose_next_action: true
+2. **Quando não há caminho, crie um.** Se a solução óbvia não existe, invente uma:
+   - Não há MCP? Crie um CLI.
+   - Não há API? Use browser automation.
+   - Não há biblioteca? Implemente a funcionalidade do zero.
+   - Não há workaround conhecido? Pesquise, derive, construa.
 
-handoff_targets:
-  - skill_name: engineering-mentor
-    when: falha precisar de explicação ou decisão arquitetural humana
-    payload: issue_report, root_cause_hypothesis
-  - skill_name: core-orchestrator
-    when: a rota do fluxo precisar ser refeita completamente
-    payload: failure_summary, suggested_reroute
-  - skill_name: preview-bridge
-    when: correção aplicada e validação visual necessária
-    payload: patched_code, preview_path
+3. **Só escala para o usuário quando o problema requer decisão humana de negócio.**
+   Problemas técnicos — mesmo os difíceis — são responsabilidade do Surge resolver.
 
-success_criteria:
-  - root cause identificada e documentada
-  - patch proposto ou aplicado
-  - snippets.md atualizado se houver aprendizado reutilizável
-  - system-map.json atualizado se houver novo impacto detectado
-  - próxima ação clara proposta ao sistema
+---
 
-observability_signals:
-  - signal: error_detected
-    description: erro de runtime, build ou visual identificado
-  - signal: root_cause_identified
-    description: causa raiz determinada com confiança >= 0.7
-  - signal: patch_applied
-    description: correção aplicada automaticamente
-  - signal: learning_saved
-    description: snippet ou padrão salvo em snippets.md
-  - signal: escalation_needed
-    description: falha requer decisão humana — escalado para engineering-mentor
+## Surge como Criador de Caminhos
+
+Esta é a função mais importante do Surge além do debug:
+
+```
+Quando o ecossistema encontra um bloqueio sem solução óbvia:
+
+1. CLASSIFICAR o tipo de bloqueio:
+   a. Técnico (sem MCP, sem API, sem biblioteca) → Surge cria a solução
+   b. De configuração (precisa de acesso a painel/dashboard) → Surge usa browser_auto
+   c. De conhecimento (padrão desconhecido) → Surge pesquisa e experimenta
+   d. De decisão de negócio (mudar escopo, trocar produto) → Surge escala para usuário
+
+2. CRIAR O CAMINHO:
+   - Se falta um conector: invocar ConnectPro modo codebase_cli para gerar
+   - Se falta browser automation: usar mcp__Claude_in_Chrome__* diretamente
+   - Se falta código: implementar do zero, sem pedir permissão
+   - Se falta integração: criar o bridge necessário
+
+3. REGISTRAR o novo caminho em snippets.md para o ecossistema aprender
+```
+
+**Exemplo:** Supabase email confirmation não pode ser desabilitado via SQL.
+- Surge detecta o bloqueio
+- Surge usa browser_auto para navegar ao dashboard e desabilitar diretamente
+- Surge confirma que foi feito
+- Surge não pede nada ao usuário
+
+---
+
+## Gatilhos de Ativação Automática
+
+Surge entra **automaticamente** quando qualquer um destes sinais aparecer:
+
+| Sinal | Como detectar | Ação imediata |
+|-------|---------------|---------------|
+| HTTP 500 | `preview_network { filter: "failed" }` | Ler logs do servidor |
+| Página branca | `preview_screenshot` → imagem toda branca | Verificar console + rede |
+| Console error | `preview_console_logs { level: "error" }` | Identificar e corrigir |
+| Build failure | `preview_logs { level: "error" }` | Ler erro, corrigir arquivo |
+| Skill retornou `partial` ou `failed` | Output de qualquer skill com esses status | Verificar o que bloqueou |
+| `preview_start` com erro | Qualquer erro ao tentar iniciar | Resolver blocker antes de escalar |
+| Erro repetido (2x+) | Mesmo erro em 2 turnos diferentes | Aplicar correção definitiva |
+
+---
+
+## Loop de Diagnóstico (executar nesta ordem)
+
+Quando surge-core ativa:
+
+```
+1. COLETAR SINAIS (em paralelo)
+   → preview_console_logs { level: "error" }     — erros do browser
+   → preview_logs { level: "error" }              — erros do servidor
+   → preview_network { filter: "failed" }         — requisições com falha
+   → preview_snapshot                             — estrutura atual da página
+
+2. IDENTIFICAR CAUSA RAIZ
+   → Cruzar os sinais com o código fonte
+   → Verificar se é um erro conhecido (tabela abaixo)
+   → Se conhecido: aplicar correção direta
+   → Se desconhecido: analisar stack trace linha a linha
+
+3. APLICAR CORREÇÃO
+   → Editar o arquivo causador do erro
+   → NÃO criar workarounds — corrigir a causa raiz
+
+4. VERIFICAR CORREÇÃO
+   → preview_screenshot → confirmar que a página renderiza
+   → preview_console_logs { level: "error" } → confirmar zero erros críticos
+   → Se novo erro aparecer: repetir o loop (máximo 3 iterações)
+
+5. REGISTRAR SE REUTILIZÁVEL
+   → Se o padrão de erro puder acontecer novamente: salvar em snippets.md
 ```
 
 ---
 
-## Snippets — Formato de Registro
+## Tabela de Erros Conhecidos e Correções Automáticas
 
-Quando uma resolução for reutilizável, registre em `snippets.md`:
+| Erro | Causa | Correção automática |
+|------|-------|-------------------|
+| `URL and Key required to create a Supabase client` | `.env.local` ausente ou com placeholders | Criar `.env.local` com placeholders; sinalizar ConnectPro para injetar valores reais |
+| `Cannot find module '@/...'` ou `Module not found '@/'` | `jsconfig.json` / `tsconfig.json` sem path alias | Criar `jsconfig.json` com `{ "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["./src/*"] } } }` |
+| `Port X is in use` | Processo anterior não finalizado | Identificar PID via `netstat`, matar, reiniciar |
+| `Cannot find module 'X'` (node_modules) | Dependência não instalada | `npm install` no diretório correto |
+| `cwd outside project root` | launch.json com path relativo que sai da raiz | Reescrever launch.json com `--prefix /caminho/absoluto` |
+| Página branca sem erros de console | Erro no servidor não propagado | Verificar `preview_logs`, checar `preview_network` para 500 |
+| `cookies() should be awaited` (Next.js 15) | API de cookies mudou no Next 15 | Adicionar `await` antes de `cookies()` |
+| `useRouter must be used in client component` | Server component usando hook client | Adicionar `'use client'` no topo do arquivo |
+| RLS policy blocking data | `user_id` não corresponde ao `auth.uid()` | Verificar query — adicionar `.eq('user_id', user.id)` |
+| `NEXT_AUTH_SECRET` not set | Variável obrigatória ausente | Adicionar ao `.env.local`; gerar valor com `openssl rand -base64 32` |
+
+---
+
+## Quando Escalar (e para quem)
+
+Surge só escala quando **esgotou 3 tentativas** ou quando o problema requer decisão:
+
+| Situação | Escalar para |
+|----------|-------------|
+| Credenciais reais necessárias (Google OAuth, Supabase keys) | ConnectPro |
+| Decisão arquitetural (mudar estrutura do banco, trocar auth provider) | engineering-mentor |
+| Fluxo completo precisa ser refeito | skill4d-core-orchestrator |
+| Bug impossível de reproduzir localmente | Reportar ao usuário com diagnóstico completo |
+
+---
+
+## Modo Proativo (entre construção e validação)
+
+Surge também entra **antes** de erros quando o core-orchestrator encerra uma skill construtiva.
+Neste modo, verifica preemptivamente:
+
+```
+1. Arquivos referenciados existem? (imports, routes, componentes)
+2. Variáveis de ambiente obrigatórias estão presentes?
+3. Dependências instaladas?
+4. Build compilaria sem erros? (next build --dry-run se disponível)
+
+Se qualquer verificação falhar → corrigir agora, antes de preview-bridge tentar.
+```
+
+---
+
+## Snippets — Registro de Aprendizado
+
+Quando uma correção for reutilizável, registrar em `surge-core/snippets.md`:
 
 ```markdown
 ## [YYYY-MM-DD] Título do problema resolvido
 
-**Contexto:** onde e quando aconteceu
-**Sintoma:** o que foi observado
+**Sintoma:** o que foi observado (erro exato, comportamento)
 **Causa raiz:** por que aconteceu
-**Solução:** o que foi feito
-
-\`\`\`ts
-// código da solução quando aplicável
-\`\`\`
-
-**Reutilizável quando:** condições para aplicar novamente
+**Correção:** o que foi feito (código ou comando exato)
+**Reutilizável quando:** condições para aplicar de novo
 ```
 
 ---
 
-## System Map — Template
+## Contrato Skill4Dummies
 
-Manter em `system-map.json` para rastrear dependências entre skills e projetos:
+```yaml
+name: surge-core
+role: observação e autocorreção
+version: "4.0"
 
-```json
-{
-  "updated": "YYYY-MM-DD",
-  "skills": {
-    "nome-da-skill": {
-      "depends_on": [],
-      "used_by_projects": ["projeto-a", "projeto-b"],
-      "known_issues": []
-    }
-  },
-  "projects": {
-    "nome-do-projeto": {
-      "skills_used": ["skill-a", "skill-b"],
-      "last_surge_check": "YYYY-MM-DD"
-    }
-  }
-}
+activation_rules:
+  - rule: qualquer sinal de erro após execução (500, console error, branco, partial)
+    priority: high
+    mode: automático — não esperar ser invocado
+
+  - rule: preview_screenshot retorna página branca
+    priority: high
+    mode: automático
+
+  - rule: skill anterior retornou status partial ou failed
+    priority: high
+    mode: automático
+
+  - rule: mesmo erro aparece pela 2ª vez
+    priority: high
+    mode: automático — aplicar correção definitiva, não paliativa
+
+execution_policy:
+  auto_activate_on_error: true          # NOVO: ativa sem precisar ser chamado
+  max_correction_iterations: 3          # NOVO: tenta até 3x antes de escalar
+  always_verify_after_fix: true         # NOVO: sempre re-screenshot após correção
+  never_ignore_silently: true           # NOVO: todo erro registrado e tratado
+  ask_minimum: true
+  prefer_partial_delivery: false
+
+success_criteria:
+  - causa raiz identificada e documentada
+  - correção aplicada E verificada com preview_screenshot
+  - zero erros críticos em preview_console_logs após fix
+  - snippets.md atualizado se padrão for reutilizável
+  - próxima ação clara proposta se não foi possível autocorrigir
+
+handoff_targets:
+  - skill_name: ConnectPro
+    when: erro é credencial/env var faltando que requer provisioning externo
+    payload: missing_vars, service_name
+  - skill_name: engineering-mentor
+    when: causa raiz requer decisão arquitetural
+    payload: issue_report, root_cause_hypothesis
+  - skill_name: skill4d-core-orchestrator
+    when: fluxo completo precisa ser refeito após falha grave
+    payload: failure_summary, suggested_reroute
 ```
-
----
-
-## Critério de Sucesso
-
-- Skills CORE puras e funcionais
-- `snippets.md` atualizado com resoluções de tarefas efêmeras
-- `system-map.json` refletindo a arquitetura real do workspace
-- Falhas diagnosticadas com causa raiz documentada
-- Zero falhas silenciosas
 
 ---
 
 ## Referência sistêmica
 
-Surge é a **camada de Observação** na arquitetura Skill4Dummies:
-
 ```
 Usuário
-↓ core-orchestrator — interpreta, classifica, roteia
+↓ skill4d-core-orchestrator — interpreta, classifica, roteia
 ↓ ConnectPro — integrações, credenciais, setup
-↓ mock-to-react | criador-de-apps | app-factory — construção
+↓ app-factory-multiagent — construção
 ↓ preview-bridge — validação visual
-↓ surge-core       ← você está aqui
-↓ engineering-mentor — quando precisar de decisão humana
+↓ surge-core v4.0   ← você está aqui
+  ├── auto-ativa em qualquer sinal de erro
+  ├── diagnóstico via preview_console_logs + preview_logs + preview_network
+  ├── corrige → verifica → registra
+  └── escala apenas quando esgotou tentativas
+↓ engineering-mentor — decisões que requerem julgamento humano
 ```
 
-Surge não é o último recurso.
-Surge é a consciência contínua do sistema.
+Surge não é o último recurso. Surge é a consciência ativa do sistema.
+Surge entra antes do usuário perceber que algo deu errado.
