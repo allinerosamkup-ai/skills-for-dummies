@@ -84,6 +84,13 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Usar a auto-descricao (Etapa 1b) como contexto adicional para guiar a analise
 - Output: objeto `mockAnalysis` com structure, typography, colors, spacing, effects, icons
 
+**ETAPA 3 -- VisionAgent: Analise de layout e grid**
+- Mapear a estrutura de layout: grid/flex/absolute, colunas, linhas, areas
+- Identificar hierarquia de componentes: header, sidebar, main, footer, cards, modais
+- Gerar mapa de componentes com dimensoes relativas e absolutas
+- Definir breakpoints responsivos baseados na analise visual
+- Output: `layoutMap` com component_tree, grid_definition, responsive_breakpoints
+
 **ETAPA 4 -- ResourceAgent: Buscar pacotes NPM**
 - API: `https://registry.npmjs.com/-/v1/search?text={query}&size=10`
 - Gerar queries a partir da auto-descricao (ex: "card component react", "shadow react")
@@ -162,7 +169,7 @@ REGRAS DA ESTRUTURA:
       senao:
         FixerAgent.aplicarCorrecoes(codigo, diffs)
 
-**ETAPA 8 -- Output final**
+**ETAPA 10 -- Output final**
 Ver formato completo em `references/output-format.md`
 - JSON com similarity %, quality metrics por dimensao, codigo final, referencias usadas
 - Screenshots: mock original, cada iteracao, comparacao final (diff visual)

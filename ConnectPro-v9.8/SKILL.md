@@ -9,7 +9,7 @@ role: preparação invisível
 compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
-# ConnectPro v3.0 — Integração Automática via MCP, API ou CLI
+# ConnectPro v3.1 — Integração Automática via MCP, API ou CLI
 
 Skill de preparação do ecossistema Skill4Dummies. Resolve integrações, credenciais e setup
 **automaticamente** usando a melhor estratégia disponível antes que as skills de construção entrem.
