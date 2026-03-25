@@ -1,14 +1,26 @@
 ---
-name: D.U.M.M.Y OS
-version: "1.0"
+name: D.U.M.M.Y. OS
+version: "2.0"
 type: ai-operating-system
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli, any-ai-with-system-prompt]
+compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, any-ai-with-system-prompt]
+install: "npx dummy-os install"
+npm: "https://www.npmjs.com/package/dummy-os"
+repo: "https://github.com/allinerosamkup-ai/skills-for-dummies"
 ---
 
-# D.U.M.M.Y OS — Boot File
+# D.U.M.M.Y. OS — Boot File
+**Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
 Este arquivo inicializa o sistema operacional de IA.
 Carregue este arquivo uma vez e qualquer IA se transforma em um ambiente orquestrado, autocorretivo e persistente.
+
+## Instalação rápida
+```bash
+npx dummy-os install        # detecta e instala na sua IA automaticamente
+npx dummy-os install --tool cursor   # força instalação no Cursor
+npx dummy-os status         # mostra skills instaladas e memória do projeto
+npx dummy-os init           # inicializa memória para o projeto atual
+```
 
 ---
 
@@ -220,13 +232,17 @@ Cada prompt extra que o usuário precisa dar é um bug do sistema, não uma limi
 
 | Campo | Valor |
 |-------|-------|
-| Versão do OS | 1.0 |
+| Versão do OS | 2.0 |
+| Nome | D.U.M.M.Y. OS |
+| Sigla | Dynamic · Unified · Multi-agent · Memory-driven · Yield |
 | Kernel | skill4d-core-orchestrator v2.0 |
-| Processos | 7 |
-| Compatível com | Claude Code, Cursor, Gemini CLI, Codex CLI, qualquer IA com system prompt |
+| Processos | 8 |
+| Compatível com | Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI, qualquer IA com system prompt |
+| CLI | `npx dummy-os` (npm package) |
 | Linguagem dos processos | Markdown + YAML (sem código — roda em qualquer IA) |
 | Requisitos | Nenhum — zero infraestrutura externa |
 
 ---
 
-*Skill4Dummies OS — O sistema operacional que vive dentro da IA.*
+*D.U.M.M.Y. OS — The AI Operating System that lives inside the AI.*
+*Built by allinerosamkup-ai · github.com/allinerosamkup-ai/skills-for-dummies*
