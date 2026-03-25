@@ -271,6 +271,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: dummy-memory
+    when: após tomar qualquer decisão arquitetural
+    payload: decision_title, decision, reason, alternatives_discarded, valid_while
   - skill_name: surge-core
     when: diagnóstico concluído e patch pode ser aplicado automaticamente
     payload: root_cause, recommended_fix

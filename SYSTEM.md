@@ -97,7 +97,12 @@ Ao carregar, o sistema:
 **Ativa quando:** ambiguidade conceitual, decisão arquitetural, escalonado pelo surge-core
 **Responsabilidade:** Decisões que requerem julgamento humano de sistemas. Nunca bloqueia o fluxo principal (parallel_safe: true).
 
-### Processo 7 — criador-de-apps (MVP Rápido)
+### Processo 7 — dummy-memory (Memória Persistente)
+**PID:** dummy-memory
+**Ativa quando:** SEMPRE — modo LOAD no boot, modo SAVE após cada ação significativa
+**Responsabilidade:** Persiste contexto entre sessões. Salva credenciais resolvidas, estado de projetos, decisões arquiteturais e erros corrigidos. Carrega tudo automaticamente no início de cada sessão. O sistema nunca esquece.
+
+### Processo 8 — criador-de-apps (MVP Rápido)
 **PID:** criador-apps
 **Ativa quando:** "faz rápido", "MVP simples", prototipagem sem necessidade de robustez
 **Responsabilidade:** Entrega o mínimo funcional no menor tempo possível. Sem over-engineering.
@@ -109,25 +114,29 @@ Ao carregar, o sistema:
 Ao iniciar uma sessão com este arquivo carregado:
 
 ```
-1. KERNEL ONLINE
+1. MEMÓRIA CARREGADA (dummy-memory LOAD)
+   → detecta projeto ativo via git remote / package.json
+   → carrega .dummy/memory/projects/{nome}/state.md
+   → carrega credenciais já resolvidas, decisões tomadas, erros corrigidos
+   → injeta contexto em todos os processos subsequentes
+
+2. KERNEL ONLINE
    → skill4d-core-orchestrator ativo
+   → contexto de memória disponível — não pergunta o que já sabe
    → aguardando intenção do usuário
 
-2. MONITOR ONLINE
+3. MONITOR ONLINE
    → surge-core em modo de escuta passiva
-   → pronto para intervir em qualquer sinal de falha
-
-3. MEMÓRIA CARREGADA
-   → lê arquivos em .claude/memory/ (se existirem)
-   → contexto de sessões anteriores disponível
+   → erros globais conhecidos carregados da memória
+   → não vai repetir os mesmos erros de sessões anteriores
 
 4. PROCESSOS REGISTRADOS
-   → 7 processos prontos para ativação
+   → 8 processos prontos para ativação
    → nenhum ativo até o kernel rotear
 
 5. SISTEMA PRONTO
    → usuário pode falar qualquer intenção
-   → o OS resolve o resto
+   → o OS resolve o resto — e lembra para a próxima vez
 ```
 
 ---

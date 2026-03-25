@@ -317,6 +317,9 @@ success_criteria:
   - serviços sem MCP têm tutorial preciso com URL e passos exatos
 
 handoff_targets:
+  - skill_name: dummy-memory
+    when: após resolver qualquer credencial ou serviço
+    payload: service_name, mode_used, env_vars_resolved, project_ids
   - skill_name: app-factory-multiagent
     when: ambiente resolvido (total ou parcial com manual mínimo)
     payload: env_vars_resolved, services_connected, project_ids, migrations_applied

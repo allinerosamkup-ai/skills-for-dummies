@@ -67,6 +67,7 @@ Working app. One prompt.
 
 | Process | Trigger | What it does |
 |---------|---------|-------------|
+| **dummy-memory** | *always — boot LOAD + after every action SAVE* | Persists project state, resolved credentials, architectural decisions, and fixed errors across sessions. The system never forgets. |
 | **ConnectPro** | OAuth, API keys, database, Supabase, Firebase | Provisions credentials automatically. MCP-first. Never asks what it can do itself. |
 | **mock-to-react** | image, wireframe, screenshot, "turn this into React" | 6-agent system that converts any visual into pixel-perfect React components |
 | **app-factory** | "build an app", full-stack, auth + database + mobile | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
@@ -155,8 +156,8 @@ The kernel loads relevant memory at the start of every session automatically.
 
 **D** — Dynamic *(adapts to any intent, context, or tool)*
 **U** — Unified *(single entry point for everything)*
-**M** — Multi-agent *(7 coordinated processes)*
-**M** — Memory-driven *(persistent context across sessions)*
+**M** — Multi-agent *(8 coordinated processes)*
+**M** — Memory-driven *(persistent context across sessions — dummy-memory saves everything, forgets nothing)*
 **Y** — Yield *(always delivers — never blocks, never gives up)*
 
 ---

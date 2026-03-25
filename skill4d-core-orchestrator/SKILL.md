@@ -49,6 +49,7 @@ Exemplos típicos:
 
 Skills disponíveis no ecossistema, desde que instaladas:
 
+- dummy-memory ← **carregada PRIMEIRO, sempre**
 - ConnectPro
 - mock-to-react
 - app-factory-multiagent
@@ -123,6 +124,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: dummy-memory
+    when: início de toda sessão (boot obrigatório)
+    payload: project_path, git_remote
   - skill_name: ConnectPro
     when: integração externa necessária antes da construção
     payload: goal, required_services
@@ -185,6 +189,23 @@ Cada prompt extra deve ser tratado como custo, atrito e sinal de deficiência do
 ## Seu comportamento
 
 Ao ser ativada, siga esta ordem mental:
+
+### 0. BOOT — Carregar Memória (SEMPRE primeiro)
+
+Antes de qualquer outra ação, chamar **dummy-memory LOAD**:
+
+```
+dummy-memory LOAD
+→ detecta projeto ativo (via git remote / package.json)
+→ carrega state.md, env.md, decisions.md do projeto
+→ carrega user/preferences.md
+→ injeta contexto no envelope de handoff de toda skill subsequente
+```
+
+Se dummy-memory retornar contexto:
+- Não perguntar o que já está configurado
+- Não reconfigurar o que já está resolvido
+- Mencionar ao usuário: "Continuando de onde paramos — [resumo de 1 linha]"
 
 ### 1. Entenda a intenção do usuário
 

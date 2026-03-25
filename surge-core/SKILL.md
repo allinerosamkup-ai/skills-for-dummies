@@ -211,6 +211,9 @@ success_criteria:
   - próxima ação clara proposta se não foi possível autocorrigir
 
 handoff_targets:
+  - skill_name: dummy-memory
+    when: após corrigir qualquer erro (antes de escalar)
+    payload: error_symptom, root_cause, correction_applied, reusable_when
   - skill_name: ConnectPro
     when: erro é credencial/env var faltando que requer provisioning externo
     payload: missing_vars, service_name

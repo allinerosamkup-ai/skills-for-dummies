@@ -251,6 +251,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: dummy-memory
+    when: após completar qualquer módulo ou feature (QA PASS)
+    payload: project_name, stack, routes_created, components, auth_type, database_tables, status
   - skill_name: ConnectPro
     when: app exige integração externa ainda não resolvida
     payload: required_services, integration_gaps
