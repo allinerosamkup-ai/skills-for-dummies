@@ -1,12 +1,12 @@
 {
   "name": "dummy-os",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "D.U.M.M.Y. OS — The AI Operating System. Dynamic. Unified. Multi-agent. Memory-driven. Yield.",
   "type": "module",
   "main": "lib/index.js",
   "bin": {
-    "dummy": "./bin/dummy.js",
-    "dummy-os": "./bin/dummy.js"
+    "dummy": "bin/dummy.js",
+    "dummy-os": "bin/dummy.js"
   },
   "scripts": {
     "test": "node bin/dummy.js status"
@@ -27,7 +27,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/allinerosamkup-ai/skills-for-dummies"
+    "url": "git+https://github.com/allinerosamkup-ai/skills-for-dummies.git"
   },
   "homepage": "https://github.com/allinerosamkup-ai/skills-for-dummies#readme",
   "engines": {
