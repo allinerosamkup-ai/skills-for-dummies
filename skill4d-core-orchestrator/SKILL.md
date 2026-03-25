@@ -1,6 +1,6 @@
 ---
 name: skill4d-core-orchestrator
-description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, and engineering-mentor into a one-shot flow: classifies intent, selects the minimum skill sequence, passes structured handoff envelopes between skills, and closes the loop with preview validation and self-correction. Triggers: build me an app, image to app, full workflow, complete project, multi-skill task."
+description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, and engineering-mentor into a one-shot flow. Primary trigger: 'hi dummy'. Also triggers on: build me an app, image to app, full workflow, complete project, multi-skill task."
 version: "2.0"
 category: orchestration
 tags: [orchestrator, workflow, multi-agent, automation, full-stack, one-shot, skill4dummies, ai-os, end-to-end]

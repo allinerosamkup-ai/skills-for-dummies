@@ -14,6 +14,13 @@ repo: "https://github.com/allinerosamkup-ai/skills-for-dummies"
 Este arquivo inicializa o sistema operacional de IA.
 Carregue este arquivo uma vez e qualquer IA se transforma em um ambiente orquestrado, autocorretivo e persistente.
 
+## Como usar
+Após instalar, basta dizer:
+```
+hi dummy
+```
+O OS liga, carrega a memória do projeto e fica pronto para qualquer intenção.
+
 ## Instalação rápida
 ```bash
 npx dummy-os install        # detecta e instala na sua IA automaticamente

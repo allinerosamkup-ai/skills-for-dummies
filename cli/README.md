@@ -26,7 +26,13 @@ Generic AI + D.U.M.M.Y. OS = AI that builds, fixes, integrates and remembers
 npx dummy-os install
 ```
 
-That's it. D.U.M.M.Y. OS detects your AI tool (Claude Code, Cursor, Windsurf) and installs all 8 processes automatically.
+D.U.M.M.Y. OS detects your AI tool (Claude Code, Cursor, Windsurf) and installs all 8 processes automatically.
+
+Then, to boot the OS, just say:
+
+```
+hi dummy
+```
 
 ---
 
