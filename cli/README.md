@@ -2,7 +2,7 @@
 
 **Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
-> The AI Operating System that lives *inside* your AI tool.
+> The AI Operating System that lives *inside* your AI tool. — v2.1.0
 
 ---
 
@@ -42,14 +42,14 @@ When you load D.U.M.M.Y. OS, your AI gains 8 specialized processes:
 
 | Process | What it does |
 |---------|-------------|
-| **ConnectPro** | Resolves OAuth, API keys, databases — zero manual config |
+| **orchestrator** | Kernel — routes your intent to the right process automatically |
+| **ConnectPro** | Resolves OAuth, API keys, databases — zero manual config. Uses MCP → API → dev-browser automation → CLI |
 | **app-factory** | Builds complete full-stack apps (Next.js, Expo, Supabase) |
 | **mock-to-react** | Turns any image or Figma design into pixel-perfect React |
 | **preview-bridge** | Opens live preview for any web project automatically |
 | **surge-core** | Monitors everything, auto-fixes errors before you notice |
 | **engineering-mentor** | Senior architect available for every decision |
 | **dummy-memory** | Persists context between sessions — the AI never forgets |
-| **orchestrator** | Routes your intent to the right process automatically |
 
 You don't call these processes manually. You just talk:
 
@@ -63,6 +63,18 @@ You don't call these processes manually. You just talk:
 "My app is showing a 500 error"
 → OS routes: surge-core (activates immediately, auto-fixes)
 ```
+
+---
+
+## Browser Automation (new in v2.1)
+
+ConnectPro now uses **dev-browser** — a sandboxed Playwright CLI — to automate dashboards when no MCP is available:
+
+```bash
+npm install -g dev-browser && dev-browser install
+```
+
+With dev-browser installed, ConnectPro can navigate to Supabase, Stripe, Vercel, Google Cloud and extract credentials automatically — no copy-paste needed.
 
 ---
 
@@ -104,10 +116,31 @@ npx dummy-os install --tool cursor # install to specific tool
 npx dummy-os install --force      # force update all skills
 npx dummy-os update               # update to latest version
 npx dummy-os status               # show installed skills + memory
+npx dummy-os doctor               # diagnose installation health
 npx dummy-os init                 # init memory for current project
 npx dummy-os memory load          # display project memory
 npx dummy-os memory clear         # clear project memory
 npx dummy-os uninstall            # remove all skills
+```
+
+### dummy doctor
+
+```
+$ npx dummy-os doctor
+
+D.U.M.M.Y.  v2.1.0
+
+Running diagnostics...
+
+  ✓ Node.js version (v20.11.0)
+  ✓ AI tools detected (Claude Code)
+  ✓ Skills installed (8/8)
+  ✓ CLAUDE.md with boot trigger
+  ⚠ dev-browser CLI (optional — needed for browser_auto)
+    → npm install -g dev-browser && dev-browser install
+  ✓ Project memory (initialized)
+
+Some issues found. Fix the ⚠ items above and re-run: dummy doctor
 ```
 
 ---
