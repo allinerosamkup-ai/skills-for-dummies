@@ -1,6 +1,6 @@
 ---
 name: D.U.M.M.Y. OS
-version: "2.0"
+version: "2.1"
 type: ai-operating-system
 compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, any-ai-with-system-prompt]
 install: "npx dummy-os install"
@@ -121,10 +121,10 @@ Ao carregar, o sistema:
 **Ativa quando:** SEMPRE — modo LOAD no boot, modo SAVE após cada ação significativa
 **Responsabilidade:** Persiste contexto entre sessões. Salva credenciais resolvidas, estado de projetos, decisões arquiteturais e erros corrigidos. Carrega tudo automaticamente no início de cada sessão. O sistema nunca esquece.
 
-### Processo 8 — criador-de-apps (MVP Rápido)
-**PID:** criador-apps
-**Ativa quando:** "faz rápido", "MVP simples", prototipagem sem necessidade de robustez
-**Responsabilidade:** Entrega o mínimo funcional no menor tempo possível. Sem over-engineering.
+### Processo 8 — skill4d-core-orchestrator (Kernel)
+**PID:** orchestrator
+**Ativa quando:** "hi dummy", fluxo multi-skill, pedido que exige mais de 1 processo
+**Responsabilidade:** Meta-processo. Coordena todos os outros. Interpreta intenção, define sequência mínima de processos, preserva contexto via HANDOFF_SCHEMA. Ativa em toda sessão como kernel central.
 
 ---
 
@@ -239,10 +239,10 @@ Cada prompt extra que o usuário precisa dar é um bug do sistema, não uma limi
 
 | Campo | Valor |
 |-------|-------|
-| Versão do OS | 2.0 |
+| Versão do OS | 2.1 |
 | Nome | D.U.M.M.Y. OS |
 | Sigla | Dynamic · Unified · Multi-agent · Memory-driven · Yield |
-| Kernel | skill4d-core-orchestrator v2.0 |
+| Kernel | skill4d-core-orchestrator v2.1 |
 | Processos | 8 |
 | Compatível com | Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI, qualquer IA com system prompt |
 | CLI | `npx dummy-os` (npm package) |

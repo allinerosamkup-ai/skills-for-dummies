@@ -165,39 +165,102 @@ O conector CLI registrado é tratado igual a um MCP pelo restante do ecossistema
 
 ### Modo: browser_auto
 
-Quando não há MCP/API mas o serviço tem interface web (dashboard, console, painel):
+Quando não há MCP/API mas o serviço tem interface web (dashboard, console, painel).
 
+**Ferramenta primária: `dev-browser`** — CLI sandboxed com Playwright completo.
+Mais rápido e mais confiável que Chrome MCP para extração de dados de dashboards.
+
+#### Setup (verificar antes de usar)
+
+```bash
+# Checar se dev-browser está instalado
+dev-browser --version 2>/dev/null || npm install -g dev-browser && dev-browser install
 ```
-Ferramentas disponíveis para browser automation:
+
+#### Como executar scripts dev-browser
+
+```bash
+# Modo headless (sem abrir janela)
+dev-browser --headless <<'EOF'
+const page = await browser.getPage("connectpro");
+await page.goto("https://exemplo.com/dashboard");
+// ... interações
+EOF
+
+# Modo conectado ao Chrome do usuário (necessário para login)
+dev-browser --connect <<'EOF'
+const page = await browser.getPage("connectpro");
+// O Chrome já está logado — apenas navegar e extrair
+EOF
+```
+
+#### Scripts prontos por serviço
+
+**[Supabase — desabilitar email confirmation]**
+```javascript
+// Executar via: dev-browser --connect
+const page = await browser.getPage("supabase");
+await page.goto("https://supabase.com/dashboard/project/PROJECT_ID/auth/providers");
+await page.locator('text=Confirm email').locator('..').locator('button[role="switch"]').click();
+await page.locator('button:has-text("Save")').click();
+const saved = await page.locator('text=Saved').isVisible();
+console.log(JSON.stringify({ success: saved }));
+```
+
+**[Stripe — obter publishable e secret key]**
+```javascript
+// Executar via: dev-browser --connect
+const page = await browser.getPage("stripe");
+await page.goto("https://dashboard.stripe.com/test/apikeys");
+const publishable = await page.locator('[data-testid="api-key-publishable"] code').textContent();
+console.log(JSON.stringify({ STRIPE_PUBLISHABLE_KEY: publishable?.trim() }));
+```
+
+**[Vercel — obter deploy token]**
+```javascript
+// Executar via: dev-browser --connect
+const page = await browser.getPage("vercel");
+await page.goto("https://vercel.com/account/tokens");
+await page.locator('button:has-text("Create")').click();
+await page.locator('input[placeholder*="token name"]').fill("dummy-os");
+await page.locator('button:has-text("Create Token")').click();
+const token = await page.locator('[data-testid="token-value"]').textContent();
+console.log(JSON.stringify({ VERCEL_TOKEN: token?.trim() }));
+```
+
+**[Google Cloud — obter OAuth Client ID]**
+```javascript
+// Executar via: dev-browser --connect
+const page = await browser.getPage("gcp");
+await page.goto("https://console.cloud.google.com/apis/credentials");
+await page.locator('button:has-text("Create Credentials")').click();
+await page.locator('text=OAuth client ID').click();
+await page.locator('select[name="applicationType"]').selectOption("WEB_APPLICATION");
+await page.locator('button:has-text("Add URI")').click();
+await page.locator('input[placeholder*="redirect"]').fill("http://localhost:3000/auth/callback");
+await page.locator('button:has-text("Create")').click();
+const clientId = await page.locator('[data-testid="client-id"]').textContent();
+const secret = await page.locator('[data-testid="client-secret"]').textContent();
+console.log(JSON.stringify({ GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: secret }));
+```
+
+#### Fallback: mcp__Claude_in_Chrome
+
+Se `dev-browser` não estiver disponível, usar MCPs do Chrome:
+```
 - mcp__Claude_in_Chrome__navigate    → ir para URL
 - mcp__Claude_in_Chrome__find        → localizar elemento
 - mcp__Claude_in_Chrome__form_input  → preencher campo
-- mcp__Claude_in_Chrome__javascript_tool → executar JS na página
-- mcp__Claude_in_Chrome__read_page   → ler conteúdo atual
-- mcp__Claude_in_Chrome__computer    → screenshot + interação visual
-
-Exemplos de uso:
-
-[Supabase — desabilitar email confirmation]
-1. navigate: https://supabase.com/dashboard/project/{project_id}/auth/providers
-2. find: toggle "Confirm email"
-3. javascript_tool: clicar no toggle para desabilitar
-4. find: botão "Save" → clicar
-5. Confirmar: read_page para verificar que foi salvo
-
-[Google OAuth — obter Client ID e Secret]
-1. navigate: https://console.cloud.google.com/apis/credentials
-2. find: "Create Credentials" → "OAuth Client ID"
-3. Preencher: Application type = Web, redirect URIs
-4. Extrair: Client ID e Client Secret via read_page
-5. Injetar no .env.local automaticamente
-
-[Regra de ouro do browser_auto]
-- Nunca peça ao usuário para abrir o browser — você abre
-- Nunca peça ao usuário para copiar/colar — você extrai
-- Só pergunte credenciais de login SE o serviço exigir login manual
-  E mesmo assim, só uma vez, só o mínimo (email + senha)
+- mcp__Claude_in_Chrome__javascript_tool → executar JS
+- mcp__Claude_in_Chrome__read_page   → ler conteúdo
 ```
+
+#### Regras de ouro do browser_auto
+- Nunca peça ao usuário para abrir o browser — você abre
+- Nunca peça ao usuário para copiar/colar — você extrai via script
+- Use `--connect` quando login manual for necessário (peça só 1x)
+- Use `--headless` para tudo que não precisa de sessão autenticada
+- Sempre parsear output como JSON e injetar no .env.local automaticamente
 
 ### Modo: tutorial_manual
 
@@ -218,7 +281,7 @@ Todo serviço integrado pelo ConnectPro produz um conector com este contrato:
 ```json
 {
   "name": "string",
-  "type": "mcp | api | cli",
+  "type": "mcp | api | browser | cli",
   "status": "active | failed | manual",
   "invoke": "padrão de chamada",
   "output_schema": {
@@ -294,7 +357,7 @@ contexto_handoff:
 ```yaml
 name: ConnectPro
 role: preparação invisível
-version: "3.0"
+version: "3.1"
 
 execution_policy:
   ask_minimum: true
@@ -329,9 +392,10 @@ handoff_targets:
 ```
 Usuário
 ↓ skill4d-core-orchestrator — interpreta, classifica, roteia
-↓ ConnectPro v3.0     ← você está aqui
+↓ ConnectPro v3.1     ← você está aqui
   ├── mcp_direct      → provisiona automaticamente (Supabase, Figma, Notion...)
   ├── api_http        → chama API com credenciais fornecidas
+  ├── browser_auto    → dev-browser (Playwright sandboxed) ou Chrome MCP
   ├── codebase_cli    → gera CLI para software sem MCP
   └── tutorial_manual → último recurso, instrução precisa
 ↓ mock-to-react | app-factory-multiagent — construção

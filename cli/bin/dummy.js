@@ -226,4 +226,108 @@ memory
     }
   })
 
+// ─── DOCTOR ───────────────────────────────────────────────────────────────────
+program
+  .command('doctor')
+  .description('Diagnose D.U.M.M.Y. OS installation health')
+  .action(async () => {
+    console.log(LOGO)
+    console.log(chalk.bold('Running diagnostics...\n'))
+
+    const { default: fs } = await import('fs-extra')
+    const { join, homedir } = await import('path')
+    const { execFileSync } = await import('child_process')
+    const home = homedir()
+
+    const checks = []
+
+    // 1. Node version
+    const nodeVersion = process.version
+    const nodeMajor = parseInt(nodeVersion.slice(1))
+    checks.push({
+      label: `Node.js version (${nodeVersion})`,
+      ok: nodeMajor >= 18,
+      fix: 'Upgrade Node.js to v18 or higher: https://nodejs.org'
+    })
+
+    // 2. AI tools detected
+    const tools = detectInstalledTools()
+    checks.push({
+      label: `AI tools detected (${tools.length > 0 ? tools.map(t => t.name).join(', ') : 'none'})`,
+      ok: tools.length > 0,
+      fix: 'Install Claude Code, Cursor, or Windsurf'
+    })
+
+    // 3. Skills installed (check Claude Code)
+    const claudeSkillsDir = join(home, '.claude', 'skills')
+    const expectedSkills = ['dummy-memory', 'skill4d-core-orchestrator', 'ConnectPro-v9.8', 'app-factory-multiagent', 'mock-to-react', 'preview-bridge', 'surge-core', 'engineering-mentor']
+    let installedCount = 0
+    for (const skill of expectedSkills) {
+      if (await fs.pathExists(join(claudeSkillsDir, skill, 'SKILL.md'))) installedCount++
+    }
+    checks.push({
+      label: `Skills installed (${installedCount}/8)`,
+      ok: installedCount === 8,
+      fix: 'Run: dummy install --force'
+    })
+
+    // 4. CLAUDE.md exists and has boot trigger
+    const claudeMd = join(home, '.claude', 'CLAUDE.md')
+    let claudeMdOk = false
+    if (await fs.pathExists(claudeMd)) {
+      const content = await fs.readFile(claudeMd, 'utf8')
+      claudeMdOk = content.includes('hi dummy')
+    }
+    checks.push({
+      label: 'CLAUDE.md with boot trigger',
+      ok: claudeMdOk,
+      fix: 'Run: dummy install --force (reinstalls CLAUDE.md)'
+    })
+
+    // 5. dev-browser installed (optional but recommended for browser_auto)
+    let devBrowserOk = false
+    try {
+      execFileSync('dev-browser', ['--version'], { stdio: 'pipe' })
+      devBrowserOk = true
+    } catch {}
+    checks.push({
+      label: `dev-browser CLI ${devBrowserOk ? '' : '(optional — needed for browser_auto)'}`,
+      ok: devBrowserOk,
+      warn: !devBrowserOk,
+      fix: 'npm install -g dev-browser && dev-browser install'
+    })
+
+    // 6. Project memory initialized
+    const memDir = join(process.cwd(), '.dummy', 'memory')
+    const hasMemory = await fs.pathExists(memDir)
+    checks.push({
+      label: `Project memory (${hasMemory ? 'initialized' : 'not initialized'})`,
+      ok: hasMemory,
+      warn: !hasMemory,
+      fix: 'Run: dummy init (in your project folder)'
+    })
+
+    // Print results
+    let allOk = true
+    for (const c of checks) {
+      if (c.ok) {
+        console.log(`  ${chalk.green('✓')} ${c.label}`)
+      } else if (c.warn) {
+        console.log(`  ${chalk.yellow('⚠')} ${c.label}`)
+        console.log(chalk.dim(`    → ${c.fix}`))
+      } else {
+        console.log(`  ${chalk.red('✗')} ${c.label}`)
+        console.log(chalk.dim(`    → ${c.fix}`))
+        allOk = false
+      }
+    }
+
+    console.log('')
+    if (allOk) {
+      console.log(chalk.green.bold('✓ D.U.M.M.Y. OS is healthy. Say "hi dummy" to start.'))
+    } else {
+      console.log(chalk.yellow('Some issues found. Fix the ✗ items above and re-run: dummy doctor'))
+    }
+  })
+
 program.parse()
