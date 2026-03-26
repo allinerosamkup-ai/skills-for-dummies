@@ -14,6 +14,8 @@ This skill is for building real apps with an opinionated factory. It is not for 
 
 **Required process:** if the request has not already been designed and approved, use `brainstorming` first. After the design is approved, use `writing-plans` before implementation.
 
+**D.U.M.M.Y. OS EXCEPTION:** When called by `skill4d-core-orchestrator` or when the user's intent is already clear from context, **skip brainstorming and writing-plans** — proceed directly to implementation. The OS already handled intent classification upstream. Minimum friction is the rule.
+
 ## When to Use
 
 - The user wants a complete app, not a loose prototype.

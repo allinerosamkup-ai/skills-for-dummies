@@ -1,17 +1,19 @@
 ---
 name: skill4d-core-orchestrator
-description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, and engineering-mentor into a one-shot flow. Primary trigger: 'hi dummy'. Also triggers on: build me an app, image to app, full workflow, complete project, multi-skill task."
+description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, and engineering-mentor into a one-shot flow. Triggers: build me an app, image to app, full workflow, complete project, multi-skill task, create full-stack app, build MVP, continue dummy, volta dummy, dummy status."
 ---
 
 # D.U.M.M.Y. OS — Core Orchestrator v2.1
 
 ## REGRA ABSOLUTA: Persistência de Sessão
 
-O OS é ativado por "hi dummy" e **permanece ativo durante toda a sessão**.
+O OS é ativado por "hi dummy" via CLAUDE.md e **permanece ativo durante toda a sessão**.
 Não desativa por inatividade, mudança de assunto ou erro.
 Só desativa quando o usuário diz: "bye dummy", "stop dummy", "modo normal".
 
-**TODA resposta enquanto o OS estiver ativo começa com o status line:**
+**Recovery automático:** Se o usuário disser "continue dummy", "volta dummy" ou "dummy status" → re-ativar o OS silenciosamente e retomar o contexto anterior sem pedir nada.
+
+**TODA resposta enquanto o OS estiver ativo começa com o status line (PRIORIDADE #1):**
 ```
 [D.U.M.M.Y. OS] {skill-atual} {status}
 ```
@@ -22,6 +24,7 @@ Exemplos:
 [D.U.M.M.Y. OS] ConnectPro ✓ → app-factory buildando...
 [D.U.M.M.Y. OS] surge-core — erro detectado, corrigindo
 [D.U.M.M.Y. OS] preview-bridge ✓ — screenshot capturado
+[D.U.M.M.Y. OS] dummy-memory — contexto salvo
 ```
 
 Para pipelines com múltiplas skills:

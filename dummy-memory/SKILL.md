@@ -14,7 +14,7 @@ Com dummy-memory, o OS lembra de tudo — projetos, credenciais, decisões, erro
 
 ## Responsabilidade
 
-dummy-memory tem **dois modos de operação**:
+dummy-memory tem **três modos de operação**:
 
 ### MODO LOAD — Boot de sessão
 Executado automaticamente pelo kernel ao iniciar qualquer sessão.
@@ -23,6 +23,18 @@ Injeta contexto relevante antes de qualquer ação.
 ### MODO SAVE — Após ação significativa
 Executado automaticamente por qualquer skill ao concluir uma ação relevante.
 Grava o que foi feito, decidido ou resolvido.
+
+**Auto-save triggers (executar SEMPRE após estas ações):**
+- Arquivo de código criado ou modificado com sucesso
+- Bug corrigido e verificado
+- Credencial ou serviço externo configurado
+- Decisão arquitetural tomada
+- Preview validado com screenshot
+- Sessão encerrando ("bye dummy")
+
+### MODO AUTO-SAVE — Inline durante o fluxo
+Não espera ser chamado. Após qualquer entrega acima, salva 1-3 linhas em background sem interromper o fluxo.
+Formato mínimo: `## {DATA} — {O que foi entregue}` seguido do resumo.
 
 ---
 
