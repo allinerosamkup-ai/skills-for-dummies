@@ -1,17 +1,6 @@
 ---
 name: mock-to-react
 description: "Transforms any visual mock (image or HTML) into a pixel-perfect React component with 98% similarity threshold. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching (5+ libraries), GitHub component research, and iterative refinement. Triggers: convert this design, generate code from mockup, transform image to React, pixel-perfect, clone this layout, mock to code, replicate interface, design to component."
-version: "2.0"
-category: ui-development
-tags: [react, tailwind, design-to-code, pixel-perfect, mockup, wireframe, frontend, component, figma, ui]
-ecosystem: skill4dummies
-role: construção visual
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
-handoff_targets:
-  - skill: preview-bridge
-    when: componente React gerado e pronto para visualização
-  - skill: surge-core
-    when: resultado visual divergir do mock original
 ---
 
 # Mock-to-React: Design Visual para Codigo

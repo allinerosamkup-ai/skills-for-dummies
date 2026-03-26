@@ -1,12 +1,6 @@
 ---
-name: ConnectPro
+name: ConnectPro-v9.8
 description: "Resolve OAuth, API keys, banco de dados e qualquer setup de integração antes que a construção comece. Zero configuração manual: ConnectPro detecta os serviços necessários, usa MCPs disponíveis, browser automation ou CLI — o que for necessário — para provisionar automaticamente sem pedir nada ao usuário além do mínimo absoluto. Cria .env real com credenciais injetadas e passa o contexto pronto para a próxima skill. Triggers: OAuth, SSO, Supabase, Firebase, Stripe, API key, banco de dados, credenciais, integrar, conectar, setup."
-version: "3.1"
-category: integrations
-tags: [oauth, api-keys, database, environment, setup, supabase, firebase, stripe, credentials, devops, mcp, cli]
-ecosystem: skill4dummies
-role: preparação invisível
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
 # ConnectPro v3.1 — Integração Automática via MCP, API ou CLI

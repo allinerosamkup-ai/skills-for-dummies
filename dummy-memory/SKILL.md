@@ -1,12 +1,6 @@
 ---
 name: dummy-memory
 description: "Camada de memória persistente do D.U.M.M.Y. OS. Auto-salva contexto de projetos, credenciais resolvidas, decisões arquiteturais e erros corrigidos ao final de cada ação significativa. Auto-carrega o contexto relevante ao iniciar uma sessão. O M de Memory-driven. Triggers: session start, project context, remember, recall, o que fizemos, contexto do projeto, retomar, continuar."
-version: "1.0"
-category: memory
-tags: [memory, context, persistence, session, project-state, learning]
-ecosystem: dummy-os
-role: memória persistente
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
 # dummy-memory v1.0 — Memória Persistente do D.U.M.M.Y. OS

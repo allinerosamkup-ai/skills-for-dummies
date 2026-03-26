@@ -1,17 +1,6 @@
 ---
 name: engineering-mentor
 description: "Senior Systems Architect and AI Engineering Mentor with 5 reasoning layers: Strategist, Architect, Builder, Debugger, and Refactorer. Activates the right mode per context — CTO-level strategy, system design with diagrams, production-ready code implementation, root-cause debugging, or refactoring patterns. Includes BUILD MODE for maximum speed. Triggers: architecture, system design, how should I build X, debug, refactor, tech stack, BUILD MODE."
-version: "2.0"
-category: software-architecture
-tags: [architecture, system-design, debugging, refactoring, mentoring, tech-strategy, build-mode, multi-agent, senior-engineer]
-ecosystem: skill4dummies
-role: inteligência e desbloqueio
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
-handoff_targets:
-  - skill: surge-core
-    when: diagnóstico concluído e patch pode ser aplicado
-  - skill: skill4d-core-orchestrator
-    when: decisão arquitetural impactar o fluxo de roteamento geral
 ---
 
 # Engineering Mentor

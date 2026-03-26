@@ -1,19 +1,7 @@
 ---
 name: app-factory-multiagent
 description: "Builds complete, production-ready apps using a coordinated multi-agent factory: product-planner, system-architect, backend-builder, web-builder, mobile-builder, integration-finisher, and qa-reviewer in a review loop until PASS. Fixed contracts for web (Next.js), mobile (Expo), backend, auth, and database. No placeholders, no pseudo-code. Triggers: build full app, complete application, auth + database + mobile, robust app, full-stack, monorepo."
-version: "2.0"
-category: app-development
-tags: [full-stack, nextjs, expo, react-native, backend, auth, database, monorepo, multi-agent, production]
-ecosystem: skill4dummies
-role: construção robusta
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
-handoff_targets:
-  - skill: ConnectPro
-    when: app exige integração externa (OAuth, banco, API key)
-  - skill: preview-bridge
-    when: build gerado e pronto para visualização
-  - skill: surge-core
-    when: build produzir erros observáveis
+---
 ---
 
 # App Factory Multiagent

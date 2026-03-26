@@ -1,15 +1,6 @@
 ---
 name: preview-bridge
 description: "GLOBAL SKILL — instantly opens live preview for any web project without manual setup. Auto-detects React, Next.js, Vue, Svelte, and HTML projects from package.json, handles projects outside the working directory, verifies .env.local exists before starting, resolves port conflicts automatically, configures .claude/launch.json, and fires the dev server. Takes screenshots, reads console logs, and hands off errors to surge-core. Triggers: preview, show me, ver, mostrar, como ficou, open preview, live view."
-version: "3.0"
-category: development-tools
-tags: [preview, live-reload, devserver, react, nextjs, vue, svelte, debugging, visual-validation, global]
-ecosystem: skill4dummies
-role: validação visual
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
-handoff_targets:
-  - skill: surge-core
-    when: preview revelar erros visuais ou de console
 ---
 
 # PreviewBridge v3.0 — Live Preview Robusto (Global)

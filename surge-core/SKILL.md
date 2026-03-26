@@ -1,12 +1,6 @@
 ---
 name: surge-core
 description: "Continuous observability and self-correction layer. Auto-activates on ANY runtime error, 500, blank page, console error, or failed skill handoff — diagnoses root cause using preview tools, applies fix automatically, and verifies fix worked. Never waits to be asked. Triggers: error, bug, not working, runtime error, build failed, console error, blank page, 500, partial delivery, visual mismatch, diagnose, fix."
-version: "4.1"
-category: debugging
-tags: [debugging, observability, autocorrection, runtime-errors, monitoring, self-healing, patches, snippets, continuous-improvement]
-ecosystem: skill4dummies
-role: observação e autocorreção
-compatible_with: [claude-code, cursor, gemini-cli, codex-cli]
 ---
 
 # Surge Core v4.1 — Autocorreção e Criação de Caminhos
