@@ -2,7 +2,7 @@
 
 **Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
-> The AI Operating System that lives *inside* your AI tool. — v2.1.0
+> The AI Operating System that lives *inside* your AI tool. — v2.2.0
 
 ---
 
@@ -43,12 +43,12 @@ When you load D.U.M.M.Y. OS, your AI gains 8 specialized processes:
 | Process | What it does |
 |---------|-------------|
 | **orchestrator** | Kernel — routes your intent to the right process automatically |
-| **ConnectPro** | Resolves OAuth, API keys, databases — zero manual config. Uses MCP → API → dev-browser automation → CLI |
+| **ConnectPro** | Resolves OAuth, API keys, databases — zero manual config. MCP → API → browser automation → CLI. Email loop completes verifications automatically. |
 | **app-factory** | Builds complete full-stack apps (Next.js, Expo, Supabase) |
 | **mock-to-react** | Turns any image or Figma design into pixel-perfect React |
 | **preview-bridge** | Opens live preview for any web project automatically |
-| **surge-core** | Monitors everything, auto-fixes errors before you notice |
-| **engineering-mentor** | Senior architect available for every decision |
+| **surge-core** | Monitors everything, auto-fixes errors within safe autonomy limits |
+| **engineering-mentor** | Generates PRD + SPEC before building. Senior architect for every decision. |
 | **dummy-memory** | Persists context between sessions — the AI never forgets |
 
 You don't call these processes manually. You just talk:
@@ -62,19 +62,44 @@ You don't call these processes manually. You just talk:
 
 "My app is showing a 500 error"
 → OS routes: surge-core (activates immediately, auto-fixes)
+
+"Every time a Stripe payment comes in, send me an email"
+→ OS routes: orchestrator → n8n workflow (created automatically)
 ```
 
 ---
 
-## Browser Automation (new in v2.1)
+## What's new in v2.2
 
-ConnectPro now uses **dev-browser** — a sandboxed Playwright CLI — to automate dashboards when no MCP is available:
+### Session persistence — hook system
+The OS injects a kernel signal into every message via `UserPromptSubmit` hook. Once active, it never drifts back to default AI behavior mid-session.
+
+### Email Loop
+ConnectPro now reads verification emails automatically via Gmail MCP — Stripe confirmations, Supabase magic links, Google OAuth codes. No inbox interruption.
+
+### AUTONOMY_POLICY
+3 explicit levels: silent execution / confirm before costly actions / never delete. ConnectPro always audits its own actions.
+
+### Workflow Engine
+Say "automate this" or "every time X, do Y" — the orchestrator creates real automations via n8n MCP (external workflows) or scheduled-tasks MCP (internal cron jobs).
+
+### Security
+`.dummy/memory/` is now in `.gitignore`. Credentials referenced in memory can never accidentally reach a git repository.
+
+### Token optimization
+Skill files cut by ~50%. Less context consumed per session, same full functionality.
+
+---
+
+## Browser Automation (v2.1+)
+
+ConnectPro uses **dev-browser** — a sandboxed Playwright CLI — to automate dashboards when no MCP is available:
 
 ```bash
 npm install -g dev-browser && dev-browser install
 ```
 
-With dev-browser installed, ConnectPro can navigate to Supabase, Stripe, Vercel, Google Cloud and extract credentials automatically — no copy-paste needed.
+With dev-browser, ConnectPro navigates to Supabase, Stripe, Vercel, Google Cloud and extracts credentials automatically — no copy-paste needed.
 
 ---
 
@@ -82,12 +107,13 @@ With dev-browser installed, ConnectPro can navigate to Supabase, Stripe, Vercel,
 
 Every session, the OS saves:
 - What was built (stack, routes, components)
-- Which credentials were resolved (and how)
+- Which credentials were resolved (and how — never the values)
 - Architectural decisions made (and why)
 - Errors fixed (never repeated)
 - Your preferences (language, style, frameworks)
 
 Next session, it loads everything back. Your AI picks up exactly where you left off.
+`.dummy/memory/` is protected by `.gitignore`.
 
 ```bash
 dummy init        # initialize memory for current project
@@ -101,7 +127,7 @@ dummy memory load # review what the OS knows about your project
 
 | AI Tool | Support |
 |---------|---------|
-| Claude Code | ✓ Full support |
+| Claude Code | ✓ Full support (skills + hooks) |
 | Cursor | ✓ Full support |
 | Windsurf | ✓ Full support |
 | Any AI (system prompt) | ✓ Via SYSTEM.md |
@@ -128,7 +154,7 @@ npx dummy-os uninstall            # remove all skills
 ```
 $ npx dummy-os doctor
 
-D.U.M.M.Y.  v2.1.0
+D.U.M.M.Y. OS v2.2.0
 
 Running diagnostics...
 
@@ -136,11 +162,12 @@ Running diagnostics...
   ✓ AI tools detected (Claude Code)
   ✓ Skills installed (8/8)
   ✓ CLAUDE.md with boot trigger
+  ✓ UserPromptSubmit hook (OS session persistence)
   ⚠ dev-browser CLI (optional — needed for browser_auto)
     → npm install -g dev-browser && dev-browser install
   ✓ Project memory (initialized)
 
-Some issues found. Fix the ⚠ items above and re-run: dummy doctor
+1 optional item. Run: dummy doctor --fix
 ```
 
 ---
@@ -154,6 +181,7 @@ D.U.M.M.Y. OS fixes that by adding the OS layer that was missing:
 - **Processes** that specialize
 - **Memory** that persists
 - **Monitor** that self-corrects
+- **Hook** that keeps the OS alive across the entire session
 
 The AI is the hardware. D.U.M.M.Y. OS is the operating system.
 

@@ -2,7 +2,7 @@
 
 **Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
-> The operating system that lives inside your AI. — v2.1
+> The operating system that lives inside your AI. — v2.2
 
 ---
 
@@ -67,14 +67,14 @@ Working app. One prompt.
 
 | Process | Trigger | What it does |
 |---------|---------|-------------|
-| **dummy-memory** | *always — boot LOAD + after every action SAVE* | Persists project state, credentials, decisions and fixed errors across sessions. The system never forgets. |
-| **ConnectPro** | OAuth, API keys, database, Supabase, Firebase, Stripe | Provisions credentials automatically. MCP → API → dev-browser automation → CLI. Never asks what it can do itself. |
-| **mock-to-react** | image, wireframe, screenshot, "turn this into React" | 6-agent system that converts any visual into pixel-perfect React components |
-| **app-factory** | "build an app", full-stack, auth + database + mobile | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
-| **preview-bridge** | after any build, "show me running" | Auto-detects framework, resolves port conflicts, opens live preview |
-| **surge-core** | *always active* | Monitors everything. Auto-corrects errors. Creates solutions where none exist. |
-| **engineering-mentor** | architectural decisions, ambiguity | Senior architect judgment. Non-blocking — runs in parallel. |
-| **orchestrator** | hi dummy, multi-skill flow | Kernel. Interprets intent, defines the minimum process sequence, preserves context. |
+| **dummy-memory** | always — boot LOAD + after every action SAVE | Persists project state, credentials, decisions and fixed errors across sessions. |
+| **ConnectPro** | OAuth, API keys, database, Supabase, Stripe | Provisions credentials automatically via MCP → API → browser automation → CLI. Email loop captures verification emails automatically. |
+| **mock-to-react** | image, wireframe, screenshot | 6-agent system that converts any visual into pixel-perfect React components |
+| **app-factory** | "build an app", full-stack, auth + database | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
+| **preview-bridge** | after any build | Auto-detects framework, resolves port conflicts, opens live preview |
+| **surge-core** | always active | Monitors everything. Auto-corrects errors within defined autonomy limits. |
+| **engineering-mentor** | architectural decisions, undefined projects | Senior architect judgment. Generates PRD + SPEC before building. Non-blocking. |
+| **orchestrator** | hi dummy, multi-skill flow | Kernel. Interprets intent, routes to right process, preserves context. |
 
 ---
 
@@ -106,9 +106,47 @@ Checks Node version, detected AI tools, installed skills, CLAUDE.md boot trigger
 
 ---
 
-## Browser Automation — dev-browser (new in v2.1)
+## What's new in v2.2
 
-ConnectPro uses **[dev-browser](https://github.com/SawyerHood/dev-browser)** — a sandboxed Playwright CLI — as its browser automation engine when no MCP is available. It can navigate to Supabase, Stripe, Vercel, Google Cloud and extract API keys automatically, without asking you to copy-paste anything.
+### Session persistence — hook system
+The OS now uses a `UserPromptSubmit` hook that injects a kernel signal into **every message**. The OS can no longer drift or fall back to default AI behavior mid-session. Once active, it stays active.
+
+### ConnectPro — 3-file architecture
+ConnectPro is now split into:
+- `SKILL.md` — pure policy and decision tree
+- `CONNECTORS.md` — per-service playbooks (Supabase, Stripe, Google, Vercel, GitHub, n8n)
+- `BROWSER_AUTO.md` — Playwright scripts per service + Email Loop
+
+### Email Loop
+When a service sends a verification email (Stripe, Supabase, Google, GitHub), ConnectPro automatically reads it via Gmail MCP, extracts the code or link, and completes the verification — without asking you to open your inbox.
+
+### AUTONOMY_POLICY
+ConnectPro now has 3 explicit autonomy levels:
+- **Silent**: read data, detect services, extract keys from logged-in dashboards
+- **Confirm first**: create projects that generate cost, issue permanent tokens
+- **Never**: delete existing resources, revoke credentials
+
+### Workflow Engine (Tipo G)
+The orchestrator now routes automation requests:
+- Internal automations → `scheduled-tasks` MCP (cron jobs)
+- External workflows (between services) → `n8n` MCP
+- "Every time X, do Y" → handled without creating new skills
+
+### Formal specs
+- `surge-core/SURGE_CORE_SPEC.md` — explicit autonomy limits, code auditor, decision tree
+- `dummy-memory/SPEC.md` — formal read/write contract, TTL, conflict policy, secret protection
+
+### Security
+- `.dummy/memory/` is now in `.gitignore` — credentials referenced in `env.md` can never accidentally reach a git repository.
+
+### Token optimization
+Skill files cut by ~50%: orchestrator 321→161 lines, dummy-memory 272→139 lines. Fewer tokens consumed per session without losing any functionality.
+
+---
+
+## Browser Automation — dev-browser
+
+ConnectPro uses **[dev-browser](https://github.com/SawyerHood/dev-browser)** — a sandboxed Playwright CLI — as its browser automation engine when no MCP is available.
 
 ```bash
 # Optional but recommended for full ConnectPro capability
@@ -125,14 +163,17 @@ D.U.M.M.Y. OS remembers between sessions:
 .dummy/memory/
   projects/{name}/
     state.md      — what was built, which routes/components exist
-    env.md        — which credentials were resolved and how
-    decisions.md  — architectural decisions and why
+    env.md        — which credentials were resolved (never the values)
+    decisions.md  — architectural decisions and autonomy actions
     errors.md     — errors fixed (never repeated)
   user/
     preferences.md — language, frameworks, coding style
+  global/
+    errors.md     — reusable error patterns across projects
 ```
 
 The kernel loads relevant memory at the start of every session automatically.
+`.dummy/memory/` is protected by `.gitignore` — credentials never reach git.
 
 ```bash
 dummy init         # initialize memory for current project
@@ -163,7 +204,7 @@ npx dummy-os uninstall            # remove all skills
 
 | AI Tool | Status |
 |---------|--------|
-| Claude Code | ✅ Native (skills system + CLAUDE.md) |
+| Claude Code | ✅ Native (skills system + CLAUDE.md + hooks) |
 | Cursor | ✅ Via rules system |
 | Windsurf | ✅ Via rules system |
 | Gemini CLI | ✅ Via SYSTEM.md |
@@ -189,18 +230,17 @@ One intent → working result.
 **D** — Dynamic *(adapts to any intent, context, or tool)*
 **U** — Unified *(single entry point for everything)*
 **M** — Multi-agent *(8 coordinated processes)*
-**M** — Memory-driven *(persistent context — dummy-memory saves everything, forgets nothing)*
+**M** — Memory-driven *(persistent context — forgets nothing)*
 **Y** — Yield *(always delivers — never blocks, never gives up)*
 
 ---
 
 ## Built on
 
-- Claude Code Skills System
-- Supabase MCP
-- Figma MCP
+- Claude Code Skills System + Hook System
+- Supabase MCP · Gmail MCP · n8n MCP · Figma MCP
 - [dev-browser](https://github.com/SawyerHood/dev-browser) (browser automation)
-- Preview Bridge MCP
+- Preview Bridge MCP · scheduled-tasks MCP
 - Next.js · Expo · Node.js · Python
 
 ---
