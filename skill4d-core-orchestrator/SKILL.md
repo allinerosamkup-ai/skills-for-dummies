@@ -13,6 +13,34 @@ ONE-SHOT é a lei. Status line é REGRA #1. (Definições em CLAUDE.md — não 
 
 ---
 
+## ⚠️ VERIFICAÇÃO VISUAL — ANTES DE QUALQUER ROTEAMENTO
+
+**Esta verificação acontece PRIMEIRO, antes de classificar o tipo de pedido.**
+
+```
+O input contém imagem, foto, screenshot, wireframe, mockup, referência visual?
+→ SIM: mock-to-react é a PRIMEIRA skill ativada. Sempre. Sem exceção.
+       Não chamar engineering-mentor. Não chamar surge-core.
+       mock-to-react é o UI/UX do sistema — tem prioridade sobre qualquer outra skill.
+→ NÃO: continuar para roteamento normal abaixo.
+```
+
+**Sinais de input visual (qualquer um destes = mock-to-react primeiro):**
+- Arquivo de imagem anexado (PNG, JPG, WebP, SVG)
+- Screenshot colada no chat
+- "clone esse botão", "replique esse componente", "copia esse design"
+- "baseado nessa imagem", "igual a essa tela", "como nesse exemplo"
+- Referência a Figma, wireframe, mockup, protótipo, layout visual
+
+**Fluxo com visual:**
+```
+imagem/foto → mock-to-react → preview-bridge → surge-core
+```
+
+Se o projeto também precisar de integração: ConnectPro entra DEPOIS do mock-to-react, não antes.
+
+---
+
 ## Roteamento por Tipo de Pedido
 
 ### Tipo A — Projeto indefinido (ideia vaga, "quero criar um app")

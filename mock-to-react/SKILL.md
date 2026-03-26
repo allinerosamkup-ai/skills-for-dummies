@@ -1,6 +1,6 @@
 ---
 name: mock-to-react
-description: "Transforms any visual mock (image or HTML) into a pixel-perfect React component with 98% similarity threshold. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching (5+ libraries), GitHub component research, and iterative refinement. Triggers: convert this design, generate code from mockup, transform image to React, pixel-perfect, clone this layout, mock to code, replicate interface, design to component."
+description: "UI/UX process of D.U.M.M.Y. OS. PRIORITY: activates FIRST whenever any image, screenshot, photo, or visual reference is present in the input — before engineering-mentor, before surge-core, before any other process. Transforms any visual (image, screenshot, Figma, wireframe, button photo, UI reference) into pixel-perfect React components with 98% similarity. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching, GitHub component research, iterative refinement. Triggers: image attached, screenshot, photo of UI, clone this button, replicate this design, copy this component, based on this image, como essa tela, igual esse layout, clone esse botão, copia esse design, converte isso em React, pixel-perfect, mock to code."
 ---
 
 # Mock-to-React: Design Visual para Codigo
