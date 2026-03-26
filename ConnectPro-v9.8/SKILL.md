@@ -10,40 +10,77 @@ Skill de preparação do ecossistema Skill4Dummies. Resolve integrações, crede
 
 ---
 
-## REGRAS FUNDAMENTAIS
+## REGRA ZERO — ONE-SHOT OBRIGATÓRIO
 
-1. **Nunca entregue `.env.example` quando pode entregar `.env.local` com valores reais.**
-2. **Nunca peça ao usuário para fazer algo manualmente quando o browser automation pode fazer.**
-3. **Pergunte o mínimo absoluto** — só email/senha de login se necessário para autenticar no serviço.
-4. **Se não houver caminho, crie um** — browser automation, CLI, workaround, o que for.
+**O usuário deu um único prompt. ConnectPro resolve tudo sozinho.**
+
+O usuário não chama ConnectPro diretamente. O orquestrador chama.
+ConnectPro não pede ajuda para o usuário — ele escalona modos internamente até resolver.
+Só faz uma pergunta ao usuário se for absolutamente impossível prosseguir sem ela.
+
+```
+FLUXO CORRETO:
+usuário → "cria app com Stripe"
+         ↓
+orchestrator → ConnectPro
+              ↓
+              tenta MCP → falhou
+              ↓ (automático, sem avisar usuário)
+              tenta API → falhou
+              ↓ (automático, sem avisar usuário)
+              ativa browser_auto via dev-browser → extrai keys → injeta .env
+              ↓
+              entrega .env.local preenchido para app-factory
+              ↓
+              app-factory constrói
+              ↓
+ENTREGA ao usuário — sem interrupções
+```
 
 ---
 
-## Árvore de Decisão (executar nesta ordem)
+## REGRAS FUNDAMENTAIS
+
+1. **Nunca entregue `.env.example` quando pode entregar `.env.local` com valores reais.**
+2. **Nunca peça ao usuário para fazer algo manualmente quando o browser_auto pode fazer.**
+3. **browser_auto ativa SOZINHO** — é a terceira etapa da árvore de decisão, não um modo opcional.
+4. **Pergunte o mínimo absoluto** — só login se o serviço exigir autenticação manual impossível de automatizar.
+5. **Se não houver caminho, crie um** — dev-browser, CLI custom, workaround, o que for.
+
+---
+
+## Árvore de Decisão (executar nesta ordem — AUTOMÁTICO)
 
 ```
 Para cada serviço necessário:
 
 1. MCP disponível para este serviço?
    → SIM: usar modo "mcp_direct" — provisionar agora, sem perguntar
-   → NÃO: continuar...
+   → NÃO: continuar AUTOMATICAMENTE...
 
-2. API HTTP oficial disponível com credenciais?
+2. API HTTP oficial disponível com credenciais já fornecidas?
    → SIM: usar modo "api_http" — chamar API, obter tokens, injetar no .env
-   → NÃO: continuar...
+   → NÃO: continuar AUTOMATICAMENTE...
 
-3. Browser automation pode resolver?
-   → SIM: usar modo "browser_auto" — navegar, clicar, extrair valores, injetar no .env
-   → NÃO: continuar...
+3. [ATIVA SOZINHO] Browser automation pode resolver?
+   → SEMPRE tentar antes de pedir ao usuário
+   → verificar: dev-browser instalado? → usar dev-browser
+   → dev-browser não instalado? → usar mcp__Claude_in_Chrome__*
+   → executar script, extrair valores, injetar no .env
+   → se falhar por precisar de login: pedir APENAS email/senha, uma vez
+   → NÃO: continuar AUTOMATICAMENTE...
 
 4. Existe código/app/CLI local para este serviço?
    → SIM: usar modo "codebase_cli" — gerar CLI agent-native, registrar como conector
-   → NÃO: continuar...
+   → NÃO: continuar AUTOMATICAMENTE...
 
-5. Nenhuma das anteriores:
-   → usar modo "tutorial_manual" — mas com instrução mínima e precisa
+5. ÚLTIMO RECURSO — tutorial_manual:
+   → usar APENAS se os 4 modos acima falharam ou forem impossíveis
+   → instrução mínima e precisa (URL + 1 linha)
    → SEMPRE oferecer: "quando você colar o valor aqui, eu injeto automaticamente"
 ```
+
+**Nenhum desses passos é anunciado ao usuário.** ConnectPro executa silenciosamente e reporta apenas o resultado final.
 
 ---
 
