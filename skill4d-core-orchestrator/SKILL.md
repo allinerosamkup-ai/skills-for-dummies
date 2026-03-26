@@ -1,6 +1,6 @@
 ---
 name: skill4d-core-orchestrator
-description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, engineering-mentor and dummy-memory into a one-shot flow. Triggers: build me an app, image to app, full workflow, complete project, multi-skill task, create full-stack app, build MVP, continue dummy, volta dummy, dummy status."
+description: "OS-level orchestrator for the Skill4Dummies ecosystem. Coordinates ConnectPro, mock-to-react, app-factory-multiagent, preview-bridge, surge-core, engineering-mentor and dummy-memory into a one-shot flow. Triggers: build me an app, image to app, full workflow, complete project, multi-skill task, create full-stack app, build MVP, automate, create workflow, toda vez que, quando X faça Y, continue dummy, volta dummy, dummy status."
 ---
 
 # D.U.M.M.Y. OS — Core Orchestrator v2.1
@@ -129,6 +129,37 @@ Fluxo: surge-core (ativa imediatamente, sem passar pelo orchestrator)
 Fluxo: engineering-mentor (parallel_safe — não bloqueia construção em andamento)
 ```
 
+### Tipo G — Automação / Workflow ("crie uma automação que X", "toda vez que Y, faça Z")
+
+Pedidos de automação são roteados para infraestrutura existente, sem criar novo skill:
+
+```
+Fase 1 → CLASSIFICAR tipo de automação:
+  a. Interna (dentro do D.U.M.M.Y. OS): usar scheduled-tasks MCP ou CronCreate
+  b. Externa (integração entre serviços): usar n8n via ConnectPro + mcp__n8n-mcp
+  c. Híbrida: combinar os dois
+
+Fase 2 → EXECUTAR:
+  a. Automação interna → mcp__scheduled-tasks__create_scheduled_task
+     { name, schedule (cron), command, description }
+  b. Workflow externo → ConnectPro acessa mcp__n8n-mcp
+     → mcp__n8n-mcp__get_template (buscar template similar)
+     → mcp__n8n-mcp__validate_workflow
+     → deploy do workflow no n8n
+  c. Ambos → executar em paralelo
+
+Fase 3 → CONFIRMAR com usuário:
+  → Mostrar o que foi criado
+  → Mostrar schedule / trigger
+  → Mostrar como pausar ou deletar
+```
+
+**Exemplos de roteamento:**
+- "toda vez que eu commitar, rodar testes" → scheduled-tasks (interno)
+- "quando um pagamento Stripe chegar, enviar email" → n8n workflow (externo)
+- "todo dia às 9h, me mandar resumo das tarefas" → scheduled-tasks (interno)
+- "quando usuário se cadastrar, criar perfil + enviar boas-vindas" → n8n workflow (externo)
+
 ---
 
 ## Quando Cada Skill Entra
@@ -143,6 +174,8 @@ Fluxo: engineering-mentor (parallel_safe — não bloqueia construção em andam
 | Resultado web criado | preview-bridge — sempre |
 | Erro, falha, 500, console error | surge-core — imediato, automático |
 | Ambiguidade, decisão de arquitetura | engineering-mentor |
+| Automação interna ("toda vez que X") | scheduled-tasks MCP |
+| Workflow externo (entre serviços) | ConnectPro → n8n MCP |
 | Início de sessão + após toda entrega | dummy-memory LOAD / SAVE |
 
 ---

@@ -1,0 +1,12 @@
+# D.U.M.M.Y. OS — Arquivos sensíveis
+
+# CRÍTICO: env.md contém referências a credenciais reais
+# NUNCA commitar este diretório
+.dummy/memory/
+
+# Dependências
+node_modules/
+ConnectPro-v9.8/node_modules/
+
+# Lock files de outros projetos
+ConnectPro-v9.8/package-lock.json
