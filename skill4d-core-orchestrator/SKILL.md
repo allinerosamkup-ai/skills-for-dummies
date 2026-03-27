@@ -13,16 +13,19 @@ ONE-SHOT é a lei. Status line é REGRA #1. (Definições em CLAUDE.md — não 
 
 ---
 
-## ⚠️ VERIFICAÇÃO VISUAL — ANTES DE QUALQUER ROTEAMENTO
+## ⚠️ VERIFICAÇÃO VISUAL — EXECUTAR PRIMEIRO, ANTES DE TUDO
 
-**Esta verificação acontece PRIMEIRO, antes de classificar o tipo de pedido.**
+**Esta verificação acontece PRIMEIRO, antes de qualquer outra análise ou roteamento.**
 
 ```
 O input contém imagem, foto, screenshot, wireframe, mockup, referência visual?
-→ SIM: mock-to-react MODO CÓPIA — primeira skill ativada. Sempre. Sem exceção.
+→ SIM: mock-to-react COPY MODE. IMEDIATAMENTE. Sem passar por outras verificações.
+       Reportar: "[orchestrator] imagem detectada → mock-to-react COPY MODE ativo"
+       A imagem É a especificação. O resultado deve ser clone pixel-perfect.
 
 Há qualquer pedido com componente visual/frontend (interface, tela, UI, design)?
 → SIM (sem imagem): mock-to-react MODO CRIATIVO — sempre chamado para a parte visual.
+                    Reportar: "[orchestrator] pedido visual sem imagem → mock-to-react CREATIVE MODE"
                     Mesmo que engineering-mentor ou app-factory liderem o projeto,
                     mock-to-react É O RESPONSÁVEL PELA PARTE VISUAL.
                     Não terceirizar criação visual para engineering-mentor ou app-factory.
@@ -160,14 +163,36 @@ PROIBIDO:
 
 ---
 
-## Reporting de Progresso (3+ skills)
+## 📢 Protocolo de Feedback Obrigatório
+
+**Todo skill chamado DEVE reportar progresso. Nunca executar silenciosamente.**
 
 ```
-[ConnectPro ✓] Supabase provisionado, .env.local criado
-[app-factory → buildando...] web + mobile em paralelo
-[app-factory ✓] build passou — 3 entidades, CRUD completo
-[preview-bridge ✓] http://localhost:3000
-[surge-core ✓] zero erros críticos
+Ao ser acionado:   "[{skill}] ativado — {motivo em 1 linha}"
+Durante execução:  "[{skill}] {passo atual} ⚙️"
+Ao concluir:       "[{skill}] ✓ {resultado em 1 linha}"
+Em erro:           "[{skill}] ✗ {erro} → passando para surge-core"
+```
+
+Orquestrador reporta roteamento antes de chamar qualquer skill:
+```
+[orchestrator] imagem detectada → mock-to-react COPY MODE
+[orchestrator] integração detectada → ConnectPro primeiro
+[orchestrator] projeto indefinido → engineering-mentor para PRD
+```
+
+Exemplo de fluxo com feedback completo:
+```
+[orchestrator] imagem detectada → mock-to-react COPY MODE ativo
+[mock-to-react] ativado — clone pixel-perfect de imagem fornecida
+[mock-to-react] Passo 1/9: análise visual ⚙️
+[mock-to-react] Passo 1/9: ✓ header + 3 cards + footer detectados
+[mock-to-react] Passo 2/9: análise técnica ⚙️
+...
+[mock-to-react] ✓ Similaridade: 98% — componente gerado
+[preview-bridge] ativado — abrindo preview
+[preview-bridge] ✓ http://localhost:3000
+[surge-core] ✓ zero erros críticos
 ```
 
 Nunca deixar o usuário sem feedback por mais de uma skill de distância.

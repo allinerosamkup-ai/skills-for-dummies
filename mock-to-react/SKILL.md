@@ -11,6 +11,48 @@ description: "Creative visual director AND pixel-perfect converter of D.U.M.M.Y.
 
 Sistema multiagente (V2 + V3). Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
 
+---
+
+## ⚠️ REGRA DE OURO — COPY MODE (imagem presente)
+
+**Quando o usuário fornece uma imagem, a imagem É A ESPECIFICAÇÃO. Não é inspiração. Não é sugestão.**
+
+```
+OBRIGATÓRIO:
+✓ Replicar TODOS os elementos visíveis — nenhum pode ser omitido
+✓ Preservar cores, tipografia, espaçamentos, posicionamentos exatos
+✓ Pesquisa web APENAS para encontrar npm/icons que implementem o que está na imagem
+✓ Se elemento não é possível replicar → informar ao usuário, nunca substituir por alternativa
+
+PROIBIDO:
+✗ Buscar "designs alternativos" ou "inspirações"
+✗ Simplificar, interpretar ou "melhorar" o design
+✗ Substituir qualquer elemento por alternativa criativa
+✗ Buscar tendências de mercado ou referências externas ao design
+✗ Pesquisar web com intenção criativa — SOMENTE para implementação técnica
+```
+
+**O resultado deve ser indistinguível da imagem original.**
+
+---
+
+## 📢 PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada etapa do pipeline, reportar progresso em tempo real:
+
+```
+[mock-to-react] Passo 1/9: Análise visual — detectando tipo de input ⚙️
+[mock-to-react] Passo 1/9: ✓ {resultado resumido}
+[mock-to-react] Passo 2/9: Análise técnica profunda ⚙️
+[mock-to-react] Passo 2/9: ✓ {resultado resumido}
+...
+[mock-to-react] Passo 9/9: ✓ Similaridade: {X}% — concluído
+```
+
+Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
+
+---
+
 ## Modos de Operação
 
 ### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
@@ -106,6 +148,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Incluir queries para elementos decorativos do inventario (ex: "svg pattern react", "emoji picker react", "gradient animation react")
 - Classificar pacotes por tipo: UI_COMPONENT, ICON_LIBRARY, STYLING, FORM, TABLE, ANIMATION, DECORATIVE
 - Ranquear por relevancia (score NPM x match de descricao)
+- ⚠️ COPY MODE: buscar pacotes para IMPLEMENTAR o que está na imagem — não para substituir o design por alternativas
 
 **ETAPA 5 -- ResourceAgent: Buscar icones**
 - Bibliotecas: tabler-icons (850), simple-icons (1500), heroicons (400), feather (286), bootstrap-icons (2000)
@@ -122,6 +165,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Extrair codigo dos top 5 repos (via `/repos/{owner}/{repo}/contents/{path}`)
 - Analisar estrutura: hooks, imports, exports, props, styling method, design patterns
 - Ranquear por qualidade (stars 40% + watchers 30% + forks 30%)
+- ⚠️ COPY MODE: buscar componentes que se pareçam com o elemento da imagem para referência técnica — não alternativas criativas ao design
 
 **ETAPA 8 -- CodeAgent: Gerar componente**
 - Contexto combinado: auto-descricao + design-tokens.json + mockAnalysis + packages + icons + exemplos GitHub
