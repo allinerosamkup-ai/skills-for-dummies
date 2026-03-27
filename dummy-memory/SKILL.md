@@ -25,10 +25,49 @@ Contrato detalhado de leitura/escrita → **SPEC.md**
     user/
       preferences.md — linguagem, frameworks, nível técnico, idioma
     global/
-      errors.md     — padrões de erro reutilizáveis entre projetos
+      errors.md          — padrões de erro reutilizáveis entre projetos
+      execution-log.md   — log de execução de skills (observabilidade de validação)
 ```
 
 **Proteção:** `.dummy/memory/` está no `.gitignore`. Nunca commitar.
+
+---
+
+## execution-log.md — Registro de Observabilidade
+
+Arquivo especial para fase de validação do sistema. Registra o que cada skill fez em cada sessão.
+
+**Formato de entrada:**
+```
+## {DATA} {HORA} — {projeto}
+skill: {nome}
+modo: {COPY|CREATIVE|LOAD|SAVE|etc}
+trigger: {o que acionou}
+steps: {passos executados}
+resultado: {✓ sucesso | ✗ falha}
+nota: {observação livre — o que funcionou ou não}
+```
+
+**Quando salvar:** após cada skill concluir (sucesso ou falha).
+**Quem usa:** o usuário pode perguntar "o que rodou hoje?" ou "mock-to-react funcionou?" e receber resposta baseada neste log.
+**Limite:** manter apenas as últimas 20 entradas. Rotacionar automaticamente.
+
+---
+
+## 📢 Protocolo de Feedback Obrigatório
+
+Todo modo de execução deve reportar progresso:
+
+```
+[dummy-memory] LOAD ⚙️ — buscando contexto do projeto
+[dummy-memory] ✓ LOAD — {projeto}: {resumo 1 linha} | serviços: {lista}
+[dummy-memory] SAVE ⚙️ — salvando {tipo de dado}
+[dummy-memory] ✓ SAVE — {arquivo}.md atualizado
+[dummy-memory] CONSULTA ⚙️ — lendo estado atual
+[dummy-memory] ✓ CONSULTA — {resposta resumida}
+```
+
+Nunca executar silenciosamente — mesmo salvando em background, confirmar conclusão.
 
 ---
 
@@ -39,6 +78,8 @@ Contrato detalhado de leitura/escrita → **SPEC.md**
 Executado automaticamente pelo kernel no início de cada sessão:
 
 ```
+[dummy-memory] LOAD ⚙️ — buscando contexto do projeto
+
 1. Detectar projeto ativo (via git remote ou package.json)
 2. Ler state.md + env.md + decisions.md
 3. Ler user/preferences.md
@@ -48,9 +89,12 @@ Executado automaticamente pelo kernel no início de cada sessão:
    env_resolved: [lista de serviços configurados]
    known_decisions: [lista]
    user_prefs: {objeto}
+
+[dummy-memory] ✓ LOAD — {projeto} | estado: {resumo} | serviços: {lista}
 ```
 
 Se `.dummy/memory/` não existir: criar estrutura vazia, retornar `memory_loaded: false`.
+Output: `[dummy-memory] ✓ LOAD — novo projeto, memória iniciada`
 
 ### MODO SAVE — Após ação significativa
 
@@ -64,21 +108,26 @@ Se `.dummy/memory/` não existir: criar estrutura vazia, retornar `memory_loaded
 
 **Regras críticas:**
 - Salvar em background — nunca bloquear o fluxo principal
-- Salvar só quando a ação for concluída com sucesso
+- Confirmar conclusão com `[dummy-memory] ✓ SAVE — {arquivo} atualizado`
 - NUNCA salvar o valor de credenciais — só o nome da var e que foi resolvida
 - Máximo 10 linhas por entrada. Memória verbose é inútil.
 - Prefira atualizar a duplicar
+- Salvar também em `global/execution-log.md` (ver abaixo)
 
 ### MODO CONSULTA — Usuário pergunta sobre o projeto
 
 Quando: "o que a gente fez?", "qual o estado?", "o que está configurado?"
 
 ```
+[dummy-memory] CONSULTA ⚙️
+
 1. Ler state.md + env.md + decisions.md
 2. Responder em linguagem natural:
    "Você tem um app de notas em Next.js 14 rodando em localhost:3000.
     Supabase configurado (projeto qyqhiksonoqxhsgctjbl).
     Auth email/password. Tabelas: profiles e notes."
+
+[dummy-memory] ✓ CONSULTA — contexto entregue
 ```
 
 ---
@@ -94,6 +143,7 @@ Quando: "o que a gente fez?", "qual o estado?", "o que está configurado?"
 | surge-core | errors.md | Após corrigir erro |
 | preview-bridge | state.md | Preview validado com URL |
 | qualquer skill | user/preferences.md | Usuário menciona preferência |
+| toda skill | global/execution-log.md | Ao concluir (sucesso ou falha) |
 
 ---
 
