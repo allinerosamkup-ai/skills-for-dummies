@@ -27,6 +27,7 @@ Contrato detalhado de leitura/escrita → **SPEC.md**
     global/
       errors.md          — padrões de erro reutilizáveis entre projetos
       execution-log.md   — log de execução de skills (observabilidade de validação)
+      dream-log.md       — histórico de consolidações (data, entradas removidas, próximo dream)
 ```
 
 **Proteção:** `.dummy/memory/` está no `.gitignore`. Nunca commitar.
@@ -114,6 +115,50 @@ Output: `[dummy-memory] ✓ LOAD — novo projeto, memória iniciada`
 - Prefira atualizar a duplicar
 - Salvar também em `global/execution-log.md` (ver abaixo)
 
+### MODO DREAM — Consolidação automática de memória
+
+Inspirado no conceito "Auto Dream Memory" — funciona como REM sleep para o OS.
+Previne **memory rot**: notas contraditórias, obsoletas e duplicadas que confundem o sistema.
+
+**Trigger automático:** após 5+ sessões desde o último dream OU ao detectar > 200 linhas em qualquer arquivo de memória.
+**Trigger manual:** usuário digita `dummy dream` / `consolidar memória` / `limpar memória`
+
+```
+[dummy-memory] DREAM ⚙️ — consolidando memória do projeto
+
+Fase 1 — ORIENTAÇÃO:
+  → Ler índice: listar todos os arquivos em .dummy/memory/
+  → Identificar tamanho de cada arquivo e data do último dream
+
+Fase 2 — COLETA DE SINAIS:
+  → Buscar entradas de alto valor: correções do usuário, decisões confirmadas
+  → Marcar entradas obsoletas: refs a features removidas, erros já resolvidos
+  → Identificar contradições: duas decisões opostas sobre a mesma escolha
+
+Fase 3 — CONSOLIDAÇÃO:
+  → Converter datas relativas → absolutas ("ontem" → "2026-03-27")
+  → Deletar entradas contraditórias (manter a mais recente)
+  → Mesclar entradas duplicadas em uma única entrada atualizada
+  → Remover erros já corrigidos há mais de 3 sessões
+
+Fase 4 — PODA E INDEXAÇÃO:
+  → state.md: máximo 50 linhas
+  → decisions.md: máximo 30 linhas
+  → errors.md: máximo 20 linhas
+  → execution-log.md: máximo 20 entradas
+  → Salvar data/hora do dream em global/dream-log.md
+
+[dummy-memory] ✓ DREAM — {N} entradas consolidadas, {M} removidas | próximo dream: {data estimada}
+```
+
+**Regras do DREAM:**
+- Nunca deletar decisões ativas ou credenciais resolvidas
+- Em caso de contradição: manter entrada mais recente + registrar o conflito resolvido
+- Rodar em background — nunca bloquear o fluxo
+- Reportar resumo ao usuário após concluir
+
+---
+
 ### MODO CONSULTA — Usuário pergunta sobre o projeto
 
 Quando: "o que a gente fez?", "qual o estado?", "o que está configurado?"
@@ -180,10 +225,14 @@ execution_policy:
   non_blocking: true
   save_on_success_only: true
   never_save_credentials: true
+  dream_trigger: "5+ sessões desde último dream OU arquivo > 200 linhas"
+  dream_manual: "dummy dream | consolidar memória | limpar memória"
 
 success_criteria:
   - contexto carregado no boot sem prompt do usuário
   - skills não perguntam o que já foi feito antes
   - erros não se repetem entre sessões
   - credenciais não reconfiguradas em projetos existentes
+  - memória não apodrece — dream consolida automaticamente após 5 sessões
+  - execution-log disponível para o usuário revisar o que funcionou
 ```
