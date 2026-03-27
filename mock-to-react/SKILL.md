@@ -1,12 +1,32 @@
 ---
 name: mock-to-react
-description: "UI/UX process of D.U.M.M.Y. OS. PRIORITY: activates FIRST whenever any image, screenshot, photo, or visual reference is present in the input — before engineering-mentor, before surge-core, before any other process. Transforms any visual (image, screenshot, Figma, wireframe, button photo, UI reference) into pixel-perfect React components with 98% similarity. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching, GitHub component research, iterative refinement. Triggers: image attached, screenshot, photo of UI, clone this button, replicate this design, copy this component, based on this image, como essa tela, igual esse layout, clone esse botão, copia esse design, converte isso em React, pixel-perfect, mock to code."
+description: "Creative visual director AND pixel-perfect converter of D.U.M.M.Y. OS. TWO ROLES: (1) COPY MODE — PRIORITY: activates FIRST whenever any image, screenshot, photo, or visual reference is present. Transforms any visual into pixel-perfect React components with 98% similarity. (2) CREATIVE MODE — when no image is provided but visual work is requested: searches web references, analyzes market trends, brings original visual direction inspired by what's highest in the market. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching, GitHub component research, iterative refinement. Triggers: image attached, screenshot, photo of UI, clone this button, replicate this design, copy this component, based on this image, como essa tela, igual esse layout, clone esse botão, copia esse design, converte isso em React, pixel-perfect, mock to code, design moderno, referências visuais, como está o mercado de UI, criar interface do zero, me inspira, visual criativo."
 ---
 
-# Mock-to-React: Design Visual para Codigo
+# Mock-to-React: Diretor Visual Criativo + Conversor Pixel-Perfect
 
-Sistema multiagente (V2 + V3) que converte qualquer mock visual em componentes React pixel-perfect.
-Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
+**Dois papéis, uma identidade:**
+- **Coração imutável:** converter qualquer mock/imagem em React pixel-perfect (98% similarity) — esta função JAMAIS muda
+- **Papel expandido:** diretor visual criativo do D.U.M.M.Y. OS — busca referências, analisa tendências de mercado, traz direção visual original quando não há imagem de input
+
+Sistema multiagente (V2 + V3). Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
+
+## Modos de Operação
+
+### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
+**Este é o coração da skill. Prioridade máxima. Nunca dilui ou remove.**
+Replica fielmente qualquer visual fornecido em React pixel-perfect.
+→ Ver **Fluxo de 9 Etapas** abaixo.
+
+### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
+Atua como diretor visual do projeto:
+1. **Pesquisa de Referências** — busca inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
+2. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
+3. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — justificando cada escolha com base em referências encontradas
+4. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
+5. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+
+**Output do Modo Criativo:** design-tokens.json gerado pela direção + componentes React construídos sobre ele
 
 ## Stack Padrao
 
@@ -175,24 +195,36 @@ Ver formato completo em `references/output-format.md`
 
 ```yaml
 name: mock-to-react
-role: construção visual
-objective: converter imagem, mock ou layout em componente React pixel-perfect fiel ao design original
+role: diretor visual criativo + conversor pixel-perfect
+objective: |
+  MODO CÓPIA: converter imagem/mock em React pixel-perfect (98% similarity) — coração imutável da skill.
+  MODO CRIATIVO: quando não há imagem, atuar como diretor visual — buscar referências, tendências, trazer direção original.
 
 activation_rules:
   - rule: usuário mostra imagem, screenshot, wireframe ou mockup
-    priority: high
+    priority: critical
+    mode: CÓPIA
   - rule: usuário pede "converta esse design", "gere o código desse mockup", "transforme em React"
     priority: high
+    mode: CÓPIA
   - rule: usuário quer replicar, clonar ou copiar um layout visual existente
     priority: high
+    mode: CÓPIA
   - rule: orquestrador identifica input visual como ponto de entrada do fluxo
+    priority: high
+    mode: CÓPIA
+  - rule: usuário pede "design moderno", "referências visuais", "como está o mercado de UI", "me inspira", "cria do zero"
+    priority: high
+    mode: CRIATIVO
+  - rule: pedido de interface sem referência visual fornecida
     priority: medium
+    mode: CRIATIVO
 
 minimum_inputs:
   - name: visual_input
     type: file | string
-    required: true
-    description: imagem (PNG/JPG/WebP) ou HTML do mockup a converter
+    required: false
+    description: imagem (PNG/JPG/WebP) ou HTML — obrigatório no MODO CÓPIA, opcional no MODO CRIATIVO
 
 optional_inputs:
   - name: target_framework
@@ -249,11 +281,18 @@ handoff_targets:
     payload: ui_code, api_contract
 
 success_criteria:
-  - componente gerado cobre 100% dos elementos do inventário visual
-  - similaridade com o mock original >= 98%
-  - todos os elementos interativos possuem handlers implementados (sem funções vazias)
-  - design tokens extraídos e aplicados corretamente
-  - código pronto para uso em projeto real sem modificações manuais
+  modo_copia:
+    - componente gerado cobre 100% dos elementos do inventário visual
+    - similaridade com o mock original >= 98%
+    - todos os elementos interativos possuem handlers implementados (sem funções vazias)
+    - design tokens extraídos e aplicados corretamente
+    - código pronto para uso em projeto real sem modificações manuais
+  modo_criativo:
+    - referências reais buscadas e apresentadas ao usuário
+    - direção visual justificada com base em tendências de mercado
+    - design-tokens.json gerado antes de codificar
+    - aprovação do usuário obtida antes da construção
+    - componente final alinhado com a direção aprovada
 
 observability_signals:
   - signal: vision_analysis_complete
