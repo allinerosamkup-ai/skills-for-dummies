@@ -19,22 +19,35 @@ ONE-SHOT é a lei. Status line é REGRA #1. (Definições em CLAUDE.md — não 
 
 ```
 O input contém imagem, foto, screenshot, wireframe, mockup, referência visual?
-→ SIM: mock-to-react é a PRIMEIRA skill ativada. Sempre. Sem exceção.
-       Não chamar engineering-mentor. Não chamar surge-core.
-       mock-to-react é o UI/UX do sistema — tem prioridade sobre qualquer outra skill.
-→ NÃO: continuar para roteamento normal abaixo.
+→ SIM: mock-to-react MODO CÓPIA — primeira skill ativada. Sempre. Sem exceção.
+
+Há qualquer pedido com componente visual/frontend (interface, tela, UI, design)?
+→ SIM (sem imagem): mock-to-react MODO CRIATIVO — sempre chamado para a parte visual.
+                    Mesmo que engineering-mentor ou app-factory liderem o projeto,
+                    mock-to-react É O RESPONSÁVEL PELA PARTE VISUAL.
+                    Não terceirizar criação visual para engineering-mentor ou app-factory.
 ```
 
-**Sinais de input visual (qualquer um destes = mock-to-react primeiro):**
+**Regra absoluta: mock-to-react é o diretor visual do sistema.**
+Todo output com interface visual passa por ele — seja copiando um mock ou criando do zero.
+
+**Sinais de input visual → MODO CÓPIA (imagem obrigatória):**
 - Arquivo de imagem anexado (PNG, JPG, WebP, SVG)
 - Screenshot colada no chat
 - "clone esse botão", "replique esse componente", "copia esse design"
 - "baseado nessa imagem", "igual a essa tela", "como nesse exemplo"
 - Referência a Figma, wireframe, mockup, protótipo, layout visual
 
-**Fluxo com visual:**
+**Sinais de pedido visual sem imagem → MODO CRIATIVO:**
+- "cria uma tela", "faz a interface", "quero um dashboard", "monta o frontend"
+- "design moderno", "algo bonito", "visual clean", "me inspira"
+- Qualquer app/projeto com UI onde o usuário não forneceu referência visual
+
+**Fluxos:**
 ```
-imagem/foto → mock-to-react → preview-bridge → surge-core
+Com imagem:    mock-to-react (CÓPIA) → preview-bridge → surge-core
+Sem imagem:    mock-to-react (CRIATIVO: busca refs → propõe → aprova) → preview-bridge → surge-core
+App completo:  engineering-mentor (PRD) → mock-to-react (visual) + app-factory (backend) → preview-bridge
 ```
 
 Se o projeto também precisar de integração: ConnectPro entra DEPOIS do mock-to-react, não antes.
@@ -119,8 +132,9 @@ Fase 3 CONFIRMAR: mostrar o que criou + schedule + como pausar
 |---|---|
 | Projeto indefinido, PRD necessário | engineering-mentor PRIMEIRO |
 | Integração, credencial, OAuth, banco | ConnectPro — antes de app-factory |
-| Input visual (imagem, mock) | mock-to-react |
-| App completo, full-stack | app-factory-multiagent |
+| Input visual (imagem, mock) | mock-to-react MODO CÓPIA |
+| Pedido de interface sem imagem | mock-to-react MODO CRIATIVO — sempre |
+| App completo, full-stack | mock-to-react (visual) + app-factory-multiagent (backend) |
 | MVP rápido | criador-de-apps |
 | Resultado web criado | preview-bridge — sempre |
 | Erro, 500, console error | surge-core — automático |
@@ -162,7 +176,10 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 
 ## Regras Obrigatórias
 
-- Começar com engineering-mentor quando projeto for indefinido
+- **mock-to-react É O DIRETOR VISUAL** — qualquer pedido com interface chama mock-to-react. Sem exceção.
+  - Com imagem → MODO CÓPIA (pixel-perfect)
+  - Sem imagem → MODO CRIATIVO (busca refs, propõe direção, aprova, constrói)
+- Começar com engineering-mentor quando projeto for indefinido (para PRD/SPEC)
 - NÃO construir antes da aprovação do usuário (PRD + SPEC + stack)
 - ConnectPro sempre antes de app-factory quando há integração
 - preview-bridge após qualquer construção visual
