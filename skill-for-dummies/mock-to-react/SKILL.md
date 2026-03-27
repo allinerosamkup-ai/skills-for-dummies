@@ -73,9 +73,11 @@ Atua como diretor visual do projeto:
 
 ## Stack Padrao
 
-- React JSX + Tailwind CSS
-- Detecta automaticamente o design system do projeto (shadcn, MUI, etc.) -- se nao houver, usa Tailwind puro
-- Exportacao: React JSX | Vue | HTML/CSS | Tailwind config | Storybook stories
+- React JSX como alvo principal (com exportacao opcional para Vue e HTML/CSS)
+- Politica de estilo neutra (sem lock): preservar o CSS original quando existir, reaproveitar design system detectado no projeto, ou gerar CSS tokenizado independente
+- Fallback de engine por menor atrito: CSS existente > design system do projeto > CSS Modules/variables > utility framework (Tailwind, etc.)
+- Proibido acoplar em UI/CSS especifico (ex.: Aura, shadcn, MUI, Tailwind) quando o projeto nao exigir
+- Exportacao: React JSX | Vue | HTML/CSS | Storybook stories | artefatos de tema compatíveis com a engine escolhida
 - Dependencias: `@anthropic-ai/sdk`, `octokit`, `node-fetch`, `puppeteer`, `sharp`, `fs-extra`
 
 ## Fluxos de Operacao
@@ -171,7 +173,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 **ETAPA 8 -- CodeAgent: Gerar componente**
 - Contexto combinado: auto-descricao + design-tokens.json + mockAnalysis + packages + icons + exemplos GitHub
 - Detectar design system existente no projeto (package.json) e adaptar
-- Se nenhum design system: React JSX + Tailwind CSS puro
+- Se nenhum design system: escolher a estrategia de estilo com menor atrito para fidelidade (CSS nativo tokenizado por padrao; Tailwind/utilitarios apenas se for o melhor encaixe)
 
 MANDATO DE COMPLETUDE (nao negociavel):
 - Implementar TODOS os elementos do inventario da Etapa 1b -- nenhum pode ser omitido
@@ -181,12 +183,13 @@ MANDATO DE COMPLETUDE (nao negociavel):
 - Elementos decorativos sao primeira classe, nao opcionais:
   emojis         -> span/text com fontSize correto e aria-hidden="true"
   ilustracoes    -> SVG inline ou img reproduzida fielmente
-  backgrounds    -> Tailwind bg-gradient-* ou CSS custom via style prop
-  shapes         -> div/span com absolute positioning e classes Tailwind
+  backgrounds    -> gradientes/classes equivalentes na engine escolhida ou CSS custom via style prop
+  shapes         -> div/span com absolute positioning usando classes/utilitarios/estilos equivalentes
   divisores      -> hr ou div estilizados conforme design-tokens.json
 - Adicionar APENAS: responsividade (breakpoints sm/md/lg) e reatividade (hover/focus/active)
 - Proibido: alterar cores, tipografia, espacamentos, posicionamentos ou identidade visual
-- Gerar tailwind.config.js com os tokens extraidos em design-tokens.json
+- Gerar artefatos de tema compatíveis com a engine escolhida (ex.: `tailwind.config.js`, `tokens.css`, `theme.ts`)
+- Registrar `styling_strategy` no output final explicando por que aquela engine foi escolhida
 
 ESTRUTURA DE OUTPUT (pronta para colar no projeto):
   src/
@@ -195,7 +198,7 @@ ESTRUTURA DE OUTPUT (pronta para colar no projeto):
     styles/
       globals.css        -- variaveis CSS :root + reset + fontes
       tokens.css         -- design tokens como CSS custom properties
-  tailwind.config.js     -- tema gerado a partir dos tokens
+  theme/                 -- artefatos de tema para a engine escolhida (quando aplicavel)
 
 REGRAS DA ESTRUTURA:
   - Componentes < 80 linhas → /components
@@ -275,11 +278,11 @@ optional_inputs:
   - name: target_framework
     type: string
     required: false
-    description: framework alvo (padrão React/Tailwind; aceita Vue, HTML/CSS)
+    description: framework alvo (padrao React; aceita Vue, HTML/CSS)
   - name: design_system
     type: string
     required: false
-    description: design system existente no projeto (shadcn, MUI, etc.)
+    description: design system existente no projeto (shadcn, MUI, Aura, custom, etc.)
   - name: backend_contract
     type: object
     required: false
@@ -299,7 +302,7 @@ output_schema:
   artifacts:
     - ui_code
     - design_tokens
-    - tailwind_config
+    - styling_artifacts
     - assets_needed
   issues:
     - missing_visual_context
@@ -331,6 +334,7 @@ success_criteria:
     - similaridade com o mock original >= 98%
     - todos os elementos interativos possuem handlers implementados (sem funções vazias)
     - design tokens extraídos e aplicados corretamente
+    - output nao fica preso a framework CSS/UI especifico sem necessidade do projeto
     - código pronto para uso em projeto real sem modificações manuais
   modo_criativo:
     - referências reais buscadas e apresentadas ao usuário

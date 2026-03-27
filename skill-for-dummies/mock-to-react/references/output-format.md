@@ -30,7 +30,15 @@
     "spacing": {"base": 8, "tokens": {"sm": 8, "md": 16, "lg": 24, "xl": 32}}
   },
 
-  "tailwind_config": "report/tailwind.config.js",
+  "styling_strategy": {
+    "engine": "css_variables",
+    "reason": "maior fidelidade com menor atrito no projeto alvo"
+  },
+  "styling_artifacts": {
+    "tokens_css": "report/tokens.css",
+    "globals_css": "report/globals.css",
+    "tailwind_config": null
+  },
 
   "analysis": {
     "elements_detected": 23,
@@ -42,7 +50,10 @@
 
   "generated_code": {
     "jsx": "export default function Card() { ... }",
-    "tailwind_config": { "theme": { "extend": {} } },
+    "style_artifacts": {
+      "engine": "css_variables",
+      "theme": {}
+    },
     "component_tree": {
       "root": "Card",
       "children": ["CardHeader", "CardBody", "CardFooter"]
@@ -87,8 +98,8 @@
     },
     "github_references": [
       {
-        "repo": "shadcn/ui",
-        "url": "https://github.com/shadcn/ui",
+        "repo": "example/component-library",
+        "url": "https://github.com/example/component-library",
         "stars": 45000,
         "pattern_used": "render_props"
       }
