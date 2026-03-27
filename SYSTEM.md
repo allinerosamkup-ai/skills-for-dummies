@@ -1,6 +1,6 @@
 ---
 name: D.U.M.M.Y. OS
-version: "2.1"
+version: "2.2"
 type: ai-operating-system
 compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, any-ai-with-system-prompt]
 install: "npx dummy-os install"
@@ -28,6 +28,9 @@ npx dummy-os install --tool cursor   # força instalação no Cursor
 npx dummy-os status         # mostra skills instaladas e memória do projeto
 npx dummy-os init           # inicializa memória para o projeto atual
 ```
+
+Instalação automática por CLI cobre Claude Code, Cursor e Windsurf.
+Gemini CLI, Codex CLI e outras IAs com system prompt usam este arquivo manualmente.
 
 ---
 
@@ -97,7 +100,7 @@ Ao carregar, o sistema:
 **Responsabilidade:** Converte qualquer visual em componente React pixel-perfect. Sistema multiagente com 6 agentes especializados.
 
 ### Processo 3 — app-factory-multiagent (Construção)
-**PID:** app-factory
+**PID:** app-factory-multiagent
 **Ativa quando:** "cria um app", "quero um sistema", MVP robusto, app com auth + banco + mobile
 **Responsabilidade:** Constrói aplicações completas — web (Next.js), mobile (Expo), backend (Node/Python), banco (Supabase/Firebase). Factory de 4 agentes paralelos.
 
@@ -173,7 +176,7 @@ Ao iniciar uma sessão com este arquivo carregado:
 ### Em qualquer outra IA (Cursor, Gemini, etc.)
 ```
 Cole o conteúdo deste arquivo no system prompt da IA.
-Os 7 processos se tornam disponíveis automaticamente.
+Os 8 processos se tornam disponíveis automaticamente.
 ```
 
 ### Como usuário
@@ -183,7 +186,7 @@ Fale sua intenção naturalmente:
 
 "Quero um app de gestão de tarefas com login Google"
 → OS detecta: integracional + construtivo
-→ Roteia: ConnectPro → app-factory → preview-bridge → surge-core
+→ Roteia: ConnectPro → app-factory-multiagent → preview-bridge → surge-core
 
 "Transforma essa imagem em React"
 → OS detecta: visual
@@ -198,14 +201,23 @@ Fale sua intenção naturalmente:
 
 ## Memória Persistente
 
-O OS mantém memória entre sessões em `.claude/memory/`:
+O OS mantém memória entre sessões em `.dummy/memory/`:
 
 ```
-memory/
-  user_*.md       — preferências e perfil do usuário
-  project_*.md    — contexto de projetos em andamento
-  feedback_*.md   — o que funcionou e o que não funcionou
-  reference_*.md  — onde encontrar recursos externos
+.dummy/
+  memory/
+    projects/{project-name}/
+      state.md      — estado do projeto e entregas
+      env.md        — serviços resolvidos (sem valores secretos)
+      decisions.md  — decisões arquiteturais e de autonomia
+      errors.md     — erros corrigidos neste projeto
+    user/
+      preferences.md — preferências globais do usuário
+    global/
+      errors.md       — padrões reutilizáveis
+      patterns.md     — padrões de execução bem-sucedidos
+      execution-log.md — observabilidade recente das skills
+      dream-log.md    — histórico de consolidação de memória
 ```
 
 A cada sessão, o kernel carrega a memória relevante automaticamente.
@@ -239,13 +251,13 @@ Cada prompt extra que o usuário precisa dar é um bug do sistema, não uma limi
 
 | Campo | Valor |
 |-------|-------|
-| Versão do OS | 2.1 |
+| Versão do OS | 2.2 |
 | Nome | D.U.M.M.Y. OS |
 | Sigla | Dynamic · Unified · Multi-agent · Memory-driven · Yield |
-| Kernel | skill4d-core-orchestrator v2.1 |
+| Kernel | skill4d-core-orchestrator v2.2 |
 | Processos | 8 |
 | Compatível com | Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI, qualquer IA com system prompt |
-| CLI | `npx dummy-os` (npm package) |
+| CLI | `npx dummy-os` (instalação automática: Claude Code, Cursor e Windsurf) |
 | Linguagem dos processos | Markdown + YAML (sem código — roda em qualquer IA) |
 | Requisitos | Nenhum — zero infraestrutura externa |
 

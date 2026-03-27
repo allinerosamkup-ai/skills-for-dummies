@@ -28,7 +28,7 @@ async function runConnectPro(userMessage, userId) {
   registry.completeTask("plan");
 
   registry.registerTask("provision");
-  const rawProvision = await runProvisioner(plan, userId);
+  const rawProvision = await runProvisioner(plan, userId, registry);
   registry.completeTask("provision");
 
   registry.registerTask("security");

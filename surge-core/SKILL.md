@@ -1,12 +1,76 @@
 ---
 name: surge-core
-description: "Continuous observability and self-correction layer. Auto-activates on ANY runtime error, 500, blank page, console error, or failed skill handoff — diagnoses root cause using preview tools, applies fix automatically, and verifies fix worked. Never waits to be asked. Triggers: error, bug, not working, runtime error, build failed, console error, blank page, 500, partial delivery, visual mismatch, diagnose, fix."
+description: "Use when execution produces runtime failures, blank pages, startup/build errors, partial or failed skill handoffs, repeated breakage, or any situation that needs autonomous diagnosis and correction before escalating."
 ---
 
 # Surge Core v4.1 — Autocorreção e Criação de Caminhos
 
 Surge não espera ser chamado. Surge entra quando há sinal de falha.
 Surge não apenas corrige — **Surge cria caminhos onde não existem.**
+
+---
+
+## Contract Snapshot
+
+```yaml
+name: surge-core
+role: observação e autocorreção
+objective: detectar falhas, diagnosticar causa raiz, corrigir dentro dos limites de autonomia e escalar só quando necessário
+
+activation_rules:
+  - rule: qualquer execução retornou erro técnico, partial, failed, blank page ou regressão repetida
+    priority: high
+  - rule: preview ou validação visual encontrou blocker de runtime, build ou rede
+    priority: high
+  - rule: uma skill terminou, mas há sinais de inconsistência antes da próxima etapa
+    priority: medium
+
+minimum_inputs:
+  - execution_result_or_observable_failure
+
+optional_inputs:
+  - preview_artifacts
+  - logs_or_terminal_output
+  - previous_failures
+  - target_project_path
+
+execution_policy:
+  auto_activate_on_error: true
+  max_correction_iterations: 3
+  always_verify_after_fix: true
+  never_ignore_silently: true
+  ask_minimum: true
+  preserve_existing_behavior: true
+  create_path_if_missing: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: causa raiz + ação aplicada ou proposta
+  artifacts: issue_report, correction_log, verification_evidence, reusable_pattern
+  issues: missing_env, runtime_error, startup_failure, repeated_failure, architecture_blocker
+  next_step: retry | preview-bridge | ConnectPro | engineering-mentor | skill4d-core-orchestrator | user
+  confidence_score: 0.0-1.0
+
+failure_policy:
+  recoverable: true
+  escalate_only_after_attempts_or_business_decision: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: dummy-memory
+    when: erro corrigido ou padrão reutilizável identificado
+    payload: error_symptom, root_cause, correction_applied, reusable_when
+  - skill_name: ConnectPro
+    when: blocker depende de credencial, env ou bridge externo
+    payload: missing_vars, service_name, attempted_paths
+  - skill_name: engineering-mentor
+    when: causa raiz exige decisão arquitetural ou de escopo
+    payload: issue_report, root_cause_hypothesis
+  - skill_name: skill4d-core-orchestrator
+    when: o fluxo inteiro precisa ser replanejado
+    payload: failure_summary, suggested_reroute
+```
 
 ---
 
@@ -35,13 +99,13 @@ Quando o ecossistema encontra um bloqueio sem solução óbvia:
 
 1. CLASSIFICAR o tipo de bloqueio:
    a. Técnico (sem MCP, sem API, sem biblioteca) → Surge cria a solução
-   b. De configuração (precisa de acesso a painel/dashboard) → Surge usa browser_auto
+   b. De configuração (precisa de acesso a painel/dashboard) → Surge usa browser automation
    c. De conhecimento (padrão desconhecido) → Surge pesquisa e experimenta
    d. De decisão de negócio (mudar escopo, trocar produto) → Surge escala para usuário
 
 2. CRIAR O CAMINHO:
    - Se falta um conector: invocar ConnectPro modo codebase_cli para gerar
-   - Se falta browser automation: usar mcp__Claude_in_Chrome__* diretamente
+   - Se falta browser automation: usar a automação de navegador disponível no ambiente
    - Se falta código: implementar do zero, sem pedir permissão
    - Se falta integração: criar o bridge necessário
 
@@ -50,7 +114,7 @@ Quando o ecossistema encontra um bloqueio sem solução óbvia:
 
 **Exemplo:** Supabase email confirmation não pode ser desabilitado via SQL.
 - Surge detecta o bloqueio
-- Surge usa browser_auto para navegar ao dashboard e desabilitar diretamente
+- Surge usa browser automation para navegar ao dashboard e desabilitar diretamente
 - Surge confirma que foi feito
 - Surge não pede nada ao usuário
 
@@ -62,12 +126,12 @@ Surge entra **automaticamente** quando qualquer um destes sinais aparecer:
 
 | Sinal | Como detectar | Ação imediata |
 |-------|---------------|---------------|
-| HTTP 500 | `preview_network { filter: "failed" }` | Ler logs do servidor |
-| Página branca | `preview_screenshot` → imagem toda branca | Verificar console + rede |
-| Console error | `preview_console_logs { level: "error" }` | Identificar e corrigir |
-| Build failure | `preview_logs { level: "error" }` | Ler erro, corrigir arquivo |
+| HTTP 500 / falha de rede | sinais HTTP/rede disponíveis no preview ou runtime | Ler logs do servidor |
+| Página branca | captura visual ou screenshot mostra tela branca | Verificar console + rede |
+| Console/runtime error | sinais de erro do browser, preview ou terminal | Identificar e corrigir |
+| Build/startup failure | logs do servidor, terminal ou preview runtime | Ler erro, corrigir arquivo |
 | Skill retornou `partial` ou `failed` | Output de qualquer skill com esses status | Verificar o que bloqueou |
-| `preview_start` com erro | Qualquer erro ao tentar iniciar | Resolver blocker antes de escalar |
+| Falha ao abrir o preview ou iniciar runtime | Qualquer erro ao tentar iniciar | Resolver blocker antes de escalar |
 | Erro repetido (2x+) | Mesmo erro em 2 turnos diferentes | Aplicar correção definitiva |
 
 ---
@@ -78,10 +142,10 @@ Quando surge-core ativa:
 
 ```
 1. COLETAR SINAIS (em paralelo)
-   → preview_console_logs { level: "error" }     — erros do browser
-   → preview_logs { level: "error" }              — erros do servidor
-   → preview_network { filter: "failed" }         — requisições com falha
-   → preview_snapshot                             — estrutura atual da página
+   → sinais de erro do browser/console disponíveis
+   → logs do servidor, terminal ou runtime preview
+   → falhas HTTP/rede disponíveis
+   → snapshot, screenshot ou estrutura atual da página
 
 2. IDENTIFICAR CAUSA RAIZ
    → Cruzar os sinais com o código fonte
@@ -94,8 +158,8 @@ Quando surge-core ativa:
    → NÃO criar workarounds — corrigir a causa raiz
 
 4. VERIFICAR CORREÇÃO
-   → preview_screenshot → confirmar que a página renderiza
-   → preview_console_logs { level: "error" } → confirmar zero erros críticos
+   → captura visual ou screenshot → confirmar que a página renderiza
+   → sinais de erro disponíveis → confirmar zero erros críticos restantes
    → Se novo erro aparecer: repetir o loop (máximo 3 iterações)
 
 5. REGISTRAR SE REUTILIZÁVEL
@@ -113,7 +177,7 @@ Quando surge-core ativa:
 | `Port X is in use` | Processo anterior não finalizado | Identificar PID via `netstat`, matar, reiniciar |
 | `Cannot find module 'X'` (node_modules) | Dependência não instalada | `npm install` no diretório correto |
 | `cwd outside project root` | launch.json com path relativo que sai da raiz | Reescrever launch.json com `--prefix /caminho/absoluto` |
-| Página branca sem erros de console | Erro no servidor não propagado | Verificar `preview_logs`, checar `preview_network` para 500 |
+| Página branca sem erros de console | Erro no servidor não propagado | Verificar logs do servidor e sinais HTTP/rede disponíveis |
 | `cookies() should be awaited` (Next.js 15) | API de cookies mudou no Next 15 | Adicionar `await` antes de `cookies()` |
 | `useRouter must be used in client component` | Server component usando hook client | Adicionar `'use client'` no topo do arquivo |
 | RLS policy blocking data | `user_id` não corresponde ao `auth.uid()` | Verificar query — adicionar `.eq('user_id', user.id)` |
@@ -165,59 +229,16 @@ Quando uma correção for reutilizável, registrar em `surge-core/snippets.md`:
 
 ---
 
-## Contrato Skill4Dummies
+## Nota de Alinhamento com o Skill Contract
 
-```yaml
-name: surge-core
-role: observação e autocorreção
-version: "4.1"
+O bloco `Contract Snapshot` acima é a fonte principal desta skill. O restante do ecossistema deve
+permanecer alinhado com:
 
-activation_rules:
-  - rule: qualquer sinal de erro após execução (500, console error, branco, partial)
-    priority: high
-    mode: automático — não esperar ser invocado
-
-  - rule: preview_screenshot retorna página branca
-    priority: high
-    mode: automático
-
-  - rule: skill anterior retornou status partial ou failed
-    priority: high
-    mode: automático
-
-  - rule: mesmo erro aparece pela 2ª vez
-    priority: high
-    mode: automático — aplicar correção definitiva, não paliativa
-
-execution_policy:
-  auto_activate_on_error: true          # NOVO: ativa sem precisar ser chamado
-  max_correction_iterations: 3          # NOVO: tenta até 3x antes de escalar
-  always_verify_after_fix: true         # NOVO: sempre re-screenshot após correção
-  never_ignore_silently: true           # NOVO: todo erro registrado e tratado
-  ask_minimum: true
-  prefer_partial_delivery: false
-
-success_criteria:
-  - causa raiz identificada e documentada
-  - correção aplicada E verificada com preview_screenshot
-  - zero erros críticos em preview_console_logs após fix
-  - snippets.md atualizado se padrão for reutilizável
-  - próxima ação clara proposta se não foi possível autocorrigir
-
-handoff_targets:
-  - skill_name: dummy-memory
-    when: após corrigir qualquer erro (antes de escalar)
-    payload: error_symptom, root_cause, correction_applied, reusable_when
-  - skill_name: ConnectPro
-    when: erro é credencial/env var faltando que requer provisioning externo
-    payload: missing_vars, service_name
-  - skill_name: engineering-mentor
-    when: causa raiz requer decisão arquitetural
-    payload: issue_report, root_cause_hypothesis
-  - skill_name: skill4d-core-orchestrator
-    when: fluxo completo precisa ser refeito após falha grave
-    payload: failure_summary, suggested_reroute
-```
+- ativação automática quando houver sinal técnico de falha
+- correção dentro dos limites de autonomia, sem alterar regra de negócio sem decisão humana
+- verificação após cada correção com os sinais realmente disponíveis no ambiente
+- handoff para `ConnectPro`, `engineering-mentor` ou `skill4d-core-orchestrator` apenas quando o
+  blocker sair da faixa técnica corrigível
 
 ---
 
@@ -229,9 +250,9 @@ Usuário
 ↓ ConnectPro — integrações, credenciais, setup
 ↓ app-factory-multiagent — construção
 ↓ preview-bridge — validação visual
-↓ surge-core v4.0   ← você está aqui
+↓ surge-core v4.1   ← você está aqui
   ├── auto-ativa em qualquer sinal de erro
-  ├── diagnóstico via preview_console_logs + preview_logs + preview_network
+  ├── diagnóstico via sinais reais de preview, terminal, rede e runtime
   ├── corrige → verifica → registra
   └── escala apenas quando esgotou tentativas
 ↓ engineering-mentor — decisões que requerem julgamento humano

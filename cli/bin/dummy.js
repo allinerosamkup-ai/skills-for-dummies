@@ -27,7 +27,7 @@ program
 program
   .command('install')
   .description('Install D.U.M.M.Y. OS skills into your AI tool')
-  .option('--tool <tool>', 'Target tool: claude-code | cursor | windsurf')
+  .option('--tool <tool>', 'Target tool: claude-code | cursor | windsurf | antigravity')
   .option('--force', 'Overwrite existing skills')
   .action(async (opts) => {
     console.log(LOGO)
@@ -106,7 +106,7 @@ program
 
     if (tools.length === 0) {
       console.log(chalk.yellow('No supported AI tools detected.'))
-      console.log(chalk.dim('Supported: Claude Code, Cursor, Windsurf'))
+      console.log(chalk.dim('Supported: Claude Code, Cursor, Windsurf, Gemini Antigravity'))
       return
     }
 
@@ -235,7 +235,8 @@ program
     console.log(chalk.bold('Running diagnostics...\n'))
 
     const { default: fs } = await import('fs-extra')
-    const { join, homedir } = await import('path')
+    const { join } = await import('path')
+    const { homedir } = await import('os')
     const { execFileSync } = await import('child_process')
     const home = homedir()
 

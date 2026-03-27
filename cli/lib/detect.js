@@ -25,6 +25,13 @@ export const AI_TOOLS = {
     rulesDir: join(HOME, '.windsurf', 'rules'),
     systemPromptDir: null,
     detected: () => existsSync(join(HOME, '.windsurf'))
+  },
+  'antigravity': {
+    name: 'Gemini Antigravity',
+    skillsDir: join(HOME, '.gemini', 'antigravity', 'skills'),
+    rulesDir: null,
+    systemPromptDir: null,
+    detected: () => existsSync(join(HOME, '.gemini', 'antigravity'))
   }
 }
 

@@ -1,13 +1,13 @@
 ---
 name: mock-to-react
-description: "Creative visual director AND pixel-perfect converter of D.U.M.M.Y. OS. TWO ROLES: (1) COPY MODE — PRIORITY: activates FIRST whenever any image, screenshot, photo, or visual reference is present. Transforms any visual into pixel-perfect React components with 98% similarity. (2) CREATIVE MODE — when no image is provided but visual work is requested: searches web references, analyzes market trends, brings original visual direction inspired by what's highest in the market. Uses 6 specialized agents: vision analysis, design token extraction, NPM package search, icon matching, GitHub component research, iterative refinement. Triggers: image attached, screenshot, photo of UI, clone this button, replicate this design, copy this component, based on this image, como essa tela, igual esse layout, clone esse botão, copia esse design, converte isso em React, pixel-perfect, mock to code, design moderno, referências visuais, como está o mercado de UI, criar interface do zero, me inspira, visual criativo."
+description: "Use when a user needs to clone a visual mock (image, screenshot, HTML, wireframe) into React with pixel-perfect fidelity as the primary objective. Use creative visual direction only as a secondary mode when no visual reference is provided."
 ---
 
-# Mock-to-React: Diretor Visual Criativo + Conversor Pixel-Perfect
+# Mock-to-React: Conversor Pixel-Perfect + Direção Criativa Secundária
 
-**Dois papéis, uma identidade:**
-- **Coração imutável:** converter qualquer mock/imagem em React pixel-perfect (98% similarity) — esta função JAMAIS muda
-- **Papel expandido:** diretor visual criativo do D.U.M.M.Y. OS — busca referências, analisa tendências de mercado, traz direção visual original quando não há imagem de input
+**Dois papéis, prioridade fixa:**
+- **Coração imutável (sempre prioritário):** converter qualquer mock/imagem em React pixel-perfect (98% similarity) — esta função JAMAIS muda
+- **Papel secundário:** direção visual criativa somente quando não há referência visual de entrada
 
 Sistema multiagente (V2 + V3). Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
 
@@ -58,6 +58,7 @@ Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
 ### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
 **Este é o coração da skill. Prioridade máxima. Nunca dilui ou remove.**
 Replica fielmente qualquer visual fornecido em React pixel-perfect.
+Quando existe referência visual, este modo é obrigatório e exclusivo.
 → Ver **Fluxo de 9 Etapas** abaixo.
 
 ### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
@@ -85,7 +86,7 @@ Fluxo principal de 9 etapas focado exclusivamente em Front-end. A skill atua com
 ### 🌐 MODO ORQUESTRACAO (Arquitetura & Delegaçao)
 Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usuario pedir para "criar o projeto todo", a skill NÃO escreve o backend, mas atua como Despachante:
 1. **Deduçao de Contrato**: Analisa a imagem e gera um `api-contract.json` (quais entidades e rotas o frontend precisara).
-2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills competentes em Backend (`criador-de-apps`, `app-factory-multiagent`).
+2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills de execução completa (`app-factory-multiagent`) e integrações (`ConnectPro`) quando necessário.
 3. **Consonancia**: O React gerado foca em consumir esse contrato futuro, com estados de loading, fetch simulados ou reais, e formulários completamente "cabeados".
 
 ## Fluxo de 9 Etapas

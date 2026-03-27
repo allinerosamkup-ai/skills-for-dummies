@@ -10,3 +10,4 @@ ConnectPro-v9.8/node_modules/
 
 # Lock files de outros projetos
 ConnectPro-v9.8/package-lock.json
+.dummy/memory/

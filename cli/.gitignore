@@ -1,2 +1,5 @@
 node_modules/
 *.log
+
+# D.U.M.M.Y. OS memory
+.dummy/

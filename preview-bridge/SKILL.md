@@ -1,6 +1,6 @@
 ---
 name: preview-bridge
-description: "GLOBAL SKILL — instantly opens live preview for any web project without manual setup. Auto-detects React, Next.js, Vue, Svelte, and HTML projects from package.json, handles projects outside the working directory, verifies .env.local exists before starting, resolves port conflicts automatically, configures .claude/launch.json, and fires the dev server. Takes screenshots, reads console logs, and hands off errors to surge-core. Triggers: preview, show me, ver, mostrar, como ficou, open preview, live view."
+description: "Use when a web project needs live preview, visual validation, or runtime inspection, including requests like preview, show me, ver, mostrar, como ficou, open preview, or live view."
 ---
 
 # PreviewBridge v3.0 — Live Preview Robusto (Global)
@@ -10,33 +10,121 @@ sem ação manual do usuário.
 
 ---
 
+## Contract Snapshot
+
+```yaml
+name: preview-bridge
+role: validação visual
+objective: detectar framework, abrir preview ao vivo e devolver sinais visuais e de runtime utilizáveis
+
+activation_rules:
+  - rule: pedido explicitamente menciona preview, mostrar, ver, open preview, live view ou equivalente
+    priority: high
+  - rule: qualquer skill gerou artefato visual ou projeto web que precisa de validação
+    priority: high
+  - rule: existe app web com necessidade de screenshot, console log ou confirmação visual
+    priority: medium
+
+minimum_inputs:
+  - project_path_or_web_artifact
+
+optional_inputs:
+  - expected_framework
+  - preferred_port
+  - known_env_requirements
+  - previous_runtime_errors
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  auto_observe_if_possible: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+  never_ask_user_to_check_manually: true
+  auto_resolve_port_conflicts: true
+  auto_create_env_placeholder: true
+  auto_install_if_no_node_modules: true
+  handle_sibling_directories: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: framework detectado + estado do preview
+  artifacts: preview_url, launch_config, screenshots, console_findings
+  issues: framework_not_detected, build_failure, runtime_console_error, missing_env
+  next_step: surge-core ou próxima validação
+  confidence_score: 0.0-1.0
+
+failure_policy:
+  recoverable: true
+  ask_user_only_if_blocked: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: surge-core
+    when: preview revelar erro visual, runtime error ou console error não autocorrigível
+    payload: console_errors, visual_diff, preview_screenshot, network_failures
+  - skill_name: dummy-memory
+    when: preview relevante foi aberto ou o diagnóstico gerou sinal reutilizável
+    payload: preview_url, framework_detected, issues, screenshots
+
+success_criteria:
+  - preview aberto sem ação manual do usuário
+  - framework detectado corretamente
+  - screenshot ou evidência visual capturada
+  - erros de console e blockers relevantes reportados
+
+observability_signals:
+  - signal: framework_detected
+    description: framework e comando de dev inferidos
+  - signal: preview_opened
+    description: URL do preview ficou acessível
+  - signal: env_placeholder_created
+    description: preview exigiu .env.local placeholder
+  - signal: console_errors_found
+    description: runtime visual abriu com erros de console
+  - signal: surge_handoff
+    description: problema precisa de observação/correção adicional
+```
+
+---
+
 ## Regra Fundamental
 
 **Nunca peça para o usuário verificar manualmente.** Se algo bloquear o preview, resolva antes de
 escalar. Só escala para o usuário se o bloqueio for genuinamente irresolvível.
 
+**Nunca invente nomes de tools ou MCPs.** Use as capacidades reais expostas no ambiente atual; se o
+ambiente tiver helpers extras de detecção, setup, logs ou rede, use-os como otimização, não como
+pré-requisito do contrato.
+
 ---
 
 ## Fluxo Obrigatório (executar nesta ordem)
 
-### Passo 1: Detectar framework com MCP nativo
+### Passo 1: Detectar ambiente e framework
 
-**SEMPRE usar os MCPs nativos antes de qualquer detecção manual:**
+**SEMPRE preferir as capacidades reais do ambiente antes de assumir um fluxo específico:**
 
 ```
-1. mcp__previewbridge__preview_detect { project_path: "/caminho/absoluto/do/projeto" }
-   → Retorna: framework, dev command, port, status de node_modules
+1. Se existir runtime PreviewBridge/MCP no ambiente:
+   → ativar o runtime disponível
+   → usar screenshot, viewport, foco de componente e leitura de erros quando houver
 
-2. mcp__previewbridge__preview_setup { project_path: "/caminho/absoluto/do/projeto" }
-   → Cria launch.json DENTRO do projeto automaticamente
-   → Retorna o nome do servidor para usar em preview_start
+2. Se o ambiente expuser helpers extras de detecção/setup/start:
+   → usar esses helpers
+   → tratar isso como aceleração do fluxo, não como dependência obrigatória
 
-3. Se o projeto estiver FORA do diretório de sessão (diretório irmão, etc.):
-   → Escrever TAMBÉM na sessão: .claude/launch.json com npm --prefix /caminho/absoluto
-   → Usar o mesmo "name" retornado pelo preview_setup
-   → Exemplo: { runtimeArgs: ["--prefix", "/caminho/absoluto", "run", "dev"] }
+3. Se não existir helper de detecção:
+   → ler package.json
+   → inferir framework, comando de dev e porta
+   → detectar se o projeto está dentro da sessão ou em diretório irmão
 
-4. mcp__previewbridge__preview_check → confirmar estado antes de iniciar
+4. Se o projeto estiver FORA do diretório de sessão:
+   → escrever também na sessão: .claude/launch.json com npm --prefix /caminho/absoluto
+   → manter o mesmo nome lógico do servidor
+   → exemplo: { runtimeArgs: ["--prefix", "/caminho/absoluto", "run", "dev"] }
 ```
 
 ### Passo 2: Verificar .env.local / .env
@@ -59,7 +147,7 @@ escalar. Só escala para o usuário se o bloqueio for genuinamente irresolvível
    → Preview abrirá em modo degradado (auth/API podem falhar, mas UI renderiza)
 ```
 
-### Passo 4: Verificar dependências
+### Passo 3: Verificar dependências
 
 ```
 1. node_modules existe na raiz do app?
@@ -69,7 +157,7 @@ escalar. Só escala para o usuário se o bloqueio for genuinamente irresolvível
    → npm ci --prefix /caminho/do/app (mais rápido)
 ```
 
-### Passo 5: Configurar launch.json
+### Passo 4: Configurar launch.json
 
 Para projetos dentro do diretório de trabalho:
 ```json
@@ -98,13 +186,13 @@ Para projetos **fora** do diretório de trabalho (diretório irmão):
 }
 ```
 
-### Passo 6: Resolver conflito de porta
+### Passo 5: Resolver conflito de porta
 
 ```
-Antes de chamar preview_start:
+Antes de iniciar o servidor:
 
 1. Verificar se a porta está em uso
-   → Windows: netstat -ano | grep ":PORTA"
+   → Windows: netstat -ano | findstr ":PORTA"
    → Unix: lsof -i :PORTA
 
 2. Se porta ocupada:
@@ -115,17 +203,20 @@ Antes de chamar preview_start:
          se o serviço na porta original pode ser parado
 ```
 
-### Passo 7: Iniciar preview e verificar
+### Passo 6: Iniciar preview e verificar
 
 ```
-1. Chamar preview_start com a configuração montada
+1. Iniciar o servidor de desenvolvimento com a configuração montada
 
-2. Aguardar servidor inicializar (verificar via preview_logs se há erros de startup)
+2. Aguardar servidor inicializar
+   → se houver captura de logs/erros no ambiente, usar
+   → se não houver, validar por resposta HTTP, screenshot e sinais do terminal
 
 3. Capturar preview_screenshot
 
 4. Analisar resultado:
-   - Página branca + erros 500 → verificar preview_logs e preview_network para causa raiz
+   - Página branca + falhas HTTP/erros de runtime → identificar causa raiz via logs, terminal,
+     captura de erros ou sinais de rede disponíveis
    - Erro "URL/Key required" (Supabase) → .env.local com placeholders confirmado,
      estado esperado para ambiente sem credenciais reais
    - Página renderizando → SUCESSO, capturar screenshot final e reportar ao usuário
@@ -137,12 +228,12 @@ Antes de chamar preview_start:
 
 ---
 
-## Interface CLI (para invocação pelo ConnectPro e core-orchestrator)
+## Interface CLI Esperada (opcional para conectores)
 
-Preview-Bridge expõe uma interface JSON padronizada:
+Se o ambiente expuser um wrapper CLI para o Preview-Bridge, o contrato recomendado é:
 
 ```bash
-# Interface canônica
+# Exemplo de interface
 preview-bridge --project /caminho/do/projeto --json
 
 # Saída esperada
@@ -160,7 +251,7 @@ preview-bridge --project /caminho/do/projeto --json
 }
 ```
 
-**Flags:**
+**Flags recomendadas:**
 - `--project` — caminho absoluto ou relativo ao projeto
 - `--port` — porta específica (opcional, detectada automaticamente)
 - `--no-install` — pular instalação de dependências
@@ -181,32 +272,12 @@ preview-bridge --project /caminho/do/projeto --json
 
 ---
 
-## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.5)
+## Nota de Alinhamento com o Skill Contract
 
-```yaml
-name: preview-bridge
-role: validação visual
-version: "3.0"
+O bloco `Contract Snapshot` acima é a fonte principal desta skill. O `skill4d-core-orchestrator`
+deve permanecer alinhado com:
 
-execution_policy:
-  ask_minimum: true
-  never_ask_user_to_check_manually: true     # NOVO: resolver blockers antes de escalar
-  auto_resolve_port_conflicts: true           # NOVO: matar processo e reiniciar
-  auto_create_env_placeholder: true           # NOVO: criar .env.local se ausente
-  auto_install_if_no_node_modules: true       # NOVO: npm install automático
-  handle_sibling_directories: true            # NOVO: usar --prefix para projetos fora da raiz
-  preserve_context: true
-  call_surge_if_execution_occurs: true
-
-success_criteria:
-  - preview aberto sem ação manual do usuário
-  - framework detectado corretamente
-  - launch.json configurado para o caminho correto do projeto
-  - screenshot capturado e compartilhado com o usuário
-  - erros de console reportados (não bloqueiam success se UI renderizar)
-
-handoff_targets:
-  - skill_name: surge-core
-    when: preview revelar erros visuais, de runtime ou de console não autocorrigíveis
-    payload: console_errors, visual_diff, preview_screenshot, network_failures
-```
+- ativação automática após artefato visual ou pedido explícito de preview
+- abertura do preview sem pedir verificação manual ao usuário
+- diagnóstico por sinais reais do ambiente
+- handoff para `surge-core` quando houver blocker não autocorrigível

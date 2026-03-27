@@ -10,7 +10,7 @@
 
 D.U.M.M.Y. OS is an **AI Operating System** — not an app, not a plugin, not a chatbot.
 
-It's a layer that installs inside any AI tool (Claude Code, Cursor, Gemini CLI) and transforms it into a fully orchestrated, self-correcting, memory-persistent system.
+It's an operating-system layer for AI tools. The CLI installs it directly into Claude Code, Cursor, and Windsurf; other tools can load [`SYSTEM.md`](./SYSTEM.md) manually and use the same orchestration model.
 
 You speak your intent. D.U.M.M.Y. figures out the rest.
 
@@ -19,7 +19,7 @@ You speak your intent. D.U.M.M.Y. figures out the rest.
          ↓
 D.U.M.M.Y. OS
   → ConnectPro sets up Supabase automatically
-  → app-factory builds the full app
+  → app-factory-multiagent builds the full app
   → preview-bridge opens it running in your browser
   → surge-core fixes any error before you notice it
          ↓
@@ -70,7 +70,7 @@ Working app. One prompt.
 | **dummy-memory** | always — boot LOAD + after every action SAVE | Persists project state, credentials, decisions and fixed errors across sessions. |
 | **ConnectPro** | OAuth, API keys, database, Supabase, Stripe | Provisions credentials automatically via MCP → API → browser automation → CLI. Email loop captures verification emails automatically. |
 | **mock-to-react** | image, wireframe, screenshot | 6-agent system that converts any visual into pixel-perfect React components |
-| **app-factory** | "build an app", full-stack, auth + database | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
+| **app-factory-multiagent** | "build an app", full-stack, auth + database | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
 | **preview-bridge** | after any build | Auto-detects framework, resolves port conflicts, opens live preview |
 | **surge-core** | always active | Monitors everything. Auto-corrects errors within defined autonomy limits. |
 | **engineering-mentor** | architectural decisions, undefined projects | Senior architect judgment. Generates PRD + SPEC before building. Non-blocking. |
@@ -85,6 +85,8 @@ npx dummy-os install
 ```
 
 Detects Claude Code, Cursor, or Windsurf and installs all 8 processes automatically.
+
+For Gemini CLI, Codex CLI, and other tools with a system prompt, load [`SYSTEM.md`](./SYSTEM.md) manually.
 
 Boot the OS in any session:
 
@@ -103,6 +105,17 @@ npx dummy-os doctor
 ```
 
 Checks Node version, detected AI tools, installed skills, CLAUDE.md boot trigger, dev-browser (optional), and project memory — with exact fix instructions for any issue found.
+
+---
+
+## Repository Layout
+
+This repository currently contains both the authoring source and distribution-oriented copies.
+
+- Root skill folders are the current source of truth used by the installer.
+- [`skill-for-dummies/`](./skill-for-dummies) is a packaged snapshot tree and should be treated as distribution content, not the canonical authoring location.
+- [`sistea/`](./sistea) contains archived or extracted material kept for reference, not for primary loading by agents.
+- [`cli/`](./cli) contains the installer and local diagnostics for supported tools.
 
 ---
 
@@ -146,7 +159,7 @@ Skill files cut by ~50%: orchestrator 321→161 lines, dummy-memory 272→139 li
 
 ## Browser Automation — dev-browser
 
-ConnectPro uses **[dev-browser](https://github.com/SawyerHood/dev-browser)** — a sandboxed Playwright CLI — as its browser automation engine when no MCP is available.
+ConnectPro now uses an internal browser engine first (`connectpro-browser`) and keeps **[dev-browser](https://github.com/SawyerHood/dev-browser)** as optional fallback when needed.
 
 ```bash
 # Optional but recommended for full ConnectPro capability
@@ -170,6 +183,9 @@ D.U.M.M.Y. OS remembers between sessions:
     preferences.md — language, frameworks, coding style
   global/
     errors.md     — reusable error patterns across projects
+    patterns.md   — reusable successful execution patterns
+    execution-log.md — recent skill observability log
+    dream-log.md  — memory consolidation history
 ```
 
 The kernel loads relevant memory at the start of every session automatically.
@@ -204,12 +220,14 @@ npx dummy-os uninstall            # remove all skills
 
 | AI Tool | Status |
 |---------|--------|
-| Claude Code | ✅ Native (skills system + CLAUDE.md + hooks) |
-| Cursor | ✅ Via rules system |
-| Windsurf | ✅ Via rules system |
-| Gemini CLI | ✅ Via SYSTEM.md |
-| Codex CLI | ✅ Via SYSTEM.md |
-| Any AI with system prompt | ✅ Load SYSTEM.md |
+| Claude Code | ✅ CLI install + native skills/hook flow |
+| Cursor | ✅ CLI install via rules system |
+| Windsurf | ✅ CLI install via rules system |
+| Gemini CLI | ✅ Manual via [`SYSTEM.md`](./SYSTEM.md) |
+| Codex CLI | ✅ Manual via [`SYSTEM.md`](./SYSTEM.md) |
+| Any AI with system prompt | ✅ Manual via [`SYSTEM.md`](./SYSTEM.md) |
+
+Current auto-detection in the CLI targets Claude Code, Cursor, and Windsurf only.
 
 ---
 
@@ -239,7 +257,7 @@ One intent → working result.
 
 - Claude Code Skills System + Hook System
 - Supabase MCP · Gmail MCP · n8n MCP · Figma MCP
-- [dev-browser](https://github.com/SawyerHood/dev-browser) (browser automation)
+- ConnectPro internal browser engine (`connectpro-browser`) + optional [dev-browser](https://github.com/SawyerHood/dev-browser) fallback
 - Preview Bridge MCP · scheduled-tasks MCP
 - Next.js · Expo · Node.js · Python
 

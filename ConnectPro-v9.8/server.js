@@ -1,9 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const { runConnectPro } = require('./agents/orchestrator');
+const { getConnectProReadiness } = require('./tools/connectpro-readiness');
+const { getCandidatePorts, listenWithFallback } = require('./tools/server-runtime');
 
 const app = express();
 app.use(express.json());
+
+app.get('/ready', (_req, res) => {
+  res.json(getConnectProReadiness());
+});
 
 app.post('/connect', async (req, res) => {
   const { userMessage, userId } = req.body;
@@ -19,7 +25,27 @@ app.post('/connect', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log("🚀 ConnectPro v9.8 rodando em http://localhost:3001");
+async function startServer(options = {}) {
+  const candidatePorts = getCandidatePorts({
+    port: options.port || process.env.PORT,
+    defaultPort: 3001,
+    fallbackSpan: options.fallbackSpan ?? 10
+  });
+
+  const started = await listenWithFallback(app, candidatePorts);
+  console.log(`🚀 ConnectPro v9.8 rodando em http://localhost:${started.port}`);
   console.log("Pronto pra ser chamado por qualquer skill do Tresformar!");
-});
+  return started;
+}
+
+if (require.main === module) {
+  startServer().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  app,
+  startServer
+};

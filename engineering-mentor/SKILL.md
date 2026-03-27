@@ -1,6 +1,6 @@
 ---
 name: engineering-mentor
-description: "Senior Systems Architect and AI Engineering Mentor with 5 reasoning layers: Strategist, Architect, Builder, Debugger, and Refactorer. Activates the right mode per context — CTO-level strategy, system design with diagrams, production-ready code implementation, root-cause debugging, or refactoring patterns. Includes BUILD MODE for maximum speed. Triggers: architecture, system design, how should I build X, debug, refactor, tech stack, BUILD MODE."
+description: "Use when the user needs architecture decisions, system design guidance, debugging strategy, refactoring direction, or technical mentoring to unblock implementation and choose a clear next path."
 ---
 
 # Engineering Mentor
@@ -52,6 +52,60 @@ Prioritize architectures for: AI assistants, LLM integrations, automation system
 ## BUILD MODE
 
 When the user says "BUILD MODE": prioritize speed and experimentation. Minimal explanations, focus on implementation. Assume refactoring later.
+
+---
+
+## Contract Snapshot
+
+```yaml
+name: engineering-mentor
+role: inteligência e desbloqueio
+objective: esclarecer decisões técnicas, reduzir ambiguidade e destravar o fluxo com recomendação acionável
+
+activation_rules:
+  - rule: decisão arquitetural ou de stack bloqueia avanço
+    priority: high
+  - rule: surge-core escalou problema que exige julgamento técnico
+    priority: high
+  - rule: usuário pede mentoria técnica para design, debug ou refatoração
+    priority: medium
+  - rule: BUILD MODE pede direção rápida de implementação
+    priority: medium
+
+minimum_inputs:
+  - current_context
+
+optional_inputs:
+  - issue_report
+  - architecture_question
+  - attempts_made
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  decision_first: true
+  avoid_exploration_drift: true
+  build_mode_speed_bias: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: bloqueio + decisão + motivo
+  artifacts: explanation, options_with_tradeoffs, recommended_path, next_handoff_payload
+  issues: ambiguity_not_resolved, insufficient_context
+  next_step: surge-core | app-factory-multiagent | ConnectPro | skill4d-core-orchestrator | user
+  confidence_score: 0.0-1.0
+
+handoff_targets:
+  - skill_name: surge-core
+    when: decisão pronta para aplicação técnica
+  - skill_name: app-factory-multiagent
+    when: arquitetura definida e pronta para construção
+  - skill_name: ConnectPro
+    when: bloqueio depende de integração, credencial ou provisioning
+  - skill_name: skill4d-core-orchestrator
+    when: decisão altera roteamento geral do fluxo
+```
 
 ---
 
@@ -175,7 +229,7 @@ Quando engineering-mentor recebe uma escalação do surge-core:
    {
      "decision": "o que foi decidido",
      "rationale": "por que",
-     "next_skill": "surge-core | app-factory | ConnectPro",
+     "next_skill": "surge-core | app-factory-multiagent | ConnectPro",
      "payload": "o que passar para a próxima skill"
    }
 ```
@@ -190,102 +244,17 @@ Cada escalação deve ser resolvida em no máximo 1 rodada de análise.
 Engineering-mentor pode rodar em paralelo com outras skills quando:
 - O orquestrador precisar de uma decisão arquitetural enquanto ConnectPro resolve credenciais
 - Houver uma questão de design que não bloqueia a construção imediatamente
-- O usuário pedir orientação enquanto app-factory está buildando
+- O usuário pedir orientação enquanto app-factory-multiagent está buildando
 
 Sinal ao orquestrador: `"parallel_safe": true` no output quando a análise não bloqueia o fluxo principal.
 
 ---
 
-## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.7)
+## Nota de Alinhamento com o Skill Contract
 
-```yaml
-name: engineering-mentor
-role: inteligência e desbloqueio
-objective: explicar, orientar decisões arquiteturais e desbloquear o fluxo quando a execução fica ambígua ou requer escolha técnica
+O bloco `Contract Snapshot` acima é a fonte principal desta skill. O ecossistema deve preservar:
 
-activation_rules:
-  - rule: ambiguidade conceitual ou decisão arquitetural bloqueia o avanço do fluxo
-    priority: high
-  - rule: surge-core escalou falha que requer decisão especialista ou humana
-    priority: high
-  - rule: usuário pede orientação de design de sistemas, stack, arquitetura ou refatoração
-    priority: high
-  - rule: usuário ativa BUILD MODE para implementação com velocidade máxima
-    priority: medium
-  - rule: há debugging, mentoria ou escolha técnica sendo solicitados
-    priority: medium
-
-minimum_inputs:
-  - name: current_context
-    type: string | object
-    required: true
-    description: contexto atual do fluxo — o que está sendo feito, qual o bloqueio ou decisão necessária
-
-optional_inputs:
-  - name: issue_report
-    type: object
-    required: false
-    description: relatório de falha do surge-core para análise e diagnóstico
-  - name: architecture_question
-    type: string
-    required: false
-    description: pergunta específica de arquitetura a responder
-
-execution_policy:
-  ask_minimum: true
-  preserve_context: true
-  prefer_partial_delivery: true
-  auto_observe_if_possible: true
-  call_preview_if_visual: false
-  call_surge_if_execution_occurs: false
-
-output_schema:
-  status: success | partial | blocked | failed
-  summary: string
-  artifacts:
-    - explanation
-    - decision_options
-    - recommended_path
-    - code_examples
-  issues:
-    - ambiguity_not_resolved
-    - insufficient_context
-  next_step: string
-  confidence_score: number
-
-failure_policy:
-  recoverable: true
-  ask_user_only_if_blocked: true
-  must_explain_blocker: true
-  must_propose_next_action: true
-
-handoff_targets:
-  - skill_name: dummy-memory
-    when: após tomar qualquer decisão arquitetural
-    payload: decision_title, decision, reason, alternatives_discarded, valid_while
-  - skill_name: surge-core
-    when: diagnóstico concluído e patch pode ser aplicado automaticamente
-    payload: root_cause, recommended_fix
-  - skill_name: skill4d-core-orchestrator
-    when: decisão arquitetural impactar o fluxo de roteamento geral
-    payload: architectural_decision, impact_on_flow
-  - skill_name: app-factory-multiagent
-    when: houver direção arquitetural clara para construção robusta
-    payload: architecture_blueprint, tech_decisions
-
-success_criteria:
-  - ambiguidade ou bloqueio resolvido com recomendação clara e acionável
-  - opções apresentadas com trade-offs objetivos quando houver alternativas
-  - próxima ação do fluxo definida sem deixar o sistema suspenso
-  - decisão registrada no handoff para preservação de contexto
-
-observability_signals:
-  - signal: reasoning_layer_activated
-    description: camada de raciocínio ativada (STRATEGIST/ARCHITECT/BUILDER/DEBUGGER/REFACTORER)
-  - signal: decision_made
-    description: decisão arquitetural tomada com confiança >= 0.7
-  - signal: escalation_back
-    description: decisão impacta roteamento geral — retornando ao orquestrador
-  - signal: unresolved_ambiguity
-    description: ambiguidade não resolvida — solicitando mais contexto ao usuário
-```
+- ativação por ambiguidade técnica real, não por exploração genérica
+- decisão clara com trade-offs objetivos e próximo passo explícito
+- handoff preciso para `surge-core`, `app-factory-multiagent`, `ConnectPro` ou orquestrador
+- resposta enxuta em BUILD MODE, com prioridade para desbloquear execução

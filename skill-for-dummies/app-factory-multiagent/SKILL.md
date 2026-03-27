@@ -1,6 +1,6 @@
 ---
 name: app-factory-multiagent
-description: Use when a user wants to build a full application with a coordinated multi-agent factory that preserves a fixed web, mobile, backend, auth, and database contract instead of a generic one-agent scaffold.
+description: "Use when a user needs a full application built with a coordinated multi-agent factory that enforces fixed contracts for web, mobile, backend, auth, and database instead of a loose single-agent scaffold."
 ---
 
 # App Factory Multiagent
@@ -12,6 +12,58 @@ Reproduce the engineering model of the Anything builder, not just its output sty
 This skill is for building real apps with an opinionated factory. It is not for vague brainstorming, tiny one-file tools, or free-form scaffolding.
 
 **Required process:** if the request has not already been designed and approved, use `brainstorming` first. After the design is approved, use `writing-plans` before implementation.
+
+**D.U.M.M.Y. OS EXCEPTION:** When called by `skill4d-core-orchestrator` or when the user's intent is already clear from context, **skip brainstorming and writing-plans** — proceed directly to implementation. The OS already handled intent classification upstream. Minimum friction is the rule.
+
+## Contract Snapshot
+
+```yaml
+name: app-factory-multiagent
+role: construção robusta
+objective: construir app completo, integrado e revisado em loop até PASS com contratos fixos
+
+activation_rules:
+  - rule: pedido exige web + backend + auth + banco, com ou sem mobile
+    priority: high
+  - rule: scaffold genérico de um agente não atende rigor de entrega
+    priority: high
+  - rule: usuário quer fidelidade ao modelo Anything-style factory
+    priority: medium
+
+minimum_inputs:
+  - product_brief
+
+optional_inputs:
+  - factory_mode
+  - integration_context
+  - design_contract
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: false
+  architecture_before_build: true
+  review_loop_until_pass_or_escalation: true
+  no_placeholders_or_pseudocode: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: stack + escopo entregue + status de QA
+  artifacts: repo_structure, file_contract, generated_modules, crud_contracts, qa_status
+  issues: unresolved_dependencies, architecture_conflicts, quality_gaps, failed_review_pass
+  next_step: preview-bridge | surge-core | ConnectPro | engineering-mentor | user
+  confidence_score: 0.0-1.0
+
+handoff_targets:
+  - skill_name: preview-bridge
+    when: build gerado e pronto para validação visual
+  - skill_name: surge-core
+    when: execução produzir erro observável no build/runtime
+  - skill_name: ConnectPro
+    when: integração externa bloquear progresso
+  - skill_name: engineering-mentor
+    when: decisão arquitetural ambígua impedir continuidade
+```
 
 ## When to Use
 
@@ -119,4 +171,27 @@ Do not allow "first pass is good enough" rationalization. The review loop is par
 
 ## Baseline Reminder
 
-The old `criador-de-apps` skill is not enough for this use case. It is generic, single-agent, and does not preserve the runtime, template, prompt, or review discipline of the Anything builder. Use this skill when fidelity to that model matters.
+Use this skill when fidelity to the Anything builder model matters — opinionated factory, fixed contracts, multi-agent specialization, and review loop until PASS.
+
+---
+
+## Interface CLI Esperada (opcional para conectores)
+
+Se o ambiente expuser um wrapper CLI para esta skill, o contrato recomendado pode ser:
+
+```bash
+app-factory --brief path/to/brief.json --stack "nextjs+expo+supabase" --complexity medium --json
+```
+
+Essa interface é opcional e não deve ser tratada como pré-requisito da skill.
+
+---
+
+## Nota de Alinhamento com o Skill Contract
+
+O bloco `Contract Snapshot` acima é a fonte principal desta skill. O ecossistema deve manter:
+
+- arquitetura e contrato de arquivos definidos antes do build
+- implementação paralela por builders especializados
+- loop de revisão-correção até PASS ou escalonamento explícito
+- handoffs claros para `preview-bridge`, `surge-core`, `ConnectPro` e `engineering-mentor`

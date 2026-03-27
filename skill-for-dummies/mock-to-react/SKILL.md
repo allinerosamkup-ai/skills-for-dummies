@@ -1,12 +1,75 @@
 ---
 name: mock-to-react
-description: "Converte mocks visuais (HTML ou imagem) em componentes React pixel-perfect usando sistema multiagente com 6 agentes especializados. Use quando o usuario mostrar um mockup, design, screenshot, wireframe, imagem ou HTML e quiser gerar codigo React/Next.js com Tailwind CSS fiel ao visual. Busca automaticamente pacotes NPM relevantes, icones de 5+ bibliotecas e componentes similares no GitHub. Triggers: converta esse design, gere o codigo desse mockup, transforme essa imagem em React, pixel-perfect, codigo igual ao design, clone esse layout, copie esse visual, mock to code, gerar componente, replicar interface."
+description: "Use when a user needs to clone a visual mock (image, screenshot, HTML, wireframe) into React with pixel-perfect fidelity as the primary objective. Use creative visual direction only as a secondary mode when no visual reference is provided."
 ---
 
-# Mock-to-React: Design Visual para Codigo
+# Mock-to-React: Conversor Pixel-Perfect + Direção Criativa Secundária
 
-Sistema multiagente (V2 + V3) que converte qualquer mock visual em componentes React pixel-perfect.
-Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
+**Dois papéis, prioridade fixa:**
+- **Coração imutável (sempre prioritário):** converter qualquer mock/imagem em React pixel-perfect (98% similarity) — esta função JAMAIS muda
+- **Papel secundário:** direção visual criativa somente quando não há referência visual de entrada
+
+Sistema multiagente (V2 + V3). Aceita HTML ou imagem como input. Usa 6 agentes especializados + loop de iteracao automatico.
+
+---
+
+## ⚠️ REGRA DE OURO — COPY MODE (imagem presente)
+
+**Quando o usuário fornece uma imagem, a imagem É A ESPECIFICAÇÃO. Não é inspiração. Não é sugestão.**
+
+```
+OBRIGATÓRIO:
+✓ Replicar TODOS os elementos visíveis — nenhum pode ser omitido
+✓ Preservar cores, tipografia, espaçamentos, posicionamentos exatos
+✓ Pesquisa web APENAS para encontrar npm/icons que implementem o que está na imagem
+✓ Se elemento não é possível replicar → informar ao usuário, nunca substituir por alternativa
+
+PROIBIDO:
+✗ Buscar "designs alternativos" ou "inspirações"
+✗ Simplificar, interpretar ou "melhorar" o design
+✗ Substituir qualquer elemento por alternativa criativa
+✗ Buscar tendências de mercado ou referências externas ao design
+✗ Pesquisar web com intenção criativa — SOMENTE para implementação técnica
+```
+
+**O resultado deve ser indistinguível da imagem original.**
+
+---
+
+## 📢 PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada etapa do pipeline, reportar progresso em tempo real:
+
+```
+[mock-to-react] Passo 1/9: Análise visual — detectando tipo de input ⚙️
+[mock-to-react] Passo 1/9: ✓ {resultado resumido}
+[mock-to-react] Passo 2/9: Análise técnica profunda ⚙️
+[mock-to-react] Passo 2/9: ✓ {resultado resumido}
+...
+[mock-to-react] Passo 9/9: ✓ Similaridade: {X}% — concluído
+```
+
+Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
+
+---
+
+## Modos de Operação
+
+### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
+**Este é o coração da skill. Prioridade máxima. Nunca dilui ou remove.**
+Replica fielmente qualquer visual fornecido em React pixel-perfect.
+Quando existe referência visual, este modo é obrigatório e exclusivo.
+→ Ver **Fluxo de 9 Etapas** abaixo.
+
+### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
+Atua como diretor visual do projeto:
+1. **Pesquisa de Referências** — busca inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
+2. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
+3. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — justificando cada escolha com base em referências encontradas
+4. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
+5. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+
+**Output do Modo Criativo:** design-tokens.json gerado pela direção + componentes React construídos sobre ele
 
 ## Stack Padrao
 
@@ -23,7 +86,7 @@ Fluxo principal de 9 etapas focado exclusivamente em Front-end. A skill atua com
 ### 🌐 MODO ORQUESTRACAO (Arquitetura & Delegaçao)
 Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usuario pedir para "criar o projeto todo", a skill NÃO escreve o backend, mas atua como Despachante:
 1. **Deduçao de Contrato**: Analisa a imagem e gera um `api-contract.json` (quais entidades e rotas o frontend precisara).
-2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills competentes em Backend (`criador-de-apps`, `app-factory-multiagent`).
+2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills de execução completa (`app-factory-multiagent`) e integrações (`ConnectPro`) quando necessário.
 3. **Consonancia**: O React gerado foca em consumir esse contrato futuro, com estados de loading, fetch simulados ou reais, e formulários completamente "cabeados".
 
 ## Fluxo de 9 Etapas
@@ -73,12 +136,20 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Usar a auto-descricao (Etapa 1b) como contexto adicional para guiar a analise
 - Output: objeto `mockAnalysis` com structure, typography, colors, spacing, effects, icons
 
+**ETAPA 3 -- VisionAgent: Analise de layout e grid**
+- Mapear a estrutura de layout: grid/flex/absolute, colunas, linhas, areas
+- Identificar hierarquia de componentes: header, sidebar, main, footer, cards, modais
+- Gerar mapa de componentes com dimensoes relativas e absolutas
+- Definir breakpoints responsivos baseados na analise visual
+- Output: `layoutMap` com component_tree, grid_definition, responsive_breakpoints
+
 **ETAPA 4 -- ResourceAgent: Buscar pacotes NPM**
 - API: `https://registry.npmjs.com/-/v1/search?text={query}&size=10`
 - Gerar queries a partir da auto-descricao (ex: "card component react", "shadow react")
 - Incluir queries para elementos decorativos do inventario (ex: "svg pattern react", "emoji picker react", "gradient animation react")
 - Classificar pacotes por tipo: UI_COMPONENT, ICON_LIBRARY, STYLING, FORM, TABLE, ANIMATION, DECORATIVE
 - Ranquear por relevancia (score NPM x match de descricao)
+- ⚠️ COPY MODE: buscar pacotes para IMPLEMENTAR o que está na imagem — não para substituir o design por alternativas
 
 **ETAPA 5 -- ResourceAgent: Buscar icones**
 - Bibliotecas: tabler-icons (850), simple-icons (1500), heroicons (400), feather (286), bootstrap-icons (2000)
@@ -95,6 +166,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Extrair codigo dos top 5 repos (via `/repos/{owner}/{repo}/contents/{path}`)
 - Analisar estrutura: hooks, imports, exports, props, styling method, design patterns
 - Ranquear por qualidade (stars 40% + watchers 30% + forks 30%)
+- ⚠️ COPY MODE: buscar componentes que se pareçam com o elemento da imagem para referência técnica — não alternativas criativas ao design
 
 **ETAPA 8 -- CodeAgent: Gerar componente**
 - Contexto combinado: auto-descricao + design-tokens.json + mockAnalysis + packages + icons + exemplos GitHub
@@ -151,7 +223,7 @@ REGRAS DA ESTRUTURA:
       senao:
         FixerAgent.aplicarCorrecoes(codigo, diffs)
 
-**ETAPA 8 -- Output final**
+**ETAPA 10 -- Output final**
 Ver formato completo em `references/output-format.md`
 - JSON com similarity %, quality metrics por dimensao, codigo final, referencias usadas
 - Screenshots: mock original, cada iteracao, comparacao final (diff visual)
@@ -161,3 +233,121 @@ Ver formato completo em `references/output-format.md`
 - `references/agents.md` -- codigo completo dos 6 agentes (VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent) + orquestradores V2 e V3
 - `references/vision-prompts.md` -- 4 prompts especializados para analise pixel-perfect via Claude Vision
 - `references/output-format.md` -- estrutura JSON completa do output + quality metrics + sugestoes de melhoria
+
+---
+
+## Contrato (Skill4Dummies SKILL_CONTRACT.md §7.2)
+
+```yaml
+name: mock-to-react
+role: diretor visual criativo + conversor pixel-perfect
+objective: |
+  MODO CÓPIA: converter imagem/mock em React pixel-perfect (98% similarity) — coração imutável da skill.
+  MODO CRIATIVO: quando não há imagem, atuar como diretor visual — buscar referências, tendências, trazer direção original.
+
+activation_rules:
+  - rule: usuário mostra imagem, screenshot, wireframe ou mockup
+    priority: critical
+    mode: CÓPIA
+  - rule: usuário pede "converta esse design", "gere o código desse mockup", "transforme em React"
+    priority: high
+    mode: CÓPIA
+  - rule: usuário quer replicar, clonar ou copiar um layout visual existente
+    priority: high
+    mode: CÓPIA
+  - rule: orquestrador identifica input visual como ponto de entrada do fluxo
+    priority: high
+    mode: CÓPIA
+  - rule: usuário pede "design moderno", "referências visuais", "como está o mercado de UI", "me inspira", "cria do zero"
+    priority: high
+    mode: CRIATIVO
+  - rule: pedido de interface sem referência visual fornecida
+    priority: medium
+    mode: CRIATIVO
+
+minimum_inputs:
+  - name: visual_input
+    type: file | string
+    required: false
+    description: imagem (PNG/JPG/WebP) ou HTML — obrigatório no MODO CÓPIA, opcional no MODO CRIATIVO
+
+optional_inputs:
+  - name: target_framework
+    type: string
+    required: false
+    description: framework alvo (padrão React/Tailwind; aceita Vue, HTML/CSS)
+  - name: design_system
+    type: string
+    required: false
+    description: design system existente no projeto (shadcn, MUI, etc.)
+  - name: backend_contract
+    type: object
+    required: false
+    description: contrato de API já definido para cabear o frontend gerado
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  auto_observe_if_possible: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: string
+  artifacts:
+    - ui_code
+    - design_tokens
+    - tailwind_config
+    - assets_needed
+  issues:
+    - missing_visual_context
+    - mismatch_risk
+    - incomplete_elements
+  next_step: string
+  confidence_score: number
+
+failure_policy:
+  recoverable: true
+  ask_user_only_if_blocked: true
+  must_explain_blocker: true
+  must_propose_next_action: true
+
+handoff_targets:
+  - skill_name: preview-bridge
+    when: componente React gerado e pronto para visualização
+    payload: generated_code, project_path
+  - skill_name: surge-core
+    when: resultado visual divergir do mock original após iteração
+    payload: comparison_result, diff_analysis
+  - skill_name: app-factory-multiagent
+    when: interface precisa virar app completo com backend
+    payload: ui_code, api_contract
+
+success_criteria:
+  modo_copia:
+    - componente gerado cobre 100% dos elementos do inventário visual
+    - similaridade com o mock original >= 98%
+    - todos os elementos interativos possuem handlers implementados (sem funções vazias)
+    - design tokens extraídos e aplicados corretamente
+    - código pronto para uso em projeto real sem modificações manuais
+  modo_criativo:
+    - referências reais buscadas e apresentadas ao usuário
+    - direção visual justificada com base em tendências de mercado
+    - design-tokens.json gerado antes de codificar
+    - aprovação do usuário obtida antes da construção
+    - componente final alinhado com a direção aprovada
+
+observability_signals:
+  - signal: vision_analysis_complete
+    description: mock analisado e descrição estruturada gerada
+  - signal: design_tokens_extracted
+    description: tokens de cor, tipografia e espaçamento extraídos
+  - signal: component_generated
+    description: componente React gerado com estrutura completa
+  - signal: similarity_threshold_reached
+    description: similaridade >= 98% atingida após iterações
+  - signal: mismatch_detected
+    description: divergência visual detectada — escalando para surge-core
+```

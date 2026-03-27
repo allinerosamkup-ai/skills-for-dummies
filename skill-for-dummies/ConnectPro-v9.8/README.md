@@ -1,7 +1,10 @@
-# ConnectPro v9.8 — Integration Maestro (Skill 6 do Tresformar)
+# ConnectPro package v9.8 — runtime bundle, skill contract v3.2
 
 Skill multi-agente oficial do Super App Tresformar.
 Alinhada 100% com o pitch (MCP + Coordination Protocol + SURGE).
+
+Nota: a especificação comportamental canônica desta skill está em [`SKILL.md`](./SKILL.md).
+Este `README.md` descreve o pacote/runtime desta pasta, não substitui o contrato da skill.
 
 Rodar:
 npm install

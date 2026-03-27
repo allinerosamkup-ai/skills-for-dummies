@@ -1,7 +1,7 @@
 import fs from 'fs-extra'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { detectInstalledTools, getSkillsDir } from './detect.js'
+import { AI_TOOLS, detectInstalledTools, getSkillsDir } from './detect.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SKILLS_SOURCE = join(__dirname, '..', '..') // repo root
@@ -17,8 +17,19 @@ const SKILLS = [
   'engineering-mentor'
 ]
 
+function getRequestedTools(toolId) {
+  if (!toolId) return detectInstalledTools()
+
+  if (!AI_TOOLS[toolId]) {
+    return { error: `Unknown tool "${toolId}". Supported: ${Object.keys(AI_TOOLS).join(', ')}` }
+  }
+
+  return [{ id: toolId, ...AI_TOOLS[toolId] }]
+}
+
 export async function install(toolId, { force = false } = {}) {
-  const tools = toolId ? [{ id: toolId }] : detectInstalledTools()
+  const tools = getRequestedTools(toolId)
+  if (tools.error) return { success: false, error: tools.error }
 
   if (tools.length === 0) {
     return { success: false, error: 'No supported AI tools detected (Claude Code, Cursor, Windsurf)' }
@@ -63,7 +74,8 @@ export async function install(toolId, { force = false } = {}) {
 }
 
 export async function uninstall(toolId) {
-  const tools = toolId ? [{ id: toolId }] : detectInstalledTools()
+  const tools = getRequestedTools(toolId)
+  if (tools.error) return { success: false, error: tools.error }
   const results = []
 
   for (const tool of tools) {
@@ -85,7 +97,8 @@ export async function uninstall(toolId) {
 }
 
 export async function listInstalled(toolId) {
-  const tools = toolId ? [{ id: toolId }] : detectInstalledTools()
+  const tools = getRequestedTools(toolId)
+  if (tools.error) throw new Error(tools.error)
   const results = []
 
   for (const tool of tools) {
