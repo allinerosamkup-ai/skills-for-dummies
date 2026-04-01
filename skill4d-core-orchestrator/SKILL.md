@@ -13,6 +13,34 @@ ONE-SHOT é a lei. Status line é REGRA #1. (Definições em CLAUDE.md — não 
 
 ---
 
+## FASE 0 — PROMPT OPTIMIZER (executa antes de absolutamente tudo)
+
+**Toda entrada do usuário passa por aqui primeiro. Sem exceção. Sem trigger. Não importa o que foi digitado.**
+
+Antes de verificar imagem, antes de rotear, antes de chamar qualquer skill:
+transformar o input bruto no prompt mais claro e estruturado possível.
+
+### Regras:
+1. **Preservar intenção 100%** — nunca mudar o que o usuário quer, só clarificar como
+2. **Completar contexto implícito** → "faz igual ao de antes" vira "replicar o componente X com as mesmas especificações"
+3. **Tornar ambiguidades explícitas** com a interpretação mais provável dado o contexto do projeto
+4. **Estruturar em 4 dimensões:** Objetivo + Contexto + Restrições + Output esperado
+5. **Se a entrada já for clara** → passar direto sem modificar
+
+### Output interno (não mostrar ao usuário):
+```
+[orchestrator] Fase 0 ✓
+Objetivo: {o que o usuário quer alcançar}
+Contexto: {projeto atual, estado, histórico relevante}
+Restrições: {limitações identificadas — stack, tempo, estilo, etc.}
+Output: {formato ou resultado esperado}
+```
+
+Este prompt estruturado é o que alimenta **todas as skills** — engineering-mentor, mock-to-react, ConnectPro, app-factory, surge-core.
+A distribuição para a skill correta acontece **depois** da Fase 0, nunca antes.
+
+---
+
 ## Contract Snapshot
 
 ```yaml
