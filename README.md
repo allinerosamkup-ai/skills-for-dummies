@@ -119,6 +119,36 @@ This repository currently contains both the authoring source and distribution-or
 
 ---
 
+## What's new in v2.3
+
+### Fase 0 — Prompt Optimizer (universal)
+Every input you send — no trigger word, no exception — is automatically refined into a structured prompt before reaching any skill. Natural language, typos, fragments: all converted to `[Objective + Context + Constraints + Expected Output]` internally. You see only the result. Every skill downstream gets a better input.
+
+### Anti-Vibe Coding — Structured Development Methodology
+engineering-mentor now enforces a 4-phase methodology that prevents improvised, duplicated, or context-losing code:
+
+| Command | What it does |
+|---------|-------------|
+| `/spec` | Generates `spec.md` — pages, components inventory, behavior dictionary. Waits for approval. |
+| `/break` | Decomposes spec into atomic issues (1 page = 1 issue, 1 behavior = 1 issue). Saves to `.dummy/issues/`. Phase 1 = visual prototype, Phase 2 = logic. |
+| `/plan` | Per-issue plan: greps existing codebase for reuse, lists exact files to touch. Files not on the list are off-limits during execute. |
+| `/execute` | Implements: thin client/fat server + modularization by behavior. Consults `/references/architecture.md` when available. |
+
+### Global Observability — Feedback Protocol
+Every skill now reports its execution in real time:
+```
+[skill-name] starting — {mission}
+[skill-name] step N/total: {what it's doing} ⚙️
+[skill-name] step N/total: ✓ {result}
+[skill-name] ✓ done — {delivery}
+```
+You always see what's running, what passed, and what escalated.
+
+### dummy-memory — MODO DREAM
+Automatic memory consolidation that runs in the background. Prevents memory rot: detects contradictory entries, outdated decisions, and duplicate notes. Trims each memory file to a readable maximum. Triggered automatically after 5+ sessions or manually with `dummy dream`.
+
+---
+
 ## What's new in v2.2
 
 ### Session persistence — hook system
