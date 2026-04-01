@@ -169,6 +169,21 @@ Do not allow "first pass is good enough" rationalization. The review loop is par
 | "Review means quick polish" | Review means contract verification. |
 | "One review pass is enough" | Loop through fix packets until PASS or explicit escalation. |
 
+## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada etapa do workflow, reportar em tempo real:
+
+```
+[app-factory] iniciando — {stack + escopo recebido}
+[app-factory] passo {N}/11: {papel ativo} — {o que está fazendo} ⚙️
+[app-factory] passo {N}/11: ✓ {resultado}
+[app-factory] review loop {N}: {pass/fail — razão}
+[app-factory] ✓ concluído — build passou QA | entregando para preview-bridge
+[app-factory] ✗ bloqueado em passo {N} — {motivo} → escalando para {skill}
+```
+
+---
+
 ## Baseline Reminder
 
 Use this skill when fidelity to the Anything builder model matters — opinionated factory, fixed contracts, multi-agent specialization, and review loop until PASS.

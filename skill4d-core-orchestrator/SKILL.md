@@ -229,6 +229,24 @@ surge-core (ativa imediatamente, sem passar pelo orchestrator)
 engineering-mentor (parallel_safe — não bloqueia construção em andamento)
 ```
 
+### Tipo H — Desenvolvimento Estruturado (Anti-Vibe Coding)
+
+Triggers: `/spec`, `/break`, `/plan`, `/execute`, "cria um app do zero", "preciso de um blueprint", "quero estruturar antes de codar"
+
+```
+engineering-mentor MODO ESTRUTURADO
+
+Fluxo obrigatório:
+  /spec  → gera spec.md → aguarda aprovação do usuário
+  /break → decompõe em issues (.dummy/issues/)
+  /plan  → plano por issue (grep interno + lista de arquivos exatos)
+  /execute → implementa (thin client/fat server + modularização por comportamento)
+
+Regra: não pular fases. /execute nunca acontece antes de /plan.
+```
+
+---
+
 ### Tipo G — Automação / Workflow ("crie uma automação que X", "toda vez que Y")
 
 ```

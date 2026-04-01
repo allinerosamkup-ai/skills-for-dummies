@@ -33,6 +33,21 @@ orchestrator → ConnectPro
 
 ---
 
+## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada integração, reportar em tempo real:
+
+```
+[ConnectPro] iniciando — {serviços detectados: Supabase, Stripe, ...}
+[ConnectPro] {serviço}: tentando {modo} ⚙️
+[ConnectPro] {serviço}: ✓ {modo usado} — vars injetadas: {lista}
+[ConnectPro] {serviço}: ✗ {modo} falhou — tentando próximo modo ⚙️
+[ConnectPro] ✓ concluído — {N} serviços resolvidos | .env.local pronto | entregando para app-factory
+[ConnectPro] ✗ bloqueado — {serviço} requer ação manual: {instrução}
+```
+
+---
+
 ## REGRAS FUNDAMENTAIS
 
 1. **Nunca entregar `.env.example` quando pode entregar `.env.local` com valores reais.**

@@ -74,6 +74,22 @@ handoff_targets:
 
 ---
 
+## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada ativação, reportar em tempo real:
+
+```
+[surge-core] ativado — sinal detectado: {tipo de erro/sinal}
+[surge-core] diagnóstico {N}/3: {o que está analisando} ⚙️
+[surge-core] diagnóstico {N}/3: ✓ causa raiz — {diagnóstico em 1 linha}
+[surge-core] correção {N}/3: aplicando fix em {arquivo} ⚙️
+[surge-core] correção {N}/3: ✓ verificado — {resultado}
+[surge-core] ✓ resolvido — {causa} corrigida | padrão salvo em snippets.md
+[surge-core] ✗ esgotado (3 tentativas) — escalando para {skill}: {motivo}
+```
+
+---
+
 ## Regras Fundamentais
 
 1. **Nunca ignore um erro silenciosamente.** Se há sinal de falha — 500, branco, console error,

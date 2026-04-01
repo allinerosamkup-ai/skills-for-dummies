@@ -55,6 +55,115 @@ When the user says "BUILD MODE": prioritize speed and experimentation. Minimal e
 
 ---
 
+## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada ativação, reportar em tempo real:
+
+```
+[engineering-mentor] iniciando — {missão recebida}
+[engineering-mentor] {etapa}: {o que está analisando} ⚙️
+[engineering-mentor] {etapa}: ✓ {decisão ou resultado}
+[engineering-mentor] ✓ concluído — {entrega + próxima skill}
+[engineering-mentor] ✗ falhou — {motivo} → escalando para {skill}
+```
+
+Nunca executar silenciosamente. O usuário precisa ver cada etapa.
+
+---
+
+## MODO ESTRUTURADO — Anti-Vibe Coding
+
+Metodologia obrigatória para qualquer projeto novo. Ativa automaticamente quando o usuário usa `/spec`, `/break`, `/plan`, `/execute`, ou quando o pedido é um novo app/feature sem spec definida.
+
+**Fluxo:** `/spec` → usuário aprova → `/break` → `/plan` por issue → `/execute`
+
+---
+
+### `/spec` — Especificação Técnica
+
+Gerar `spec.md` na raiz do projeto com:
+
+```markdown
+## Descrição Técnica
+{propósito técnico do projeto em 2-3 linhas}
+
+## Páginas
+- {Nome da página}: {propósito}
+- ...
+
+## Componentes por Página
+### {Página}
+- {ComponenteA}: {função visual e interativa}
+- {ComponenteB}: ...
+
+## Dicionário de Comportamentos
+- {Comportamento}: {ação que o usuário pode realizar}
+- ...
+```
+
+**Regra:** Não prosseguir para `/break` sem aprovação explícita do usuário.
+
+```
+[engineering-mentor] /spec — gerando blueprint do projeto ⚙️
+[engineering-mentor] /spec ✓ — spec.md criado. Aguardando aprovação antes de /break.
+```
+
+---
+
+### `/break` — Decomposição em Issues Atômicas
+
+Pega o `spec.md` aprovado e fragmenta em issues salvas em `.dummy/issues/`:
+
+**Regras de quebra:**
+- Cada página → 1 issue (`page-{nome}.md`)
+- Cada comportamento → 1 issue separada (`behavior-{nome}.md`)
+
+**Priorização cronológica:**
+- **Fase 1:** protótipo visual — front-end estático para validação de UI
+- **Fase 2:** lógica funcional — implementação após UI aprovada
+
+```
+[engineering-mentor] /break — decompondo spec em issues atômicas ⚙️
+[engineering-mentor] /break ✓ — {N} issues criadas em .dummy/issues/ | Fase 1: {X} UI | Fase 2: {Y} lógica
+```
+
+---
+
+### `/plan` — Plano de Implementação por Issue
+
+Para cada issue, antes de qualquer código:
+
+1. **Busca interna:** `grep` no codebase para funções/componentes reutilizáveis → não duplicar
+2. **Busca externa:** docs de dependências relevantes quando necessário
+3. Definir: **Caminho Feliz** + **Edge Cases** + **Cenários de Erro**
+4. Listar tabelas e colunas de banco a criar ou alterar
+5. Listar **exatamente** quais arquivos serão tocados
+
+**Regra crítica:** arquivos fora da lista são **proibidos** de ser modificados durante o `/execute`.
+
+```
+[engineering-mentor] /plan — {issue-name} — buscando reutilizáveis no codebase ⚙️
+[engineering-mentor] /plan ✓ — {N} arquivos listados | reutilizando: {componentes} | novos: {arquivos}
+```
+
+---
+
+### `/execute` — Execução Especializada
+
+Princípios obrigatórios para toda implementação:
+
+- **Thin Client, Fat Server:** o frontend só captura e envia intenções — regras de negócio, validações e API keys ficam no backend
+- **Modularização por Comportamento:** código organizado em pastas por funcionalidade — alteração em um comportamento não quebra outro
+- Consultar `/references/architecture.md` e `/references/design-system.md` se existirem no projeto
+- Agentes especializados: `model-writer` (DB/schema), `component-writer` (UI), nunca um agente faz tudo
+
+```
+[engineering-mentor] /execute — {issue-name} — iniciando implementação ⚙️
+[engineering-mentor] /execute ✓ — {issue-name} entregue | arquivos: {lista} | próxima issue: {nome}
+```
+
+---
+
 ## Contract Snapshot
 
 ```yaml
