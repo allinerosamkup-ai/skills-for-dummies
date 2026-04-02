@@ -90,6 +90,23 @@ observability_signals:
 
 ---
 
+## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
+
+A cada etapa, reportar em tempo real:
+
+```
+[preview-bridge] iniciando — detectando framework em {projeto} ⚙️
+[preview-bridge] passo 1/6: framework detectado — {Next.js | React | Vue | ...}
+[preview-bridge] passo 2/6: .env verificado — {ok | placeholder criado}
+[preview-bridge] passo 3/6: dependências — {ok | instalando npm...} ⚙️
+[preview-bridge] passo 4/6: launch.json configurado ✓
+[preview-bridge] passo 5/6: iniciando servidor na porta {N} ⚙️
+[preview-bridge] passo 6/6: ✓ preview ao vivo — {URL}
+[preview-bridge] ✗ bloqueado em passo {N} — {motivo} → escalando para surge-core
+```
+
+---
+
 ## Regra Fundamental
 
 **Nunca peça para o usuário verificar manualmente.** Se algo bloquear o preview, resolva antes de

@@ -163,6 +163,11 @@ Todo output com interface visual passa por ele — seja copiando um mock ou cria
 - "design moderno", "algo bonito", "visual clean", "me inspira"
 - Qualquer app/projeto com UI onde o usuário não forneceu referência visual
 
+**Design system nomeado (empresa/estilo mencionado):**
+- "no estilo Notion", "como o Vercel", "igual ao Stripe", "inspirado no Linear", "estilo Apple"
+→ mock-to-react CRIATIVO + buscar DESIGN.md em https://github.com/allinerosamkup-ai/awesome-design-md
+→ Reportar: `[orchestrator] estilo {empresa} → mock-to-react CRIATIVO + awesome-design-md/{empresa}`
+
 **Fluxos:**
 ```
 Com imagem:    mock-to-react (CÓPIA) → preview-bridge → surge-core

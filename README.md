@@ -187,6 +187,17 @@ Skill files cut by ~50%: orchestrator 321→161 lines, dummy-memory 272→139 li
 
 ---
 
+## Ecosystem
+
+D.U.M.M.Y. OS integrates with two companion repositories:
+
+| Repo | Role | Used by |
+|------|------|---------|
+| **[awesome-design-md](https://github.com/allinerosamkup-ai/awesome-design-md)** | 55 DESIGN.md files from real companies (Vercel, Stripe, Notion, Apple, etc.) with full color palettes, typography, and component patterns | mock-to-react CREATIVE MODE — referenced automatically when a design style is named |
+| **[oh-my-codex](https://github.com/allinerosamkup-ai/oh-my-codex)** | Workflow layer for Codex CLI — source of `$deep-interview` (Socratic spec questioning) and `$tdd` patterns adopted by engineering-mentor | engineering-mentor `/spec` + test-driven mode |
+
+---
+
 ## Browser Automation — dev-browser
 
 ConnectPro now uses an internal browser engine first (`connectpro-browser`) and keeps **[dev-browser](https://github.com/SawyerHood/dev-browser)** as optional fallback when needed.

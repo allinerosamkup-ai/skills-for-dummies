@@ -79,6 +79,48 @@ Metodologia obrigatória para qualquer projeto novo. Ativa automaticamente quand
 
 ---
 
+### ENTREVISTA SOCRÁTICA (pré-spec)
+
+Quando o pedido for vago, novo domínio, ou o usuário não souber exatamente o que quer — rodar antes do `/spec`:
+
+```
+[engineering-mentor] /spec — pedido vago detectado → entrevista antes de gerar spec ⚙️
+
+4 perguntas máximas:
+1. Qual o problema central que esse produto resolve?
+2. Quem é o usuário primário e o que ele faz hoje sem esse produto?
+3. O que define sucesso para o MVP?
+4. Qual funcionalidade NÃO deve estar no v1?
+
+→ Com as respostas: gerar spec.md direto, sem mais perguntas.
+```
+
+Se o pedido já for claro → pular entrevista e ir direto ao `/spec`.
+
+---
+
+### `$tdd` — Test-Driven Mode
+
+Ativar com: `$tdd` ou "quero TDD" ou "testes primeiro"
+
+Quando ativo, modifica o comportamento do `/plan` e `/execute`:
+
+```
+$tdd ativo:
+  /plan inclui:
+    - Lista de testes a escrever ANTES do código
+    - Critério de "verde" para cada comportamento (o que o teste deve verificar)
+    - Ordem: teste → implementação → verde → próximo
+
+  /execute segue:
+    1. Escrever o teste que falha (red)
+    2. Implementar o mínimo para passar (green)
+    3. Refatorar se necessário (refactor)
+    4. Repetir por comportamento
+```
+
+---
+
 ### `/spec` — Especificação Técnica
 
 Gerar `spec.md` na raiz do projeto com:

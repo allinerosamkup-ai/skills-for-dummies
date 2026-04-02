@@ -63,13 +63,41 @@ Quando existe referência visual, este modo é obrigatório e exclusivo.
 
 ### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
 Atua como diretor visual do projeto:
-1. **Pesquisa de Referências** — busca inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
-2. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
-3. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — justificando cada escolha com base em referências encontradas
-4. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
-5. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+1. **Biblioteca de Design Systems** — verificar primeiro se o usuário mencionou uma empresa/estilo (Notion, Vercel, Stripe, Apple, etc.) e buscar o DESIGN.md correspondente em **awesome-design-md** (ver seção abaixo)
+2. **Pesquisa de Referências** — se não há empresa mencionada, buscar inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
+3. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
+4. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — reutilizando ao máximo do design system de referência, inventando apenas o que não está coberto
+5. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
+6. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+
+**Princípio de reaproveitamento (menos código = mais fidelidade):**
+- Paleta → usar hex do design system de referência antes de inventar cores
+- Tipografia → usar fontes documentadas no DESIGN.md antes de escolher por conta
+- Componentes → verificar padrões do design system antes de criar do zero
 
 **Output do Modo Criativo:** design-tokens.json gerado pela direção + componentes React construídos sobre ele
+
+## DESIGN SYSTEMS LIBRARY — awesome-design-md
+
+Repositório: **https://github.com/allinerosamkup-ai/awesome-design-md**
+
+Quando o usuário mencionar empresa, produto ou estilo de design, buscar o DESIGN.md correspondente antes de qualquer código. URL do arquivo raw:
+`https://raw.githubusercontent.com/allinerosamkup-ai/awesome-design-md/main/design-md/{Categoria}/{Empresa}.md`
+
+| Categoria | Empresas disponíveis |
+|-----------|---------------------|
+| AI & Machine Learning | Claude, Cohere, ElevenLabs, Mistral AI, Ollama, OpenAI, Replicate, RunwayML |
+| Developer Tools | Cursor, Expo, Linear, Lovable, PostHog, Raycast, Resend, Sentry, Supabase, Vercel, Warp, Zapier |
+| Infrastructure | ClickHouse, HashiCorp, MongoDB, Sanity, Stripe |
+| Design & Produtividade | Airtable, Cal.com, Figma, Framer, Intercom, Miro, Notion, Webflow |
+| Fintech | Coinbase, Kraken, Revolut, Wise |
+| Consumer/Enterprise | Airbnb, Apple, BMW, IBM, NVIDIA, Spotify, Uber |
+
+**Quando usar:** usuário diz "no estilo Notion", "como Vercel", "igual ao Stripe", "inspirado no Linear" → fetch do DESIGN.md antes de definir qualquer token visual.
+**O que extrair:** color palette (hex), tipografia (família + pesos), spacing scale, border-radius, shadows.
+**Informar ao usuário:** "Usando design system da [empresa] como referência."
+
+---
 
 ## Stack Padrao
 
