@@ -183,6 +183,23 @@ Para cada issue, antes de qualquer código:
 
 **Regra crítica:** arquivos fora da lista são **proibidos** de ser modificados durante o `/execute`.
 
+**Formato de output obrigatório (XML com critérios de verificação):**
+
+```xml
+<plan>
+  <name>{issue-name}</name>
+  <files>{arquivo1.js, arquivo2.jsx, ...}</files>
+  <reuse>{componentes/funções reutilizáveis encontrados via grep}</reuse>
+  <action>{o que será implementado em 1-2 linhas}</action>
+  <happy_path>{comportamento esperado no fluxo principal}</happy_path>
+  <edge_cases>{casos extremos a tratar}</edge_cases>
+  <error_scenarios>{o que pode falhar e como tratar}</error_scenarios>
+  <db_changes>{tabelas/colunas a criar ou alterar — ou "none"}</db_changes>
+  <verification>{critério objetivo: "Ao fazer X, o sistema deve Y"}</verification>
+  <completion>{estado final: o que estará em vigor quando a issue estiver done}</completion>
+</plan>
+```
+
 ```
 [engineering-mentor] /plan — {issue-name} — buscando reutilizáveis no codebase ⚙️
 [engineering-mentor] /plan ✓ — {N} arquivos listados | reutilizando: {componentes} | novos: {arquivos}

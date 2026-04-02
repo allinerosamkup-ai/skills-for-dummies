@@ -119,6 +119,66 @@ This repository currently contains both the authoring source and distribution-or
 
 ---
 
+## Platform Installation
+
+D.U.M.M.Y. OS runs on every major AI tool. Install once, works everywhere.
+
+| Platform | How to install |
+|----------|---------------|
+| **Claude Code** | `npx dummy-os install` — automatic |
+| **Cursor** | `npx dummy-os install --tool cursor` |
+| **Windsurf** | `npx dummy-os install --tool windsurf` |
+| **claude.ai (Anthropic web)** | Create a **Project** → paste `SYSTEM.md` content into Project Instructions |
+| **Codex CLI** | Add `SYSTEM.md` content to `AGENTS.md` in project root |
+| **OpenCode** | Add `SYSTEM.md` content to `AGENTS.md` |
+| **Antigravity** | Add `SYSTEM.md` content to system instructions |
+| **ChatGPT / Gemini / other** | Paste `SYSTEM.md` as system prompt |
+
+After installing, boot the OS in any session:
+```
+hi dummy
+```
+
+The OS loads your project memory and waits for your intent — no configuration needed.
+
+---
+
+## What's new in v2.4
+
+### Visual feedback protocol — all skills
+Every skill now reports execution with visible borders:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  mock-to-react
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ▶ Step 1/9  Visual analysis...
+ ✓ Step 1/9  Header + 3 cards + nav detected
+ ✓ DONE  98% similarity ▸ passing to preview-bridge
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Multiplataform — SYSTEM.md standalone
+SYSTEM.md now contains all OS laws (status line, feedback, one-shot) and platform-specific installation instructions. Works as a drop-in system prompt for any AI — not just Claude Code.
+
+### mock-to-react — MODO SCAN (autonomous project analysis)
+Point mock-to-react at a whole project and it autonomously:
+1. Scans all pages/screens
+2. Identifies UI type per screen
+3. Matches each to awesome-design-md references
+4. Presents a pre-defined suggestions menu
+5. Executes approved clones
+
+### GSD patterns absorbed
+- `modo yolo` — zero confirmations, max one-shot
+- `/next` — auto-detect current workflow phase and advance
+- XML plan format in `/plan` — with verification criteria
+- `profile-user` in dummy-memory — personalized responses
+
+### Agent SDK — Tier 2 skeleton
+`dummy-os-saas` now exposes `POST /api/agent/run` — a programmatic agent endpoint that runs the D.U.M.M.Y. OS orchestration loop via Anthropic SDK. Platform-agnostic, works in any Node.js environment.
+
+---
+
 ## What's new in v2.3
 
 ### Fase 0 — Prompt Optimizer (universal)

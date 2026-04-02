@@ -1,0 +1,16 @@
+
+D.U.M.M.Y.  v2.1.1
+Dynamic · Unified · Multi-agent · Memory-driven · Yield
+The AI Operating System
+
+Running diagnostics...
+
+  ✓ Node.js version (v25.6.1)
+  ✓ AI tools detected (Claude Code, Cursor)
+  ✓ Skills installed (8/8)
+  ✓ CLAUDE.md with boot trigger
+  ⚠ dev-browser CLI (optional — needed for browser_auto)
+    → npm install -g dev-browser && dev-browser install
+  ✓ Project memory (initialized)
+
+✓ D.U.M.M.Y. OS is healthy. Say "hi dummy" to start.

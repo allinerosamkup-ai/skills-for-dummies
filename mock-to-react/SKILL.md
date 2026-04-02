@@ -77,6 +77,68 @@ Atua como diretor visual do projeto:
 
 **Output do Modo Criativo:** design-tokens.json gerado pela direção + componentes React construídos sobre ele
 
+### 🔍 MODO SCAN (ativado quando usuário aponta um projeto inteiro)
+
+Trigger: "analisa meu projeto", "escaneia as telas", "o que posso clonar", "sugere melhorias visuais", projeto inteiro fornecido (pasta, repo, URL)
+
+```
+[mock-to-react] MODO SCAN iniciando — analisando projeto ⚙️
+```
+
+**Fluxo obrigatório:**
+
+```
+Passo 1: Detectar todas as telas/páginas
+  → Varrer pages/, screens/, routes/, app/ (Next.js/Expo/React Router)
+  → Listar cada rota com nome e propósito inferido
+
+Passo 2: Capturar ou ler cada tela
+  → Se preview ativo: screenshot de cada rota
+  → Se não: ler JSX/TSX de cada arquivo de página
+
+Passo 3: Para cada tela, classificar:
+  → Tipo de UI: dashboard | landing | auth | form | lista | detalhe | settings
+  → Design system atual: cores dominantes, fontes, componentes detectados
+
+Passo 4: Cruzar com awesome-design-md
+  → Para cada tipo de UI, sugerir 2-3 empresas da biblioteca cujo design combina
+  → Ex: dashboard → Vercel, Linear, PostHog
+  →     auth → Supabase, Notion, Stripe
+  →     settings → Linear, Raycast, Cursor
+
+Passo 5: Apresentar menu de sugestões:
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  mock-to-react  ▸  SCAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Encontrei {N} telas no projeto:
+
+ [1] /dashboard  (tipo: dashboard)
+     → sugestão: Vercel, Linear, PostHog
+ [2] /login      (tipo: auth)
+     → sugestão: Notion, Supabase, Stripe
+ [3] /settings   (tipo: settings)
+     → sugestão: Linear, Raycast, Cursor
+
+ Clonar todas? [S] ou escolher: [1] [2] [3]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+```
+Passo 6: Com aprovação → executar MODO CRIATIVO em cada tela aprovada
+  → Buscar DESIGN.md da empresa escolhida
+  → Aplicar tokens de design (paleta, tipografia, spacing)
+  → Gerar componente para cada tela no estilo escolhido
+  → Reportar progresso por tela: "Tela {N}/{total}: ✓ {nome} clonada no estilo {empresa}"
+```
+
+**Regra:** MODO SCAN não altera a lógica de negócio — apenas a camada visual.
+O pixel-perfect do MODO CÓPIA é preservado intacto; MODO SCAN opera somente sobre a camada de estilo.
+
+---
+
 ## DESIGN SYSTEMS LIBRARY — awesome-design-md
 
 Repositório: **https://github.com/allinerosamkup-ai/awesome-design-md**

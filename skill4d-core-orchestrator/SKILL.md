@@ -252,6 +252,33 @@ Regra: não pular fases. /execute nunca acontece antes de /plan.
 
 ---
 
+### Tipo I — Project Scan ("analisa meu projeto", "o que posso melhorar", "clona as telas")
+
+```
+mock-to-react MODO SCAN
+
+Trigger: usuário aponta projeto inteiro (pasta, repo, "analisa", "escaneia")
+
+1. Detectar todas as telas/páginas (pages/, screens/, routes/)
+2. Identificar tipo de UI por tela (dashboard, auth, form, lista, detalhe)
+3. Cruzar com awesome-design-md → 2-3 sugestões de referência por tela
+4. Apresentar menu visual:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  mock-to-react  ▸  SCAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Encontrei {N} telas no projeto:
+ [1] /dashboard → sugestão: Vercel, Linear
+ [2] /login     → sugestão: Notion, Supabase
+ [3] /settings  → sugestão: Linear, Raycast
+ Clonar todas? ou escolher [1,2,3]:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. Com aprovação → COPY MODE em cada tela aprovada
+```
+
+---
+
 ### Tipo G — Automação / Workflow ("crie uma automação que X", "toda vez que Y")
 
 ```
@@ -277,11 +304,16 @@ Fase 3 CONFIRMAR: mostrar o que criou + schedule + como pausar
 | Integração, credencial, OAuth, banco | ConnectPro — antes de app-factory-multiagent |
 | Input visual (imagem, mock) | mock-to-react MODO CÓPIA |
 | Pedido de interface sem imagem | mock-to-react MODO CRIATIVO — sempre |
+| Estilo nomeado ("como Vercel", "estilo Notion") | mock-to-react CRIATIVO + awesome-design-md |
 | App completo, full-stack | mock-to-react (visual) + app-factory-multiagent (backend) |
 | MVP rápido | app-factory-multiagent |
+| Projeto inteiro para analisar/clonar | mock-to-react MODO SCAN |
 | Resultado web criado | preview-bridge — sempre |
 | Erro, 500, console error | surge-core — automático |
 | Decisão arquitetural | engineering-mentor |
+| `/spec` `/break` `/plan` `/execute` | engineering-mentor MODO ESTRUTURADO |
+| `yolo` / "sem confirmação" / "auto tudo" | MODO YOLO — ONE-SHOT máximo |
+| `/next` / "continua" / "próximo passo" | orchestrator detecta fase + avança |
 | Automação interna | scheduled-tasks MCP |
 | Workflow externo | ConnectPro → n8n MCP |
 | Boot + após cada entrega | dummy-memory LOAD / SAVE |
@@ -303,12 +335,67 @@ PROIBIDO:
 
 ---
 
-## 📢 Protocolo de Feedback Obrigatório
+## MODO YOLO
 
-**Todo skill chamado DEVE reportar progresso. Nunca executar silenciosamente.**
+Trigger: `yolo` / "sem confirmação" / "auto tudo" / "executa tudo"
 
 ```
-Ao ser acionado:   "[{skill}] ativado — {motivo em 1 linha}"
+[orchestrator] MODO YOLO ativo — ONE-SHOT máximo, zero interrupções
+
+Efeitos:
+- ConnectPro: pula confirmações de custo (exceto ações proibidas)
+- engineering-mentor: pula aprovação de spec, vai direto ao /break
+- app-factory: pula review loop intermediário, vai ao PASS final
+- Toda skill: assume opção sugerida quando há ambiguidade
+
+Desativar: "desativa yolo" / "modo normal"
+```
+
+---
+
+## /next — Auto-avanço
+
+Trigger: `/next` / "continua" / "próximo passo" / "o que falta"
+
+```
+1. Ler .dummy/memory/projects/{atual}/state.md
+2. Identificar fase atual do workflow
+3. Reportar posição e avançar:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  /next
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Fase atual: /plan concluído
+ Avançando → /execute: {issue-name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## 📢 Protocolo de Feedback Visual Obrigatório
+
+**Todo skill DEVE usar o formato com bordas. Nunca executar silenciosamente.**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  {skill-name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ▶ {etapa N}/{total}  {o que está fazendo}
+ ✓ {etapa N}/{total}  {resultado}
+ ✓ CONCLUÍDO  {entrega} ▸ {próxima skill}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Ao rotear:
+```
+[orchestrator] imagem detectada → mock-to-react MODO CÓPIA
+[orchestrator] MODO YOLO ativo — zero interrupções
+[orchestrator] /next → fase atual: {X} → avançando para {Y}
+```
+
+```
+Ao ser acionado (formato legado, ainda válido):
+"[{skill}] ativado — {motivo em 1 linha}"
 Durante execução:  "[{skill}] {passo atual} ⚙️"
 Ao concluir:       "[{skill}] ✓ {resultado em 1 linha}"
 Em erro:           "[{skill}] ✗ {erro} → passando para surge-core"

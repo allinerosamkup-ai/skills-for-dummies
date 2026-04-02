@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dummy-os-saas",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\allin\\Downloads\\dummy-os-saas", "run", "dev"],
+      "autoPort": true,
+      "port": 3002
+    }
+  ]
+}

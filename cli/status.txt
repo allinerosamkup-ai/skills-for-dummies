@@ -1,0 +1,33 @@
+
+D.U.M.M.Y.  v2.1.1
+Dynamic · Unified · Multi-agent · Memory-driven · Yield
+The AI Operating System
+
+Detected AI tools:
+  ✓ Claude Code
+  ✓ Cursor
+
+Installed skills:
+
+  claude-code → C:\Users\allin\.claude\skills
+    ✓ dummy-memory v1.1
+    ✓ skill4d-core-orchestrator vunknown
+    ✓ ConnectPro-v9.8 v3.2
+    ✓ mock-to-react vunknown
+    ✓ app-factory-multiagent vunknown
+    ✓ preview-bridge v3.0
+    ✓ surge-core v4.1
+    ✓ engineering-mentor vunknown
+
+  cursor → C:\Users\allin\.cursor\rules
+    ✓ dummy-memory v1.1
+    ✓ skill4d-core-orchestrator vunknown
+    ✓ ConnectPro-v9.8 v3.2
+    ✓ mock-to-react vunknown
+    ✓ app-factory-multiagent vunknown
+    ✓ preview-bridge v3.0
+    ✓ surge-core v4.1
+    ✓ engineering-mentor vunknown
+
+Project memory:
+  No memory for "skills-for-dummies". Run: dummy init

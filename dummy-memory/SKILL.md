@@ -210,6 +210,50 @@ Fase 4 — PODA E INDEXAÇÃO:
 
 ---
 
+### MODO PERFIL — profile-user
+
+Aprende o perfil do desenvolvedor para personalizar todas as respostas futuras do OS.
+
+**Trigger:** `profile-user` / "me conhece melhor" / "aprenda meu estilo" / "personaliza o OS pra mim"
+
+```
+[dummy-memory] PERFIL ⚙️ — coletando perfil do desenvolvedor
+
+5 perguntas (máximo):
+1. Qual sua stack principal? (ex: Next.js + Supabase, Python + FastAPI, React Native + Expo)
+2. Nível de experiência: iniciante | intermediário | sênior | especialista?
+3. Prefere código com muitos comentários ou limpo e direto?
+4. Idioma preferido nas respostas: português | inglês | misturado?
+5. Qual seu maior objetivo agora? (ex: lançar SaaS, aprender, projeto freelance, startup)
+
+→ Com as respostas: salvar em .dummy/memory/user/profile.md
+→ Confirmar: "[dummy-memory] ✓ PERFIL salvo — personalizando respostas para {nome do perfil}"
+```
+
+**Formato do profile.md:**
+
+```markdown
+# Perfil do Usuário
+
+stack: {tecnologias principais}
+nivel: iniciante | intermediário | sênior | especialista
+estilo_codigo: comentado | limpo
+idioma: português | inglês | misturado
+objetivo_atual: {objetivo em 1 linha}
+preferencias_extras: {observações coletadas em uso ao longo das sessões}
+atualizado_em: {data}
+```
+
+**Como usar o perfil:**
+- engineering-mentor: ajusta profundidade das explicações ao nível declarado
+- mock-to-react: adapta stack sugerida às preferências do usuário
+- orchestrator: usa idioma preferido nas confirmações
+- Toda skill: evita perguntar o que o perfil já responde
+
+**Atualização automática:** quando o usuário corrige uma suposição errada ("não, eu uso Expo, não React Native puro"), salvar a correção em `preferencias_extras`.
+
+---
+
 ### MODO CONSULTA — Usuário pergunta sobre o projeto
 
 Quando: "o que a gente fez?", "qual o estado?", "o que está configurado?"

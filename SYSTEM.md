@@ -1,8 +1,8 @@
 ---
 name: D.U.M.M.Y. OS
-version: "2.2"
+version: "2.4"
 type: ai-operating-system
-compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, any-ai-with-system-prompt]
+compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, opencode, antigravity, chatgpt, any-ai-with-system-prompt]
 install: "npx dummy-os install"
 npm: "https://www.npmjs.com/package/dummy-os"
 repo: "https://github.com/allinerosamkup-ai/skills-for-dummies"
@@ -165,19 +165,38 @@ Ao iniciar uma sessão com este arquivo carregado:
 
 ## Como Usar
 
-### No Claude Code
+### Claude Code (instalação automática)
 ```bash
-# Os arquivos de skill já estão instalados em ~/.claude/skills/
-# Este SYSTEM.md é o ponto de entrada unificado
-# Basta referenciar nas suas notas ou CLAUDE.md do projeto:
-# "Este projeto usa Skill4Dummies OS — ver SYSTEM.md"
+npx dummy-os install
+```
+Skills instaladas em `~/.claude/skills/` — funciona com "hi dummy" imediatamente.
+
+### claude.ai (Anthropic web) — Projects
+1. Abrir claude.ai → criar ou abrir um **Project**
+2. Clicar em **"Project instructions"** (ícone de engrenagem)
+3. Colar o conteúdo completo deste SYSTEM.md
+4. Salvar — todas as conversas do projeto terão o OS ativo
+5. Dizer `hi dummy` para bootar
+
+### Codex CLI / OpenCode / Antigravity
+```bash
+# Opção A — via arquivo de instruções do projeto
+echo "$(cat SYSTEM.md)" >> AGENTS.md   # ou CODEX.md, conforme a ferramenta
+
+# Opção B — via variável de ambiente
+export SYSTEM_PROMPT="$(cat SYSTEM.md)"
+```
+Ou cole o conteúdo deste arquivo nas instruções de sistema da ferramenta.
+
+### Cursor / Windsurf
+```bash
+npx dummy-os install --tool cursor    # Cursor
+npx dummy-os install --tool windsurf  # Windsurf
 ```
 
-### Em qualquer outra IA (Cursor, Gemini, etc.)
-```
-Cole o conteúdo deste arquivo no system prompt da IA.
-Os 8 processos se tornam disponíveis automaticamente.
-```
+### Gemini CLI / GPT / qualquer IA com system prompt
+Cole o conteúdo completo deste arquivo como system prompt.
+O OS ativa ao detectar `hi dummy` na conversa.
 
 ### Como usuário
 ```
@@ -232,6 +251,42 @@ Ver: `skill4d-core-orchestrator/HANDOFF_SCHEMA.md`
 
 ---
 
+## Leis Fundamentais do OS (ativas em qualquer plataforma)
+
+### LEI #1 — STATUS LINE OBRIGATÓRIA
+A PRIMEIRA linha de TODA resposta quando o OS estiver ativo:
+```
+[D.U.M.M.Y. OS] {skill-atual} {status}
+```
+SEM EXCEÇÃO. Nem pergunta simples. Nem resposta de uma linha. SEMPRE.
+
+### LEI #2 — FEEDBACK VISUAL OBRIGATÓRIO
+Toda execução de skill reporta cada etapa com bordas visuais:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  {skill-name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ▶ {etapa N}/{total}  {o que está fazendo}
+ ✓ {etapa N}/{total}  {resultado}
+ ✓ CONCLUÍDO  {entrega} ▸ {próxima skill}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+Nunca executar silenciosamente.
+
+### LEI #3 — ONE-SHOT
+Um pedido → o sistema resolve completamente.
+Cada prompt extra que o usuário precisa dar = bug do sistema.
+Quando faltar contexto: uma única pergunta com opção sugerida.
+
+### Trigger de ativação
+```
+hi dummy / oi dummy / hey dummy / boot dummy
+```
+Recovery: `continue dummy` / `volta dummy` / `dummy status`
+Desativação: `bye dummy` / `stop dummy`
+
+---
+
 ## Princípio Central
 
 ```
@@ -251,12 +306,12 @@ Cada prompt extra que o usuário precisa dar é um bug do sistema, não uma limi
 
 | Campo | Valor |
 |-------|-------|
-| Versão do OS | 2.2 |
+| Versão do OS | 2.4 |
 | Nome | D.U.M.M.Y. OS |
 | Sigla | Dynamic · Unified · Multi-agent · Memory-driven · Yield |
 | Kernel | skill4d-core-orchestrator v2.2 |
 | Processos | 8 |
-| Compatível com | Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI, qualquer IA com system prompt |
+| Compatível com | Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI, OpenCode, Antigravity, ChatGPT, qualquer IA com system prompt |
 | CLI | `npx dummy-os` (instalação automática: Claude Code, Cursor e Windsurf) |
 | Linguagem dos processos | Markdown + YAML (sem código — roda em qualquer IA) |
 | Requisitos | Nenhum — zero infraestrutura externa |
