@@ -55,9 +55,7 @@ When the user says "BUILD MODE": prioritize speed and experimentation. Minimal e
 
 ---
 
-## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada ativação, reportar em tempo real:
+## Formato de Reporte
 
 ```
 [engineering-mentor] iniciando — {missão recebida}

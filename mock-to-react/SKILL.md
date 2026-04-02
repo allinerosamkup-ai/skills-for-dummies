@@ -36,9 +36,7 @@ PROIBIDO:
 
 ---
 
-## 📢 PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada etapa do pipeline, reportar progresso em tempo real:
+## Formato de Reporte
 
 ```
 [mock-to-react] Passo 1/9: Análise visual — detectando tipo de input ⚙️

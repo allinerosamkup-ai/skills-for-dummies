@@ -27,14 +27,20 @@ transformar o input bruto no prompt mais claro e estruturado possível.
 4. **Estruturar em 4 dimensões:** Objetivo + Contexto + Restrições + Output esperado
 5. **Se a entrada já for clara** → passar direto sem modificar
 
-### Output interno (não mostrar ao usuário):
+### Output — MOSTRAR ao usuário (sempre):
 ```
-[orchestrator] Fase 0 ✓
-Objetivo: {o que o usuário quer alcançar}
-Contexto: {projeto atual, estado, histórico relevante}
-Restrições: {limitações identificadas — stack, tempo, estilo, etc.}
-Output: {formato ou resultado esperado}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  Fase 0 — Prompt Optimizer
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Objetivo:    {o que o usuário quer alcançar}
+ Contexto:    {projeto atual, estado, histórico relevante}
+ Restrições:  {stack, tempo, estilo ou limites identificados}
+ Output:      {formato ou resultado esperado}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+Exibir SEMPRE antes do roteamento. O usuário precisa ver como o OS interpretou seu pedido — para corrigir antes de executar se necessário.
+Se a entrada já for clara e sem ambiguidade → exibir bloco reduzido: `[Fase 0] ✓ prompt claro — roteando direto`
 
 Este prompt estruturado é o que alimenta **todas as skills** — engineering-mentor, mock-to-react, ConnectPro, app-factory, surge-core.
 A distribuição para a skill correta acontece **depois** da Fase 0, nunca antes.
@@ -386,40 +392,13 @@ Trigger: `/next` / "continua" / "próximo passo" / "o que falta"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Ao rotear:
-```
-[orchestrator] imagem detectada → mock-to-react MODO CÓPIA
-[orchestrator] MODO YOLO ativo — zero interrupções
-[orchestrator] /next → fase atual: {X} → avançando para {Y}
-```
-
-```
-Ao ser acionado (formato legado, ainda válido):
-"[{skill}] ativado — {motivo em 1 linha}"
-Durante execução:  "[{skill}] {passo atual} ⚙️"
-Ao concluir:       "[{skill}] ✓ {resultado em 1 linha}"
-Em erro:           "[{skill}] ✗ {erro} → passando para surge-core"
-```
-
 Orquestrador reporta roteamento antes de chamar qualquer skill:
 ```
-[orchestrator] imagem detectada → mock-to-react COPY MODE
+[orchestrator] imagem detectada → mock-to-react MODO CÓPIA
 [orchestrator] integração detectada → ConnectPro primeiro
 [orchestrator] projeto indefinido → engineering-mentor para PRD
-```
-
-Exemplo de fluxo com feedback completo:
-```
-[orchestrator] imagem detectada → mock-to-react COPY MODE ativo
-[mock-to-react] ativado — clone pixel-perfect de imagem fornecida
-[mock-to-react] Passo 1/9: análise visual ⚙️
-[mock-to-react] Passo 1/9: ✓ header + 3 cards + footer detectados
-[mock-to-react] Passo 2/9: análise técnica ⚙️
-...
-[mock-to-react] ✓ Similaridade: 98% — componente gerado
-[preview-bridge] ativado — abrindo preview
-[preview-bridge] ✓ http://localhost:3000
-[surge-core] ✓ zero erros críticos
+[orchestrator] MODO YOLO ativo — zero interrupções
+[orchestrator] /next → fase atual: {X} → avançando para {Y}
 ```
 
 Nunca deixar o usuário sem feedback por mais de uma skill de distância.
@@ -439,6 +418,59 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 - dummy-memory LOAD no boot + SAVE após cada entrega significativa
 - Nunca `router.push` após auth Supabase — usar `window.location.href`
 - Uma pergunta por vez com suposição sugerida quando faltar contexto
+
+---
+
+## Regra de Precedência — Pedidos Mistos
+
+Quando o pedido combina visual + arquitetura (ex: "me manda uma imagem e quero estruturar o app"):
+
+```
+ORDEM OBRIGATÓRIA:
+1. Se há imagem → mock-to-react CÓPIA primeiro (absoluto)
+2. Visual aprovado → engineering-mentor ESTRUTURADO se pedido
+3. Nunca pular validação visual para chegar logo na estruturação
+```
+
+---
+
+## ONE-SHOT vs MODO YOLO — Diferença clara
+
+**ONE-SHOT (padrão sempre ativo):**
+- Mínimo de perguntas ao usuário (`ask_minimum: true`)
+- Confirmações obrigatórias para: criar recurso pago, emitir token permanente, ação irreversível
+- Uma única pergunta com sugestão quando bloqueado tecnicamente
+
+**MODO YOLO (opt-in):**
+Trigger: `yolo` / "sem confirmação" / "auto tudo" / "executa tudo"
+- Pula confirmações de custo e aprovações intermediárias
+- Mantém APENAS as proibições absolutas (deletar dados, credenciais sensíveis)
+- Uma pergunta SOMENTE se for bloqueador técnico genuíno
+
+**Resumo:** ONE-SHOT é prudente. YOLO é agressivo. O padrão é ONE-SHOT.
+
+---
+
+## Fronteiras de Autonomia (valem em QUALQUER modo)
+
+```
+AUTOMÁTICO — sem perguntar:
+  ✓ Ler/detectar serviços e configurações existentes
+  ✓ Validar credenciais já configuradas
+  ✓ Criar .env.local com placeholders
+  ✓ Instalar dependências (npm install)
+  ✓ Resolver conflito de porta
+
+CONFIRMAR PRIMEIRO — parar e perguntar:
+  ⚠ Criar recurso que gera custo (novo projeto Supabase, cloud instance)
+  ⚠ Emitir token permanente ou credencial com escopo amplo
+  ⚠ Operação que afeta ambiente compartilhado
+
+NUNCA FAZER — proibido em qualquer modo:
+  ✗ Deletar dados ou recursos existentes
+  ✗ Revogar credenciais ativas
+  ✗ Salvar valores de segredos/tokens em memória
+```
 
 ---
 

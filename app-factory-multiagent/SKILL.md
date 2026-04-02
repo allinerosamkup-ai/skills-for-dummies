@@ -169,9 +169,7 @@ Do not allow "first pass is good enough" rationalization. The review loop is par
 | "Review means quick polish" | Review means contract verification. |
 | "One review pass is enough" | Loop through fix packets until PASS or explicit escalation. |
 
-## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada etapa do workflow, reportar em tempo real:
+## Formato de Reporte
 
 ```
 [app-factory] iniciando — {stack + escopo recebido}

@@ -33,9 +33,7 @@ orchestrator → ConnectPro
 
 ---
 
-## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada integração, reportar em tempo real:
+## Formato de Reporte
 
 ```
 [ConnectPro] iniciando — {serviços detectados: Supabase, Stripe, ...}

@@ -74,9 +74,7 @@ handoff_targets:
 
 ---
 
-## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada ativação, reportar em tempo real:
+## Formato de Reporte
 
 ```
 [surge-core] ativado — sinal detectado: {tipo de erro/sinal}

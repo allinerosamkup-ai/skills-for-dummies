@@ -90,9 +90,7 @@ observability_signals:
 
 ---
 
-## PROTOCOLO DE FEEDBACK OBRIGATÓRIO
-
-A cada etapa, reportar em tempo real:
+## Formato de Reporte
 
 ```
 [preview-bridge] iniciando — detectando framework em {projeto} ⚙️
