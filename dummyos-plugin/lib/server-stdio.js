@@ -1,5 +1,6 @@
 const readline = require('readline');
 const { listTools, callTool } = require('./tools');
+const pkg = require('../package.json');
 
 function reply(id, result) {
   process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id, result }) + '\n');
@@ -15,7 +16,7 @@ async function handleMessage(msg) {
   if (method === 'initialize') {
     return reply(id, {
       protocolVersion: '2024-11-05',
-      serverInfo: { name: 'dummyos-plugin', version: '0.2.0' },
+      serverInfo: { name: 'dummyos-plugin', version: pkg.version || '0.0.0' },
       capabilities: { tools: {} }
     });
   }
