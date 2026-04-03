@@ -1,11 +1,17 @@
 {
   "name": "dummyos-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "commonjs",
-  "description": "D.U.M.M.Y. OS plugin server (minimal MCP over stdio)",
-  "main": "server.js",
+  "description": "D.U.M.M.Y. OS plugin server (stdio + optional HTTP)",
+  "main": "lib/server-stdio.js",
+  "bin": {
+    "dummyos-plugin": "bin/dummyos-plugin.js"
+  },
   "scripts": {
-    "start": "node server.js"
+    "start": "node bin/dummyos-plugin.js start"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

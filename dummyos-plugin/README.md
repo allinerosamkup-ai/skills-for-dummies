@@ -1,17 +1,34 @@
 # dummyos-plugin
 
-Minimal MCP-like plugin server for D.U.M.M.Y. OS.
+Plugin server for D.U.M.M.Y. OS (kept off `master`).
 
-## Run
+## Install global (Windows)
 
 ```powershell
-cd dummyos-plugin
-npm run start
+npm install -g C:\Users\allin\Downloads\skills-for-dummies-wt-commit\dummyos-plugin
 ```
 
-## Tools
+## Run (stdio)
 
-- `dummyos.connect` -> calls ConnectPro runConnectPro
-- `dummyos.ready` -> ConnectPro readiness snapshot
+```powershell
+dummyos-plugin start --project "C:\\path\\to\\your-app"
+```
 
-This is intentionally minimal: it is a stable place to hang capability-first tools without changing `master`.
+## List tools
+
+```powershell
+dummyos-plugin tools
+```
+
+## Call tool directly
+
+```powershell
+dummyos-plugin call dummyos.sentry.detect "{\"projectPath\":\".\"}"
+```
+
+Tools currently provided:
+- `dummyos.ready`
+- `dummyos.connect`
+- `dummyos.project.detect`
+- `dummyos.sentry.detect`
+- `dummyos.sentry.plan`
