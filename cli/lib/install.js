@@ -14,8 +14,7 @@ const SKILLS = [
   'app-factory-multiagent',
   'preview-bridge',
   'surge-core',
-  'engineering-mentor'
-]
+  'engineering-mentor',\n  'sentry-core'\n]
 
 // Tools that use a single AGENTS.md / GEMINI.md file instead of a skills directory
 const AGENTS_FILE_TOOLS = ['gemini-cli', 'codex-cli', 'opencode']
@@ -176,3 +175,4 @@ export async function listInstalled(toolId) {
 
   return results
 }
+
