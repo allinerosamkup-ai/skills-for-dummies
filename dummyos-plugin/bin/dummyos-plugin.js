@@ -10,12 +10,13 @@ function usage() {
       'Usage:',
       '  dummyos-plugin start [--project <path>]',
       '  dummyos-plugin tools',
-      '  dummyos-plugin call <toolName> <jsonArgs>',
+      '  dummyos-plugin call <toolName> <jsonArgs | - | @file>',
       '',
       'Examples:',
       '  dummyos-plugin start --project "C:\\path\\to\\app"',
       '  dummyos-plugin tools',
       '  dummyos-plugin call dummyos.sentry.detect "{\\"projectPath\\":\\".\\"}"',
+      '  \'{\"projectPath\":\"C:\\\\path\\\\to\\\\app\"}\' | dummyos-plugin call dummyos.project.detect -',
       ''
     ].join('\n')
   );
