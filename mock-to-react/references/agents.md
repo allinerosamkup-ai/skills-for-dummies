@@ -15,6 +15,16 @@ Responsabilidades:
 - Buscar icones SVG em 5 bibliotecas (tabler, simple-icons, heroicons, feather, bootstrap)
 - Baixar recursos para cache local
 
+Gates (quando NAO pode pular):
+- Existem elementos no inventario com `type` icon/complex_component e sem implementacao obvia
+- Existem efeitos nao-triviais (blur/backdrop-filter/gradientes complexos/masks)
+- Existem componentes de alto nivel (date picker, chart, table complexa, upload, editor rich-text)
+- O CodeAgent reporta baixa confianca em implementar do zero
+
+Output minimo (para auditoria no report final):
+- `queries[]`: termos buscados + justificativa
+- `packages[]`: pacotes escolhidos + por que (ou vazio com justificativa)
+
 Bibliotecas de icones configuradas:
 - tabler-icons: 850 icones, CDN jsdelivr
 - simple-icons: 1500 icones, CDN jsdelivr
@@ -58,6 +68,14 @@ Responsabilidades:
 - Analisar estrutura (hooks, imports, styling, patterns)
 - Ranquear por qualidade (stars/watchers/forks)
 
+Gates (quando NAO pode pular):
+- Componente complexo (tabela, virtual list, drag-drop, charts, editor, wizard)
+- Diffs persistentes apos 2 iteracoes no loop
+- Necessidade de patterns de acessibilidade/keyboard navigation
+
+Output minimo:
+- `github_references[]`: repo + path + motivo do uso
+
 API base: https://api.github.com
 Auth header: Authorization: token {githubToken}
 
@@ -99,6 +117,7 @@ Fluxo runSkill(mockInput, componentPath):
    - Aguardar confirmacao ou correcao
 
 3. visionAgent.analyze(mockInput, autoDescription)
+   - GATE: gerar inventario visual enumerado antes de buscas/codigo
 
 4. resourceAgent.searchPackages(autoDescription || mockAnalysis.description)
 
@@ -112,6 +131,9 @@ Fluxo runSkill(mockInput, componentPath):
    - analyzeComponentStructure(code)
 
 8. codeAgent.generate(mockAnalysis, {autoDescription, packages, icons, githubExamples})
+8b. harmonyGate.validateAndAdjust(...)
+   - COPY MODE: apenas validar e sugerir ajustes restritos a estados/responsividade
+   - CRIATIVO: ajustar tokens/spacing/type-scale ate passar no checklist de harmonia
 
 9. iterateUntilPerfect(mockOriginal, codigoGerado):
 

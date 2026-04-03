@@ -51,6 +51,25 @@ Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
 
 ---
 
+## Padrao Estetico (Harmonia Universal)
+
+Objetivo: garantir um padrao visual consistente e harmonicamente "bom" quando o design nao esta 100% especificado, sem violar o pixel-perfect quando existe imagem.
+
+Regras:
+- MODO COPIA: a imagem manda. Harmonia nao autoriza alterar o visual visivel. Harmonia so pode atuar em estados (hover/active/disabled/loading), responsividade e partes nao especificadas/ocultas na imagem.
+- MODO CRIATIVO: harmonia e obrigatoria. Se ficar incoerente (tipografia ruim, espacamento aleatorio, cores brigando), corrigir antes de entregar.
+
+Checklist minimo (nao negociavel):
+- Tipografia: no maximo 2 familias; escala coerente (ex.: 12/14/16/20/24/32); pesos usados com parcimonia; line-height consistente.
+- Espacamento: base unit consistente (4/8) e uso repetido (8/16/24/32); evitar gaps aleatorios.
+- Alinhamento: grids/colunas claras; edges alinhadas; icones/textos com baseline coerente.
+- Cores: roles semanticos claros (bg/surface/text/primary/border); contraste minimo legivel; nao inventar tons sem motivo.
+- Efeitos: sombras/radius consistentes (1-2 niveis); nao misturar estilos.
+
+Artefato: incluir no output final um `harmony_report` (pass/fail + 3-5 ajustes sugeridos ou "ok").
+
+---
+
 ## Modos de Operação
 
 ### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
@@ -220,6 +239,19 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Se usuario corrigir a descricao, usar a versao corrigida nas etapas seguintes
 - Se usuario confirmar, prosseguir com a descricao e tokens gerados
 
+**ETAPA 1c -- VisionAgent: Inventario Visual (GATE obrigatorio)**
+- Antes de qualquer busca/codigo: gerar um inventario completo e enumerado dos elementos visiveis.
+- Nao avancar para ETAPA 2 sem este inventario.
+- Formato minimo por item:
+  - id: string (estavel, ex.: header_title, card_1, cta_button)
+  - type: text | button | input | icon | image | container | divider | decorative
+  - role: semantico (ex.: primary_action, navigation, card, heading, body)
+  - content: texto/label (se houver)
+  - interactive: true|false
+  - approx_bbox: { x, y, w, h } (estimado)
+  - style_hints: { font, color, radius, shadow } (estimado)
+- O inventario precisa incluir TODOS os decorativos listados na ETAPA 1b.
+
 **ETAPA 2 -- VisionAgent: Analise tecnica profunda**
 - Modo HTML: parsear DOM, extrair estrutura, estilos, tipografia, cores, componentes
 - Modo Imagem: rodar as 4 analises especializadas (layout, cores, tipografia, elementos decorativos — descritas na Etapa 1b acima)
@@ -234,6 +266,12 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Output: `layoutMap` com component_tree, grid_definition, responsive_breakpoints
 
 **ETAPA 4 -- ResourceAgent: Buscar pacotes NPM**
+- Regra: esta etapa NAO pode ser pulada quando houver qualquer um dos casos:
+  - elementos no inventario com `type` icon/complex_component e sem implementacao obvia
+  - efeitos nao-triviais (blur/backdrop-filter/gradientes complexos/masks)
+  - componentes de alto nivel (date picker, chart, table complexa, upload, editor rich-text)
+  - baixa confianca do CodeAgent em implementar do zero
+- Output minimo: `packages[]`, `queries[]` (o que foi buscado e por que).
 - API: `https://registry.npmjs.com/-/v1/search?text={query}&size=10`
 - Gerar queries a partir da auto-descricao (ex: "card component react", "shadow react")
 - Incluir queries para elementos decorativos do inventario (ex: "svg pattern react", "emoji picker react", "gradient animation react")
@@ -251,6 +289,11 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Usar `package.json` de cada pacote para encontrar entry point (module > main > index.js)
 
 **ETAPA 7 -- GitHubAgent: Buscar componentes similares**
+- Regra: esta etapa NAO pode ser pulada quando houver qualquer um dos casos:
+  - componente complexo (tabela, virtual list, drag-drop, charts, editor, wizard)
+  - diffs persistentes apos 2 iteracoes no loop (ETAPA 9)
+  - necessidade de patterns de acessibilidade/keyboard navigation
+- Output minimo: `github_references[]` (repo + arquivo + motivo do uso).
 - API: `https://api.github.com/search/code?q={query}&language:jsx`
 - Queries geradas a partir da auto-descricao: "React component {tipo}", "responsive {layout} component"
 - Extrair codigo dos top 5 repos (via `/repos/{owner}/{repo}/contents/{path}`)
@@ -278,6 +321,11 @@ MANDATO DE COMPLETUDE (nao negociavel):
 - Proibido: alterar cores, tipografia, espacamentos, posicionamentos ou identidade visual
 - Gerar artefatos de tema compatíveis com a engine escolhida (ex.: `tailwind.config.js`, `tokens.css`, `theme.ts`)
 - Registrar `styling_strategy` no output final explicando por que aquela engine foi escolhida
+
+**ETAPA 8b -- HarmonyGate (GATE obrigatorio)**
+- MODO COPIA: apenas validar (nao "embelezar") e sugerir ajustes restritos a estados/responsividade.
+- MODO CRIATIVO: ajustar tokens e composicao ate passar no checklist de harmonia.
+- Output: `harmony_report` + (se aplicavel) ajustes aplicados em tokens/spacing/type-scale.
 
 ESTRUTURA DE OUTPUT (pronta para colar no projeto):
   src/
@@ -307,6 +355,7 @@ REGRAS DA ESTRUTURA:
       espacamento: peso 10%  (padding, margin, gap)
       efeitos:     peso 10%  (sombras, bordas, opacidade)
       completude:  peso 15%  (TODOS os elementos do inventario presentes? elemento faltando = penalidade imediata)
+      harmonia:    peso 5%   (no modo criativo sempre; no modo copia so para partes nao especificadas pela imagem)
     se similaridade < 98%:
       diffs = identificar diferencas por categoria
       se convergencia lenta (melhora < 0.5% apos 3+ iteracoes):
