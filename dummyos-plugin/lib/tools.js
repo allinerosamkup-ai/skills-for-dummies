@@ -333,14 +333,30 @@ async function toolBrowserRun(args) {
   const slowMo = Number(args?.slowMo || 0) || 0;
   const defaultTimeoutMs = Math.max(1000, Math.min(120000, Number(args?.timeoutMs || 30000)));
 
+  const launchAttempts = [];
+  if (args?.channel) launchAttempts.push({ channel: String(args.channel) });
+  // Try system browsers first to avoid large Playwright downloads.
+  launchAttempts.push({ channel: 'msedge' }, { channel: 'chrome' }, {});
+
   let browser;
-  try {
-    browser = await playwright.chromium.launch({ headless, slowMo });
-  } catch (err) {
+  let lastErr;
+  for (const attempt of launchAttempts) {
+    try {
+      const opts = { headless, slowMo, ...attempt };
+      browser = await playwright.chromium.launch(opts);
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  if (!browser) {
+    const err = lastErr;
     const msg = String(err?.message || err);
     const hint =
       msg.includes("Executable doesn't exist") || msg.includes('run the following command to download new browsers')
-        ? 'Playwright browsers not installed. Run: `npx playwright install chromium` (requires disk space).'
+        ? 'Playwright managed browsers not installed and no system browser channel worked. Try: `npx playwright install chromium` (requires disk space) or install Chrome/Edge.'
         : msg.includes('ENOSPC') || msg.includes('no space left on device')
           ? 'No disk space available to install/run Playwright browsers. Free space and retry.'
           : 'Failed to launch browser.';
@@ -558,6 +574,7 @@ const TOOLS = [
       properties: {
         steps: { type: 'array', items: { type: 'object' } },
         headless: { type: 'boolean' },
+        channel: { type: 'string' },
         slowMo: { type: 'number' },
         timeoutMs: { type: 'number' }
       },
