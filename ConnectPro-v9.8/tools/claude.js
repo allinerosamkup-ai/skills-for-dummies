@@ -56,6 +56,61 @@ function normalizeText(value) {
   return String(value || '').toLowerCase();
 }
 
+function detectCapabilities(message) {
+  const value = normalizeText(message);
+  const capabilities = [];
+
+  // "WebSearch" in this ecosystem means: the ability to find information/patterns/packages on the public web.
+  if (
+    value.includes('websearch') ||
+    value.includes('web search') ||
+    value.includes('pesquis') ||
+    value.includes('buscar na web') ||
+    value.includes('scrap') ||
+    value.includes('scrape') ||
+    value.includes('scrapping')
+  ) {
+    capabilities.push('web_search');
+  }
+
+  // Browser automation: navigate dashboards, login flows, copy keys, complete MFA/email confirmation.
+  if (
+    value.includes('browser') ||
+    value.includes('navegador') ||
+    value.includes('login') ||
+    value.includes('automat') ||
+    value.includes('dashboard')
+  ) {
+    capabilities.push('browser_automation');
+  }
+
+  // Email confirmation / code capture flows.
+  if (
+    value.includes('email') ||
+    value.includes('e-mail') ||
+    value.includes('verifica') ||
+    value.includes('confirm') ||
+    value.includes('código') ||
+    value.includes('codigo') ||
+    value.includes('2fa') ||
+    value.includes('mfa')
+  ) {
+    capabilities.push('email_confirmation');
+  }
+
+  // Workflow automation (often delegated to n8n when available).
+  if (
+    value.includes('workflow') ||
+    value.includes('automação') ||
+    value.includes('automacao') ||
+    value.includes('n8n')
+  ) {
+    capabilities.push('workflow_automation');
+  }
+
+  return uniq(capabilities);
+}
+
 function detectServices(message) {
   const value = normalizeText(message);
   const mapping = [
@@ -90,9 +145,11 @@ function analyzePrompt(prompt) {
   const messageMatch = prompt.match(/Mensagem:\s*"([\s\S]*)"$/);
   const message = messageMatch ? messageMatch[1] : prompt;
   const services = detectServices(message);
+  const capabilities = detectCapabilities(message);
 
   return {
     services,
+    capabilities,
     intent: inferIntent(message, services),
     minDataNeeded: ['email']
   };
@@ -104,15 +161,17 @@ function planPrompt(prompt) {
     try {
       const parsed = extractFirstJsonObject(inputMatch[1]);
       const services = Array.isArray(parsed?.services) ? parsed.services.map((service) => String(service).toLowerCase()) : [];
+      const capabilities = Array.isArray(parsed?.capabilities) ? parsed.capabilities.map((cap) => String(cap).toLowerCase()) : [];
       return {
         steps: services.map((service) => `connect_${service}`),
         order: services,
-        servicePlans: services.map((service) => ({ service, strategies: [] }))
+        servicePlans: services.map((service) => ({ service, strategies: [] })),
+        capabilities
       };
     } catch {}
   }
 
-  return { steps: [], order: [], servicePlans: [] };
+  return { steps: [], order: [], servicePlans: [], capabilities: [] };
 }
 
 function conversationalPrompt(prompt) {
@@ -141,4 +200,5 @@ async function callClaude(prompt, json = true) {
 
 callClaude.extractFirstJsonObject = extractFirstJsonObject;
 callClaude.detectServices = detectServices;
+callClaude.detectCapabilities = detectCapabilities;
 module.exports = callClaude;

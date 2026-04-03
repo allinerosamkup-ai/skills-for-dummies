@@ -367,6 +367,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: ConnectPro
+    when: faltar capability externa (web_search, browser_automation, email_confirmation, workflow_automation) ou credencial para buscar pacotes/refs/assets
+    payload: requested_capabilities, required_services, blocking_issues
   - skill_name: preview-bridge
     when: componente React gerado e pronto para visualização
     payload: generated_code, project_path

@@ -34,6 +34,7 @@ Ela deve recebê-lo.
   "goal": "o objetivo final do usuário",
   "user_intent": "interpretação atual da intenção",
   "current_state": "em que estágio do fluxo estamos",
+  "requested_capabilities": [],
   "artifacts": [],
   "decisions_made": [],
   "blocking_issues": [],
@@ -126,6 +127,16 @@ Exemplo: `"Se não detectar framework, devolver blocked com diagnóstico e passa
 ### confidence_score
 Confiança da skill emissora sobre o estado atual.
 Faixa: `0.0` a `1.0`.
+
+### requested_capabilities
+Lista de capacidades que a skill emissora precisa que o sistema obtenha antes de continuar.
+
+Exemplos:
+- `"web_search"` (pesquisa e coleta de referencias/pacotes/padroes)
+- `"browser_automation"` (login/dashboard/scrape)
+- `"email_confirmation"` (capturar codigo/magic link)
+- `"workflow_automation"` (n8n como auxiliar)
+- `"mcp_discovery"` (descobrir MCPs desconhecidos via registry)
 
 ### requires_user_input
 Booleano.

@@ -20,6 +20,9 @@ O usuário não chama ConnectPro diretamente. O orquestrador chama.
 ConnectPro não pede ajuda ao usuário — escala modos internamente até resolver.
 Faz uma pergunta ao usuário **só** se for absolutamente impossível prosseguir.
 
+ConnectPro e incremental: ele pode ser chamado varias vezes ao longo do projeto.
+Se ja existir uma conexao salva, ele adiciona apenas as novas capacidades/servicos solicitados.
+
 ```
 usuário → "cria app com Stripe"
          ↓
@@ -85,6 +88,22 @@ Para cada serviço necessário:
 ```
 
 Nenhum desses passos é anunciado ao usuário. Só o resultado final é reportado.
+
+---
+
+## Capability-First (quando o usuario nao sabe o nome da ferramenta)
+
+Quando o usuario descreve "o que precisa" sem citar um servico (ex.: "preciso buscar referencias na web", "preciso automatizar login no navegador"),
+ConnectPro deve operar por capacidades.
+
+Exemplos de `capabilities`:
+- `web_search` (pesquisa e coleta de referencias/pacotes/padroes)
+- `browser_automation` (dashboard/login/scrape)
+- `email_confirmation` (captura de codigo/magic link)
+- `workflow_automation` (n8n como auxiliador)
+- `mcp_discovery` (descobrir MCPs via registry)
+
+Regra: se nao houver conector no catalogo, consultar `mcp__mcp-registry__search_mcp_registry` e provisionar via `mcp_direct` quando possivel.
 
 ---
 

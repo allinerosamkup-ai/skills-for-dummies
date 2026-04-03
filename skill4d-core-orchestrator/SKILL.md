@@ -406,6 +406,34 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 
 ---
 
+## Protocolo de Integracao (Skills se puxam)
+
+Regra: cada skill deve ser inteligente individualmente, mas nao deve "morrer sozinha". Quando travar, ela devolve um handoff claro para o kernel, e o kernel chama a skill que supre a lacuna.
+
+### Quando uma skill deve escalar para o kernel
+- Falta de capacidade externa: precisa de `web_search`, `browser_automation`, `email_confirmation`, `workflow_automation`, `mcp_discovery`.
+- Falta de credencial/MCP/API/CLI: precisa de ConnectPro para provisionar.
+- Ambiguidade conceitual: precisa de engineering-mentor para decidir.
+- Erro observavel (runtime/build/preview/diff): precisa de surge-core para corrigir.
+
+### O que a skill deve retornar quando estiver bloqueada
+Sempre incluir um envelope (ver `HANDOFF_SCHEMA.md`) com:
+- `blocking_issues[]` (type/severity/message)
+- `requested_capabilities[]` (quando aplicavel)
+- `expected_next_step`: "Kernel: chamar {ConnectPro|surge-core|engineering-mentor} e depois retomar {skill_original}"
+- `fallback_if_blocked`
+
+### Como o kernel resolve e retoma
+Ordem padrao:
+1. Se `blocking_issues` indicam credencial/capability → chamar ConnectPro com `required_services` e/ou `requested_capabilities`.
+2. Se o problema for erro tecnico observavel → chamar surge-core.
+3. Se for decisao/escopo → chamar engineering-mentor.
+4. Retomar a skill original com o envelope atualizado (artefatos + decisoes + capacidades resolvidas).
+
+Isso e o que faz o ecossistema parecer um unico sistema (e nao prompts soltos).
+
+---
+
 ## Regra de Precedência — Pedidos Mistos
 
 Quando o pedido combina visual + arquitetura (ex: "me manda uma imagem e quero estruturar o app"):
