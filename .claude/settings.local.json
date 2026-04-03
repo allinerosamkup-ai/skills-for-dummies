@@ -58,7 +58,8 @@
       "WebFetch(domain:dmarketertayeeb.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(mkdir -p \"C:/Users/allin/Downloads/dummy-os-saas/src/agents\")",
-      "Bash(mkdir -p \"C:/Users/allin/Downloads/dummy-os-saas/src/app/api/agent/run\")"
+      "Bash(mkdir -p \"C:/Users/allin/Downloads/dummy-os-saas/src/app/api/agent/run\")",
+      "Bash(node cli/bin/dummy.js install --help)"
     ]
   }
 }

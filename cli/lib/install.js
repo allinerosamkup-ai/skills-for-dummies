@@ -17,6 +17,9 @@ const SKILLS = [
   'engineering-mentor'
 ]
 
+// Tools that use a single AGENTS.md / GEMINI.md file instead of a skills directory
+const AGENTS_FILE_TOOLS = ['gemini-cli', 'codex-cli', 'opencode']
+
 function getRequestedTools(toolId) {
   if (!toolId) return detectInstalledTools()
 
@@ -27,17 +30,66 @@ function getRequestedTools(toolId) {
   return [{ id: toolId, ...AI_TOOLS[toolId] }]
 }
 
+/**
+ * Install for tools that use an AGENTS.md / GEMINI.md file (Gemini CLI, Codex CLI, OpenCode).
+ * Appends SYSTEM.md content + each SKILL.md to the agents file.
+ */
+async function installAgentsFile(tool, skillsSource, force) {
+  const agentsFile = tool.agentsFile
+  const systemSrc = join(skillsSource, 'SYSTEM.md')
+
+  const systemContent = await fs.pathExists(systemSrc)
+    ? await fs.readFile(systemSrc, 'utf8')
+    : ''
+
+  let agentsContent = `# D.U.M.M.Y. OS — Auto-injected by \`npx dummy-os install --tool ${tool.id}\`\n\n`
+  agentsContent += systemContent + '\n\n---\n\n'
+
+  for (const skill of SKILLS) {
+    const skillFile = join(skillsSource, skill, 'SKILL.md')
+    if (await fs.pathExists(skillFile)) {
+      const content = await fs.readFile(skillFile, 'utf8')
+      agentsContent += `\n<!-- skill: ${skill} -->\n${content}\n`
+    }
+  }
+
+  const alreadyExists = await fs.pathExists(agentsFile)
+  if (alreadyExists && !force) {
+    const existing = await fs.readFile(agentsFile, 'utf8')
+    if (existing.includes('D.U.M.M.Y. OS — Auto-injected')) {
+      return { tool: tool.id, agentsFile, installed: [{ skill: 'all', status: 'skipped (already installed — use --force to update)' }] }
+    }
+    // Append to existing file
+    await fs.appendFile(agentsFile, '\n\n' + agentsContent)
+  } else {
+    await fs.writeFile(agentsFile, agentsContent, 'utf8')
+  }
+
+  return {
+    tool: tool.id,
+    targetDir: agentsFile,
+    installed: SKILLS.map(s => ({ skill: s, status: force ? 'updated' : 'installed' }))
+  }
+}
+
 export async function install(toolId, { force = false } = {}) {
   const tools = getRequestedTools(toolId)
   if (tools.error) return { success: false, error: tools.error }
 
   if (tools.length === 0) {
-    return { success: false, error: 'No supported AI tools detected (Claude Code, Cursor, Windsurf)' }
+    return { success: false, error: 'No supported AI tools detected (Claude Code, Cursor, Windsurf, Gemini CLI)' }
   }
 
   const results = []
 
   for (const tool of tools) {
+    // Handle agents-file-based tools (Gemini CLI, Codex CLI, OpenCode)
+    if (AGENTS_FILE_TOOLS.includes(tool.id)) {
+      const result = await installAgentsFile(tool, SKILLS_SOURCE, force)
+      results.push(result)
+      continue
+    }
+
     const targetDir = getSkillsDir(tool.id)
     if (!targetDir) {
       results.push({ tool: tool.id, skipped: true, reason: 'No skills directory for this tool' })

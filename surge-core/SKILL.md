@@ -51,12 +51,6 @@ output_schema:
   next_step: retry | preview-bridge | ConnectPro | engineering-mentor | skill4d-core-orchestrator | user
   confidence_score: 0.0-1.0
 
-failure_policy:
-  recoverable: true
-  escalate_only_after_attempts_or_business_decision: true
-  must_explain_blocker: true
-  must_propose_next_action: true
-
 handoff_targets:
   - skill_name: dummy-memory
     when: erro corrigido ou padrão reutilizável identificado
@@ -240,19 +234,6 @@ Quando uma correção for reutilizável, registrar em `surge-core/snippets.md`:
 **Correção:** o que foi feito (código ou comando exato)
 **Reutilizável quando:** condições para aplicar de novo
 ```
-
----
-
-## Nota de Alinhamento com o Skill Contract
-
-O bloco `Contract Snapshot` acima é a fonte principal desta skill. O restante do ecossistema deve
-permanecer alinhado com:
-
-- ativação automática quando houver sinal técnico de falha
-- correção dentro dos limites de autonomia, sem alterar regra de negócio sem decisão humana
-- verificação após cada correção com os sinais realmente disponíveis no ambiente
-- handoff para `ConnectPro`, `engineering-mentor` ou `skill4d-core-orchestrator` apenas quando o
-  blocker sair da faixa técnica corrigível
 
 ---
 

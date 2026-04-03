@@ -55,12 +55,6 @@ output_schema:
   next_step: surge-core ou próxima validação
   confidence_score: 0.0-1.0
 
-failure_policy:
-  recoverable: true
-  ask_user_only_if_blocked: true
-  must_explain_blocker: true
-  must_propose_next_action: true
-
 handoff_targets:
   - skill_name: surge-core
     when: preview revelar erro visual, runtime error ou console error não autocorrigível
@@ -75,17 +69,6 @@ success_criteria:
   - screenshot ou evidência visual capturada
   - erros de console e blockers relevantes reportados
 
-observability_signals:
-  - signal: framework_detected
-    description: framework e comando de dev inferidos
-  - signal: preview_opened
-    description: URL do preview ficou acessível
-  - signal: env_placeholder_created
-    description: preview exigiu .env.local placeholder
-  - signal: console_errors_found
-    description: runtime visual abriu com erros de console
-  - signal: surge_handoff
-    description: problema precisa de observação/correção adicional
 ```
 
 ---
@@ -105,7 +88,11 @@ observability_signals:
 
 ---
 
-## Regra Fundamental
+## Regras Fundamentais
+
+**preview-bridge ativa AUTOMATICAMENTE** — não aguarda o usuário pedir "mostra o preview" ou "abre o app".
+O orquestrador chama preview-bridge assim que qualquer artefato visual (HTML, JSX, TSX, componente React) é gerado.
+Se o usuário não pediu preview mas um build visual foi concluído → iniciar preview mesmo assim.
 
 **Nunca peça para o usuário verificar manualmente.** Se algo bloquear o preview, resolva antes de
 escalar. Só escala para o usuário se o bloqueio for genuinamente irresolvível.
@@ -276,23 +263,15 @@ preview-bridge --project /caminho/do/projeto --json
 
 ## Diagnóstico Rápido de Erros Comuns
 
+Tabela completa de erros conhecidos e correções automáticas → `surge-core/SKILL.md § Tabela de Erros Conhecidos`
+
+Erros específicos do preview:
+
 | Erro | Causa | Solução Automática |
 |------|-------|-------------------|
 | Página branca | .env.local ausente | Criar com placeholders |
 | 500 "URL and Key required" | Supabase sem env vars | Estado esperado — informar usuário |
-| "Module not found @/" | jsconfig.json ausente | Criar jsconfig.json com baseUrl e paths |
 | Port in use | Processo anterior | Matar PID, reiniciar |
 | ERR_ABORTED na rede | Servidor ainda iniciando | Aguardar 3s, tentar novamente |
 | cwd outside root | Projeto em diretório irmão | Usar --prefix em vez de cwd |
 
----
-
-## Nota de Alinhamento com o Skill Contract
-
-O bloco `Contract Snapshot` acima é a fonte principal desta skill. O `skill4d-core-orchestrator`
-deve permanecer alinhado com:
-
-- ativação automática após artefato visual ou pedido explícito de preview
-- abertura do preview sem pedir verificação manual ao usuário
-- diagnóstico por sinais reais do ambiente
-- handoff para `surge-core` quando houver blocker não autocorrigível

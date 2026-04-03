@@ -90,17 +90,17 @@ Do not use this skill for:
 - Finish with a contract review, not a vibes review.
 - Run an explicit implementation-review-correction loop until the reviewer passes the result or the loop escalates.
 
-Read these references before implementation:
-- `references/system-prompt.md`
-- `references/file-contract.md`
-- `references/crud-contract.md`
-- `references/agent-roles.md`
-- `references/review-checklist.md`
-- `references/loop-contract.md`
-- `references/template-manifest.md`
-- `references/template-runtime-contract.md`
-- `references/template-starter-contract.md`
-- `references/materialization-rules.md`
+Contratos internos aplicados antes da implementação:
+- **system-prompt:** prompt do orquestrador principal — normalizar brief, plataformas e critérios de sucesso
+- **file-contract:** estrutura de pastas do monorepo — `apps/web`, `apps/mobile`, `packages/shared`, `packages/db`
+- **crud-contract:** para cada entidade core, gerar Create/Read/Update/Delete completo salvo exclusão explícita no design
+- **agent-roles:** papéis fixos (orchestrator, product-planner, system-architect, backend-builder, web-builder, mobile-builder, integration-finisher, qa-reviewer) — ver tabela "Roles At A Glance" abaixo
+- **review-checklist:** verificar contratos de arquivo, ausência de placeholders, CRUD completo, validação de inputs, consistência de nomes entre camadas
+- **loop-contract:** loop revisão-correção continua até qa-reviewer emitir PASS ou loop escalonar explicitamente
+- **template-manifest:** blocos de template disponíveis no modo `embedded-template` — selecionados pelo system-architect na etapa de arquitetura
+- **template-runtime-contract:** regras de materialização de blocos em tempo de execução
+- **template-starter-contract:** estrutura base do starter shell quando `embedded-template` está ativo
+- **materialization-rules:** arquivos estruturais só podem vir de blocos aprovados do manifest ou serem marcados explicitamente como não-template
 
 ## Factory Modes
 
@@ -130,11 +130,11 @@ In this mode, the `system-architect` must choose template blocks before builders
 1. `orchestrator` normalizes the brief, success criteria, and required platforms.
 2. `product-planner` defines entities, flows, pages, screens, and integrations.
 3. `system-architect` fixes the monorepo/file contract, shared technical decisions, and factory mode.
-4. If using `embedded-template`, `system-architect` selects approved blocks from `references/template-manifest.md`.
+4. If using `embedded-template`, `system-architect` selects approved blocks from the template manifest (ver contratos internos acima).
 5. `backend-builder`, `web-builder`, and `mobile-builder` implement the first pass in parallel only after the contract is fixed.
 6. In `embedded-template` mode, builders may materialize only files covered by the approved blocks plus explicit non-template implementation files.
 7. `integration-finisher` resolves naming, route, data, auth, and block-integration mismatches for the current pass.
-8. `qa-reviewer` checks the result against `references/review-checklist.md` and emits a pass/fail packet with exact fixes.
+8. `qa-reviewer` checks the result against the review-checklist (ver contratos internos acima) and emits a pass/fail packet with exact fixes.
 9. If the review fails but the architecture still stands, `orchestrator` starts another loop by routing the fix packet back to the relevant builders and then through `integration-finisher` and `qa-reviewer` again.
 10. If the review fails because the architecture, manifest choice, or shared contracts are wrong, stop the implementation loop and reopen `system-architect` before more code is written.
 11. Completion is allowed only when `qa-reviewer` returns PASS or the loop exits with an explicit blocked/escalated status.

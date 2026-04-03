@@ -414,13 +414,3 @@ Engineering-mentor pode rodar em paralelo com outras skills quando:
 
 Sinal ao orquestrador: `"parallel_safe": true` no output quando a análise não bloqueia o fluxo principal.
 
----
-
-## Nota de Alinhamento com o Skill Contract
-
-O bloco `Contract Snapshot` acima é a fonte principal desta skill. O ecossistema deve preservar:
-
-- ativação por ambiguidade técnica real, não por exploração genérica
-- decisão clara com trade-offs objetivos e próximo passo explícito
-- handoff preciso para `surge-core`, `app-factory-multiagent`, `ConnectPro` ou orquestrador
-- resposta enxuta em BUILD MODE, com prioridade para desbloquear execução

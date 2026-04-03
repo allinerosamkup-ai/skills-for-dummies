@@ -307,13 +307,3 @@ on_session_end (ou entrega significativa):
   - dummy-memory SAVE com resumo do que foi feito
 ```
 
----
-
-## Nota de Alinhamento com o Skill Contract
-
-O bloco `Contract Snapshot` acima é a fonte principal desta skill. O ecossistema deve preservar:
-
-- `LOAD` automático no boot da sessão
-- `SAVE` não bloqueante após ações significativas
-- nenhuma persistência de valor secreto em `env.md`
-- consolidação periódica (`DREAM`) para evitar memória contraditória ou obsoleta

@@ -215,14 +215,14 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
   - efeitos de fundo: {blur, overlay, texture, pattern}
   - qualquer elemento visual que nao seja interativo mas compoe a identidade da pagina
 
-- Gerar `design-tokens.json` como output estruturado (ver PROMPT 5 em references/vision-prompts.md):
+- Gerar `design-tokens.json` como output estruturado (ver PROMPT 5 na seção abaixo):
   cores with semantic/HEX/RGB/HSL/wcag_aa/variants -- tipografia com css object -- espacamento com base unit
 - Se usuario corrigir a descricao, usar a versao corrigida nas etapas seguintes
 - Se usuario confirmar, prosseguir com a descricao e tokens gerados
 
 **ETAPA 2 -- VisionAgent: Analise tecnica profunda**
 - Modo HTML: parsear DOM, extrair estrutura, estilos, tipografia, cores, componentes
-- Modo Imagem: rodar as 4 analises especializadas -- ver `references/vision-prompts.md`
+- Modo Imagem: rodar as 4 analises especializadas (layout, cores, tipografia, elementos decorativos — descritas na Etapa 1b acima)
 - Usar a auto-descricao (Etapa 1b) como contexto adicional para guiar a analise
 - Output: objeto `mockAnalysis` com structure, typography, colors, spacing, effects, icons
 
@@ -315,15 +315,14 @@ REGRAS DA ESTRUTURA:
         FixerAgent.aplicarCorrecoes(codigo, diffs)
 
 **ETAPA 10 -- Output final**
-Ver formato completo em `references/output-format.md`
 - JSON com similarity %, quality metrics por dimensao, codigo final, referencias usadas
 - Screenshots: mock original, cada iteracao, comparacao final (diff visual)
 
 ## Referencias
 
-- `references/agents.md` -- codigo completo dos 6 agentes (VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent) + orquestradores V2 e V3
-- `references/vision-prompts.md` -- 4 prompts especializados para analise pixel-perfect via Claude Vision
-- `references/output-format.md` -- estrutura JSON completa do output + quality metrics + sugestoes de melhoria
+- **6 agentes:** VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent + orquestradores V2 e V3 — descritos no Fluxo de 9 Etapas acima
+- **4 prompts de analise visual:** layout, cores, tipografia, elementos decorativos — detalhados na Etapa 1b acima
+- **Output format:** estrutura JSON com similarity %, quality metrics por dimensao, codigo final, screenshots — detalhado na Etapa 10 acima
 
 ---
 

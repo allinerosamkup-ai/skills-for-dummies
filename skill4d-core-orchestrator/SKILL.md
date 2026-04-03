@@ -86,12 +86,6 @@ output_schema:
   next_step: próxima skill ou próxima ação
   confidence_score: 0.0-1.0
 
-failure_policy:
-  recoverable: true
-  ask_user_only_if_blocked: true
-  must_explain_blocker: true
-  must_propose_next_action: true
-
 handoff_targets:
   - skill_name: ConnectPro
     when: integração, credencial, OAuth, banco ou setup externo forem necessários
@@ -121,17 +115,6 @@ success_criteria:
   - preview e surge entram quando a natureza do fluxo exigir
   - usuário não precisa coordenar manualmente as skills
 
-observability_signals:
-  - signal: routing_decision
-    description: skill escolhida e motivo
-  - signal: handoff_envelope
-    description: contexto estruturado passado adiante
-  - signal: preview_requested
-    description: resultado visual precisa ser validado
-  - signal: surge_escalation
-    description: execução falhou ou exige observação
-  - signal: user_blocker
-    description: existe dependência real que impede progresso útil
 ```
 
 ---
@@ -314,7 +297,7 @@ Fase 3 CONFIRMAR: mostrar o que criou + schedule + como pausar
 | App completo, full-stack | mock-to-react (visual) + app-factory-multiagent (backend) |
 | MVP rápido | app-factory-multiagent |
 | Projeto inteiro para analisar/clonar | mock-to-react MODO SCAN |
-| Resultado web criado | preview-bridge — sempre |
+| Resultado web criado (qualquer HTML/JSX/TSX gerado) | **preview-bridge — AUTOMÁTICO, sem esperar pedido** |
 | Erro, 500, console error | surge-core — automático |
 | Decisão arquitetural | engineering-mentor |
 | `/spec` `/break` `/plan` `/execute` | engineering-mentor MODO ESTRUTURADO |
@@ -413,7 +396,9 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 - Começar com engineering-mentor quando projeto for indefinido (para PRD/SPEC)
 - NÃO construir antes da aprovação do usuário (PRD + SPEC + stack)
 - ConnectPro sempre antes de app-factory-multiagent quando há integração
-- preview-bridge após qualquer construção visual
+- **preview-bridge é OBRIGATÓRIO após qualquer construção visual — não é opcional, não é sugestão.**
+  Chamar automaticamente após: mock-to-react gerar componente, app-factory concluir build, qualquer arquivo HTML/JSX/TSX criado.
+  Reportar: `[orchestrator] build visual detectado → preview-bridge iniciando automaticamente`
 - surge-core é camada contínua — não só em erro
 - dummy-memory LOAD no boot + SAVE após cada entrega significativa
 - Nunca `router.push` após auth Supabase — usar `window.location.href`

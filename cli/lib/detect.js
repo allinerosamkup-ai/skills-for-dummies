@@ -3,6 +3,7 @@ import { join } from 'path'
 import os from 'os'
 
 const HOME = os.homedir()
+const CWD = process.cwd()
 
 export const AI_TOOLS = {
   'claude-code': {
@@ -32,6 +33,33 @@ export const AI_TOOLS = {
     rulesDir: null,
     systemPromptDir: null,
     detected: () => existsSync(join(HOME, '.gemini', 'antigravity'))
+  },
+  'gemini-cli': {
+    name: 'Gemini CLI',
+    // Gemini CLI reads GEMINI.md or AGENTS.md in the project directory
+    skillsDir: null,
+    rulesDir: null,
+    systemPromptDir: CWD,
+    agentsFile: join(CWD, 'GEMINI.md'),
+    detected: () => existsSync(join(HOME, '.gemini')) && !existsSync(join(HOME, '.gemini', 'antigravity'))
+  },
+  'codex-cli': {
+    name: 'Codex CLI',
+    // Codex CLI reads AGENTS.md in the project directory
+    skillsDir: null,
+    rulesDir: null,
+    systemPromptDir: CWD,
+    agentsFile: join(CWD, 'AGENTS.md'),
+    detected: () => false // never auto-detected — always explicit --tool codex-cli
+  },
+  'opencode': {
+    name: 'OpenCode',
+    // OpenCode reads AGENTS.md in the project directory
+    skillsDir: null,
+    rulesDir: null,
+    systemPromptDir: CWD,
+    agentsFile: join(CWD, 'AGENTS.md'),
+    detected: () => false // always explicit
   }
 }
 

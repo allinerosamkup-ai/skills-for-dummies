@@ -27,7 +27,7 @@ program
 program
   .command('install')
   .description('Install D.U.M.M.Y. OS skills into your AI tool')
-  .option('--tool <tool>', 'Target tool: claude-code | cursor | windsurf | antigravity')
+  .option('--tool <tool>', 'Target tool: claude-code | cursor | windsurf | antigravity | gemini-cli | codex-cli | opencode')
   .option('--force', 'Overwrite existing skills')
   .action(async (opts) => {
     console.log(LOGO)
@@ -62,7 +62,7 @@ program
 program
   .command('update')
   .description('Update all installed D.U.M.M.Y. OS skills to latest')
-  .option('--tool <tool>', 'Target tool')
+  .option('--tool <tool>', 'Target tool: claude-code | cursor | windsurf | antigravity | gemini-cli | codex-cli | opencode')
   .action(async (opts) => {
     console.log(LOGO)
     const spinner = ora('Updating skills...').start()
