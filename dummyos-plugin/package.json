@@ -1,0 +1,11 @@
+{
+  "name": "dummyos-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "D.U.M.M.Y. OS plugin server (minimal MCP over stdio)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
