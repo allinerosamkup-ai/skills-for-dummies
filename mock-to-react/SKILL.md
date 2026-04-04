@@ -157,16 +157,63 @@ Ao detectar qualquer elemento abaixo na auto-descricao, a busca NPM e OBRIGATORI
 **Este é o coração da skill. Prioridade máxima. Nunca dilui ou remove.**
 Replica fielmente qualquer visual fornecido em React pixel-perfect.
 Quando existe referência visual, este modo é obrigatório e exclusivo.
-→ Ver **Fluxo de 9 Etapas** abaixo.
+→ Ver **Fluxo de 10 Etapas** abaixo.
 
 ### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
-Atua como diretor visual do projeto:
-1. **Biblioteca de Design Systems** — verificar primeiro se o usuário mencionou uma empresa/estilo (Notion, Vercel, Stripe, Apple, etc.) e buscar o DESIGN.md correspondente em **awesome-design-md** (ver seção abaixo)
-2. **Pesquisa de Referências** — se não há empresa mencionada, buscar inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
-3. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
-4. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — reutilizando ao máximo do design system de referência, inventando apenas o que não está coberto
-5. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
-6. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+Atua como diretor visual do projeto. Usa fan-out paralelo para pesquisa — 3 agentes simultâneos, não sequencial.
+
+**FASE 1 — FAN-OUT PARALELO (3 agentes ao mesmo tempo)**
+
+```
+[mock-to-react] CRIATIVO — fan-out de pesquisa iniciado ⚙️
+  → Agent A: design system library (awesome-design-md)
+  → Agent B: referências de mercado (Dribbble, Awwwards, Mobbin, Behance)
+  → Agent C: tendências técnicas + GitHub (componentes similares)
+```
+
+**Agent A — Design System Library:**
+- Se usuário mencionou empresa/estilo: buscar DESIGN.md em awesome-design-md
+- Se não mencionou: buscar as 2 empresas com UI mais próxima do tipo pedido (dashboard → Vercel+Linear, auth → Notion+Supabase, settings → Linear+Raycast)
+- Extrair: paleta hex, tipografia, spacing scale, border-radius, shadows
+
+**Agent B — Referências de Mercado:**
+- WebSearch: Dribbble + Awwwards + Mobbin para o tipo de UI pedido
+- Identificar tendência dominante: glassmorphism, neobrutalism, bento grid, minimal luxury, flat 3.0, etc.
+- Coletar 2-3 referências visuais descritivas
+
+**Agent C — GitHub + Stack:**
+- Buscar: `"React {tipo} component 2024 site:github.com"`
+- Extrair: biblioteca mais usada, padrão de styling recorrente, template popular
+- Retornar: stack recommendation com base em evidência real
+
+**FASE 2 — SYNTHESIZER (após os 3 agentes)**
+
+```
+[mock-to-react] CRIATIVO — sintetizando 3 agentes ⚙️
+  → design system: {Agent A}
+  → estética: {Agent B}
+  → stack: {Agent C}
+```
+
+Sintetizar em direção visual unificada. Prioridade: coerência entre as 3 fontes.
+
+**FASE 3 — PROPOSTA + APROVAÇÃO (única pergunta ao usuário)**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  mock-to-react  ▸  DIREÇÃO VISUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Referência:   {empresa} ({estética de mercado})
+ Paleta:       primary {#hex} · surface {#hex} · text {#hex}
+ Tipografia:   {família}, escala {nome}
+ Stack:        {biblioteca/framework de implementação}
+
+ Essa direção serve? [S] ou descreva o ajuste:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**FASE 4 — CONSTRUÇÃO**
+Usar o Fluxo de 10 Etapas com os tokens gerados na direção criativa.
 
 **Princípio de reaproveitamento (menos código = mais fidelidade):**
 - Paleta → usar hex do design system de referência antes de inventar cores
@@ -550,7 +597,7 @@ REGRAS DA ESTRUTURA:
 
 ## Referencias
 
-- **6 agentes:** VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent + orquestradores V2 e V3 — descritos no Fluxo de 9 Etapas acima
+- **6 agentes:** VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent + orquestradores V2 e V3 — descritos no Fluxo de 10 Etapas acima
 - **4 prompts de analise visual:** layout, cores, tipografia, elementos decorativos — detalhados na Etapa 1b acima
 - **Output format:** estrutura JSON com similarity %, quality metrics por dimensao, codigo final, screenshots — detalhado na Etapa 10 acima
 

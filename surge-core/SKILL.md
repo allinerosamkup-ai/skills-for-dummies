@@ -206,6 +206,59 @@ Surge só escala quando **esgotou 3 tentativas** ou quando o problema requer dec
 
 ---
 
+## TASK DAG — Cascading Failure Recovery
+
+Quando o orchestrator chama surge-core com um `task_id` do Task DAG, o protocolo DAG-aware substitui o fluxo padrão:
+
+**Handoff recebido do orchestrator:**
+```json
+{
+  "task_id": "t4",
+  "blocked_tasks": ["t5", "t6"],
+  "failure_reason": "descrição do erro",
+  "dag_context": { "completed": ["t1","t2","t3"], "failed": "t4", "blocked": ["t5","t6"] }
+}
+```
+
+**Protocolo:**
+```
+1. DIAGNOSTICAR — Loop padrão (coleta sinais, identifica causa raiz, aplica correção, verifica)
+
+2. AO RESOLVER:
+   → Reportar: "[surge-core] t{N} corrigida → sinalizando orchestrator: {blocked_tasks} desbloqueadas"
+   → Retornar envelope para orchestrator:
+     {
+       "task_id": "t4",
+       "status": "resolved",
+       "blocked_tasks_to_unblock": ["t5", "t6"],
+       "correction_applied": "descrição do fix",
+       "retry_ready": true
+     }
+
+3. Orchestrator ao receber "resolved":
+   → task_id: FAILED → PENDING (retry automático)
+   → blocked_tasks: BLOCKED → PENDING
+   → DAG continua do ponto onde parou
+
+4. SE esgotar 3 tentativas:
+   → status: "escalated"
+   → blocked_tasks_to_unblock: [] (permanecem BLOCKED)
+   → Orchestrator marca task como FAILED permanentemente
+   → Reportar ao usuário: diagnóstico completo + etapas afetadas
+```
+
+**Formato de reporte DAG:**
+```
+[surge-core] DAG recovery — t4 falhou → t5, t6 bloqueadas
+[surge-core] diagnóstico 1/3: analisando erro em app-factory ⚙️
+[surge-core] ✓ causa raiz — módulo 'pg' não instalado
+[surge-core] correção 1/3: npm install pg ⚙️
+[surge-core] ✓ verificado — build passou
+[surge-core] ✓ DAG recovery — t4 corrigida → orchestrator: t5, t6 desbloqueadas
+```
+
+---
+
 ## Modo Proativo (entre construção e validação)
 
 Surge também entra **antes** de erros quando o core-orchestrator encerra uma skill construtiva.
