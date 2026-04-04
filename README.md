@@ -2,7 +2,7 @@
 
 **Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
-> The operating system that lives inside your AI. — v2.2
+> The operating system that lives inside your AI. — v2.5
 
 ---
 
@@ -67,14 +67,14 @@ Working app. One prompt.
 
 | Process | Trigger | What it does |
 |---------|---------|-------------|
-| **dummy-memory** | always — boot LOAD + after every action SAVE | Persists project state, credentials, decisions and fixed errors across sessions. |
+| **dummy-memory** | always — boot LOAD + after every action SAVE | Persists project state, credentials, decisions and fixed errors across sessions. Namespaced cross-skill memory: each skill writes to its own namespace (`mock-to-react/design_tokens`, `ConnectPro/env_vars`, etc.) — any skill can read any other's output. `dummy snapshot` shows the full cross-skill state. |
 | **ConnectPro** | OAuth, API keys, database, Supabase, Stripe | Provisions credentials automatically via MCP → API → browser automation → CLI. Email loop captures verification emails automatically. |
-| **mock-to-react** | image, wireframe, screenshot | 6-agent system that converts any visual into pixel-perfect React components |
+| **mock-to-react** | image, wireframe, screenshot | 10-step multiagent system. Pixel-perfect copy from any visual. Aesthetic Intelligence Audit (color harmony, typography scale, WCAG contrast, spacing rhythm). Hard gates enforce every step. Fan-out parallel research in creative mode. |
 | **app-factory-multiagent** | "build an app", full-stack, auth + database | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
 | **preview-bridge** | after any build | Auto-detects framework, resolves port conflicts, opens live preview |
 | **surge-core** | always active | Monitors everything. Auto-corrects errors within defined autonomy limits. |
 | **engineering-mentor** | architectural decisions, undefined projects | Senior architect judgment. Generates PRD + SPEC before building. Non-blocking. |
-| **orchestrator** | hi dummy, multi-skill flow | Kernel. Interprets intent, routes to right process, preserves context. |
+| **orchestrator** | hi dummy, multi-skill flow | Kernel. Interprets intent, auto-decomposes complex goals into a Task DAG with explicit `dependsOn` chains. Independent tasks run in parallel. Cascading failure recovery via surge-core. Capability-match scheduler routes to the best skill automatically. |
 
 ---
 
@@ -140,6 +140,51 @@ hi dummy
 ```
 
 The OS loads your project memory and waits for your intent — no configuration needed.
+
+---
+
+## What's new in v2.5
+
+### Task DAG — Automatic goal decomposition
+For complex multi-skill goals, the orchestrator now auto-decomposes into an explicit task graph with `dependsOn` chains before executing. Independent tasks run in **parallel**. You see the DAG before it starts:
+
+```
+[t1] engineering-mentor  — PRD + SPEC          (independent)
+[t2] mock-to-react       — visual              (after t1)
+[t3] ConnectPro          — auth setup          (after t1) ← parallel with t2
+[t4] app-factory         — backend + API       (after t2, t3)
+[t5] preview-bridge      — preview             (after t4)
+```
+
+### Cascading failure recovery
+If task t4 fails → t5 and t6 are automatically marked **BLOCKED** → surge-core receives the exact `task_id` and `blocked_tasks`, fixes the root cause, and signals the orchestrator to unblock the chain and retry. No manual intervention.
+
+### Aesthetic Intelligence Audit — mock-to-react ETAPA 2.5
+Before generating any code, mock-to-react now audits extracted tokens with numeric rules:
+- **Color harmony** — HSL angle classification (analogous ≤30°, complementary 150–210°, triadic)
+- **WCAG 2.1 contrast** — calculated ratio per text/background pair
+- **Modular typography scale** — validates Minor Third, Perfect Fourth, Golden Ratio ratios
+- **Spacing rhythm** — detects base unit (4/8px), checks % on-grid
+- **Visual balance** — weight per quadrant, whitespace rhythm
+
+Cohesion score 0–100 before any code is written. In Copy Mode: report only. In Creative Mode: auto-correct before generating.
+
+### Hard Gates — mock-to-react steps enforced
+Every step now requires **verifiable evidence** before the next one opens. "Searched mentally" doesn't count. 20 component-to-NPM-query triggers mapped explicitly. Steps 4, 5, and 7 cannot be skipped under any justification.
+
+### Namespaced cross-skill memory
+Each skill writes to its own namespace in dummy-memory (`mock-to-react/design_tokens`, `ConnectPro/services_resolved`, `app-factory/api_contract`, etc.). The orchestrator injects the relevant namespaces into every downstream skill's handoff automatically. `dummy snapshot` shows the full cross-skill state at any point.
+
+### Typed output schemas + handoff validation
+Every skill now has a canonical output schema. Downstream skills validate that required fields are present before executing — and fall back to the namespace if artifacts are missing. `HANDOFF_SCHEMA.md` is the single source of truth for all inter-skill contracts.
+
+### Fan-out parallel research — Creative Mode
+In Creative Mode, mock-to-react now launches 3 agents simultaneously:
+- Agent A: awesome-design-md design system library
+- Agent B: market references (Dribbble, Awwwards, Mobbin)
+- Agent C: GitHub component patterns + stack trends
+
+A synthesizer merges all 3 into a unified visual direction before proposing to the user.
 
 ---
 

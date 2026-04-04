@@ -60,6 +60,19 @@
     }
   },
 
+  "aesthetic_audit": {
+    "coesao_score": 78,
+    "contraste": { "status": "1 falha AA", "pares_fail": ["placeholder/input-bg: ratio 2.1"] },
+    "harmonia_esquema": "complementar",
+    "cores_fora_de_esquema": ["#FF6B35 (ΔH=47°)"],
+    "tipografia_escala": "Perfect Fourth (1.33)",
+    "tipografia_avisos": ["line-height body: 1.28 abaixo do minimo"],
+    "espacamento_base_unit": 8,
+    "espacamento_aderencia": "87% on-grid",
+    "equilibrio": "assimetrico equilibrado",
+    "modo": "COPIA — tokens preservados, avisos registrados"
+  },
+
   "quality_metrics": {
     "layout_accuracy": 99.8,
     "color_accuracy": 99.5,

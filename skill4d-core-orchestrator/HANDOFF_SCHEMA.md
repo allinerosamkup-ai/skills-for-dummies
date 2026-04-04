@@ -34,6 +34,7 @@ Ela deve recebê-lo.
   "goal": "o objetivo final do usuário",
   "user_intent": "interpretação atual da intenção",
   "current_state": "em que estágio do fluxo estamos",
+  "requested_capabilities": [],
   "artifacts": [],
   "decisions_made": [],
   "blocking_issues": [],
@@ -126,6 +127,16 @@ Exemplo: `"Se não detectar framework, devolver blocked com diagnóstico e passa
 ### confidence_score
 Confiança da skill emissora sobre o estado atual.
 Faixa: `0.0` a `1.0`.
+
+### requested_capabilities
+Lista de capacidades que a skill emissora precisa que o sistema obtenha antes de continuar.
+
+Exemplos:
+- `"web_search"` (pesquisa e coleta de referencias/pacotes/padroes)
+- `"browser_automation"` (login/dashboard/scrape)
+- `"email_confirmation"` (capturar codigo/magic link)
+- `"workflow_automation"` (n8n como auxiliar)
+- `"mcp_discovery"` (descobrir MCPs desconhecidos via registry)
 
 ### requires_user_input
 Booleano.
@@ -271,3 +282,145 @@ Se uma skill repete perguntas já respondidas,
 a culpa é do handoff.
 Se o sistema parece lento apesar de boas skills,
 o problema quase sempre está no handoff.
+
+---
+
+## 8. Output Schemas Canônicos por Skill
+
+Cada skill produz um output estruturado ao final da execução. A skill receptora **deve esperar exatamente este formato** no campo `artifacts` do handoff. Cada schema inclui `namespace` — as chaves que a skill escreve no dummy-memory para acesso cross-skill.
+
+### mock-to-react
+```json
+{
+  "status": "success | partial | failed",
+  "mode": "COPY | CREATIVE | SCAN",
+  "similarity": 99.7,
+  "design_tokens": {
+    "colors": [], "typography": [], "spacing": { "base": 8 }
+  },
+  "generated_code": {
+    "jsx": "...", "component_tree": {}, "styling_strategy": "css_variables"
+  },
+  "resources_used": {
+    "npm_packages": [], "icons": {}, "github_references": []
+  },
+  "aesthetic_audit": {
+    "coesao_score": 78, "contraste": {}, "harmonia_esquema": "complementar", "tipografia_escala": "Perfect Fourth"
+  },
+  "namespace": {
+    "mock-to-react/design_tokens": "{colors, typography, spacing}",
+    "mock-to-react/harmony_score": "78/100 — 1 aviso WCAG"
+  }
+}
+```
+
+### ConnectPro
+```json
+{
+  "status": "success | partial | failed",
+  "services_resolved": ["supabase", "resend"],
+  "env_vars_created": ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_KEY"],
+  "services_blocked": [],
+  "next_action": "app-factory-multiagent | user | engineering-mentor",
+  "namespace": {
+    "ConnectPro/services_resolved": "[supabase, resend]",
+    "ConnectPro/env_vars": "[SUPABASE_URL, SUPABASE_ANON_KEY]"
+  }
+}
+```
+
+### app-factory-multiagent
+```json
+{
+  "status": "success | partial | failed",
+  "stack": "Next.js 14 + Supabase + Tailwind",
+  "files_created": ["src/app/page.tsx", "src/lib/supabase.ts"],
+  "api_contract": {
+    "endpoints": [{ "method": "POST", "path": "/notes", "entity": "Note" }],
+    "entities": ["Note", "User"]
+  },
+  "build_status": "passing | failing",
+  "namespace": {
+    "app-factory/api_contract": "POST/GET/DELETE /notes",
+    "app-factory/stack_chosen": "Next.js 14 + Supabase + Tailwind"
+  }
+}
+```
+
+### engineering-mentor
+```json
+{
+  "status": "success | partial | failed",
+  "prd_summary": "App de notas com auth email + Supabase",
+  "stack_recommended": "Next.js + Supabase",
+  "issues": [{ "id": "issue-1", "title": "Autenticação", "priority": "high" }],
+  "decision": "descrição da decisão arquitetural tomada",
+  "namespace": {
+    "engineering-mentor/prd_approved": "App de notas com auth email + Supabase",
+    "engineering-mentor/issues": "[issue-1, issue-2]"
+  }
+}
+```
+
+### surge-core
+```json
+{
+  "status": "success | partial | failed | escalated",
+  "task_id": "t4",
+  "root_cause": "módulo 'pg' não instalado",
+  "correction_applied": "npm install pg",
+  "blocked_tasks_to_unblock": ["t5", "t6"],
+  "retry_ready": true,
+  "reusable_pattern": { "symptom": "...", "fix": "...", "when": "..." },
+  "namespace": {
+    "surge-core/errors_fixed": "[TypeError: Cannot read 'user' of undefined]"
+  }
+}
+```
+
+### preview-bridge
+```json
+{
+  "status": "success | partial | failed",
+  "preview_url": "http://localhost:3000",
+  "screenshot": "report/screenshot.png",
+  "console_errors": [],
+  "network_errors": [],
+  "visual_match": true,
+  "namespace": {
+    "preview-bridge/preview_url": "http://localhost:3000"
+  }
+}
+```
+
+### dummy-memory
+```json
+{
+  "status": "success | partial | failed",
+  "operation": "LOAD | SAVE | DREAM | SNAPSHOT | PERFIL | CONSULTA",
+  "memory_loaded": true,
+  "state_summary": "App de notas em Next.js 14, Supabase configurado",
+  "env_resolved": ["supabase", "resend"],
+  "known_decisions": ["usar App Router", "Tailwind como styling"],
+  "snapshot": { "mock-to-react/harmony_score": "78/100", "ConnectPro/services_resolved": "..." }
+}
+```
+
+---
+
+## 9. Validação de Schema no Handoff
+
+Quando uma skill recebe um handoff, ela **deve verificar** se os campos obrigatórios estão presentes antes de executar:
+
+```
+SE handoff.artifacts está vazio E current_state != "initial_request":
+  → AVISO: "handoff incompleto — artefatos esperados ausentes"
+  → Tentar recuperar do dummy-memory/namespace da skill anterior
+  → SE não encontrar: reportar bloqueio ao orchestrator
+
+SE handoff.decisions_made está vazio E current_state IN ["ui_generated", "app_generated"]:
+  → AVISO: "decisões de stack não encontradas — risco de inconsistência"
+  → Ler engineering-mentor/prd_approved ou app-factory/stack_chosen do namespace
+
+VALIDAÇÃO PASSA → skill executa normalmente
+```

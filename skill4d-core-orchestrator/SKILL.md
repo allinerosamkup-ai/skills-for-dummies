@@ -309,6 +309,82 @@ Fase 3 CONFIRMAR: mostrar o que criou + schedule + como pausar
 
 ---
 
+## TASK DAG — Decomposição Automática (Coordinator Pattern)
+
+Para objetivos com ≥ 3 skills ou dependências explícitas entre etapas, o orchestrator decompõe automaticamente em grafo de tarefas antes de executar — em vez de descrever o fluxo em texto livre.
+
+**Quando usar:** Tipo A (app completo), Tipo C (app + integrações), qualquer pedido com encadeamento claro entre skills.
+
+**Fluxo:**
+1. Fase 0 → objetivo estruturado
+2. Orchestrator declara task array JSON com `skill`, `goal` e `dependsOn`
+3. Exibir DAG ao usuário antes de executar
+4. Tasks sem dependência rodam em **paralelo**
+5. Tasks com `dependsOn` aguardam predecessores completarem
+6. Falha em task N → dependentes marcados `BLOQUEADOS` automaticamente → surge-core escalado
+7. Após resolução → retomar task N e desbloquear dependentes
+
+**Formato de declaração:**
+```json
+[
+  { "id": "t1", "skill": "engineering-mentor",   "goal": "Gerar PRD + SPEC",      "dependsOn": [] },
+  { "id": "t2", "skill": "mock-to-react",         "goal": "Visual criativo",       "dependsOn": ["t1"] },
+  { "id": "t3", "skill": "ConnectPro",            "goal": "Setup auth + DB",       "dependsOn": ["t1"] },
+  { "id": "t4", "skill": "app-factory-multiagent","goal": "Construir backend+API", "dependsOn": ["t2","t3"] },
+  { "id": "t5", "skill": "preview-bridge",        "goal": "Preview + screenshot",  "dependsOn": ["t4"] },
+  { "id": "t6", "skill": "surge-core",            "goal": "Monitorar e corrigir",  "dependsOn": ["t5"] }
+]
+```
+
+**Exibição obrigatória ao usuário antes de executar:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  Task DAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ [t1] engineering-mentor  — PRD + SPEC          (independente)
+ [t2] mock-to-react       — visual criativo      (após t1)
+ [t3] ConnectPro          — auth + DB            (após t1) ← paralelo com t2
+ [t4] app-factory         — backend + API        (após t2, t3)
+ [t5] preview-bridge      — preview              (após t4)
+ [t6] surge-core          — monitorar            (após t5)
+
+ t2 e t3 rodam em PARALELO.
+ Confirmar? [S] ou ajustar:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+No MODO YOLO: pular confirmação, executar imediatamente.
+
+**Estados de task:**
+- `pending` — aguardando início
+- `in_progress` — skill executando
+- `completed ✓` — entregue com sucesso
+- `failed ✗` — erro não recuperável
+- `blocked ◼` — dependência falhou (cascade automático)
+- `skipped →` — pulado por YOLO ou decisão do usuário
+
+**Cascading failure:**
+```
+SE task {N} → FAILED:
+  → Todos dependentes diretos e transitivos: BLOCKED
+  → Reportar: "[orchestrator] t{N} falhou → {dependentes} bloqueados → escalando surge-core"
+  → Após surge-core resolver: retomar t{N} e desbloquear dependentes
+```
+
+**Progresso em tempo real:**
+```
+[orchestrator] ▶ t1 engineering-mentor — gerando PRD...
+[orchestrator] ✓ t1 — PRD aprovado → desbloqueando t2, t3
+[orchestrator] ▶ t2 mock-to-react + t3 ConnectPro — paralelo iniciado
+[orchestrator] ✓ t2 — visual aprovado | ✓ t3 — Supabase configurado
+[orchestrator] ▶ t4 app-factory — construindo...
+[orchestrator] ✗ t4 — erro → t5, t6 BLOQUEADOS → surge-core escalado
+```
+
+**Capability-match (scheduler automático):**
+Quando `assignee` não é especificado, o orchestrator ranqueia skills por overlap de keywords entre o `goal` da task e o `description` de cada skill — e escolhe a de maior score. Isso permite que novas skills sejam incorporadas ao ecossistema sem alterar regras manuais de roteamento.
+
+---
+
 ## Execução Paralela
 
 ```
@@ -316,10 +392,11 @@ PERMITIDO:
 ├── ConnectPro + engineering-mentor (credenciais enquanto arquitetura é decidida)
 ├── web + mobile + backend (dentro do app-factory-multiagent)
 └── surge-core + preview-bridge
+└── tasks sem dependsOn dentro de um Task DAG
 
 PROIBIDO:
 ├── ConnectPro → app-factory-multiagent (app-factory-multiagent precisa das credenciais primeiro)
-└── qualquer skill que depende do output da anterior
+└── qualquer skill que depende do output da anterior (usar dependsOn no DAG)
 ```
 
 ---
@@ -403,6 +480,34 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 - dummy-memory LOAD no boot + SAVE após cada entrega significativa
 - Nunca `router.push` após auth Supabase — usar `window.location.href`
 - Uma pergunta por vez com suposição sugerida quando faltar contexto
+
+---
+
+## Protocolo de Integracao (Skills se puxam)
+
+Regra: cada skill deve ser inteligente individualmente, mas nao deve "morrer sozinha". Quando travar, ela devolve um handoff claro para o kernel, e o kernel chama a skill que supre a lacuna.
+
+### Quando uma skill deve escalar para o kernel
+- Falta de capacidade externa: precisa de `web_search`, `browser_automation`, `email_confirmation`, `workflow_automation`, `mcp_discovery`.
+- Falta de credencial/MCP/API/CLI: precisa de ConnectPro para provisionar.
+- Ambiguidade conceitual: precisa de engineering-mentor para decidir.
+- Erro observavel (runtime/build/preview/diff): precisa de surge-core para corrigir.
+
+### O que a skill deve retornar quando estiver bloqueada
+Sempre incluir um envelope (ver `HANDOFF_SCHEMA.md`) com:
+- `blocking_issues[]` (type/severity/message)
+- `requested_capabilities[]` (quando aplicavel)
+- `expected_next_step`: "Kernel: chamar {ConnectPro|surge-core|engineering-mentor} e depois retomar {skill_original}"
+- `fallback_if_blocked`
+
+### Como o kernel resolve e retoma
+Ordem padrao:
+1. Se `blocking_issues` indicam credencial/capability → chamar ConnectPro com `required_services` e/ou `requested_capabilities`.
+2. Se o problema for erro tecnico observavel → chamar surge-core.
+3. Se for decisao/escopo → chamar engineering-mentor.
+4. Retomar a skill original com o envelope atualizado (artefatos + decisoes + capacidades resolvidas).
+
+Isso e o que faz o ecossistema parecer um unico sistema (e nao prompts soltos).
 
 ---
 

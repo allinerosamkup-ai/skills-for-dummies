@@ -39,12 +39,14 @@ PROIBIDO:
 ## Formato de Reporte
 
 ```
-[mock-to-react] Passo 1/9: Análise visual — detectando tipo de input ⚙️
-[mock-to-react] Passo 1/9: ✓ {resultado resumido}
-[mock-to-react] Passo 2/9: Análise técnica profunda ⚙️
-[mock-to-react] Passo 2/9: ✓ {resultado resumido}
+[mock-to-react] Passo 1/10:  Análise visual — detectando tipo de input ⚙️
+[mock-to-react] Passo 1/10:  ✓ {resultado resumido}
+[mock-to-react] Passo 2/10:  Análise técnica profunda ⚙️
+[mock-to-react] Passo 2/10:  ✓ {resultado resumido}
+[mock-to-react] Passo 2.5/10: Auditoria estética ⚙️
+[mock-to-react] Passo 2.5/10: ✓ Score de coesão: {N}/100
 ...
-[mock-to-react] Passo 9/9: ✓ Similaridade: {X}% — concluído
+[mock-to-react] Passo 10/10: ✓ Similaridade: {X}% — concluído
 ```
 
 Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
@@ -53,20 +55,99 @@ Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
 
 ## Padrao Estetico (Harmonia Universal)
 
-Objetivo: garantir um padrao visual consistente e harmonicamente "bom" quando o design nao esta 100% especificado, sem violar o pixel-perfect quando existe imagem.
+Objetivo: garantir um padrao visual consistente e harmonicamente coerente. A auditoria estetica completa e executada na **ETAPA 2.5** do fluxo com regras numericas verificaveis.
 
-Regras:
-- MODO COPIA: a imagem manda. Harmonia nao autoriza alterar o visual visivel. Harmonia so pode atuar em estados (hover/active/disabled/loading), responsividade e partes nao especificadas/ocultas na imagem.
-- MODO CRIATIVO: harmonia e obrigatoria. Se ficar incoerente (tipografia ruim, espacamento aleatorio, cores brigando), corrigir antes de entregar.
+Politica por modo:
+- **MODO COPIA:** a imagem manda. A auditoria identifica falhas no mock original mas NAO altera os tokens. Harmonia so pode atuar em estados nao especificados (hover/active/disabled), responsividade e partes ocultas. Reportar sem corrigir.
+- **MODO CRIATIVO:** a auditoria e corretiva. Tokens com falhas sao ajustados antes de gerar codigo. Score de coesao >= 70 obrigatorio para avancar.
 
-Checklist minimo (nao negociavel):
-- Tipografia: no maximo 2 familias; escala coerente (ex.: 12/14/16/20/24/32); pesos usados com parcimonia; line-height consistente.
-- Espacamento: base unit consistente (4/8) e uso repetido (8/16/24/32); evitar gaps aleatorios.
-- Alinhamento: grids/colunas claras; edges alinhadas; icones/textos com baseline coerente.
-- Cores: roles semanticos claros (bg/surface/text/primary/border); contraste minimo legivel; nao inventar tons sem motivo.
-- Efeitos: sombras/radius consistentes (1-2 niveis); nao misturar estilos.
+Dimensoes auditadas na ETAPA 2.5 (com regras numericas concretas):
+- **Contraste:** WCAG 2.1 — ratio >= 4.5 para texto normal, >= 3.0 para texto grande / UI
+- **Harmonia de cores:** esquema HSL — analogos (|ΔH| <= 30°), complementar (150–210°), triadico (115–125° ou 235–245°); saturacao consistente (variacao maxima 25pp entre cores saturadas); sem conflito de temperatura quente+frio sem neutro mediador
+- **Tipografia:** escala modular verificavel (Minor Third 1.2 / Major Third 1.25 / Perfect Fourth 1.333 / Golden Ratio 1.618); hierarquia de pesos (heading >= 600, body = 400); line-height body 1.4–1.8, headings 1.1–1.35
+- **Espacamento:** base unit 4 ou 8px; aderencia >= 70% on-grid; progressao linear ou geometrica
+- **Equilibrio visual:** desequilibrio < 40% entre quadrantes opostos; whitespace respirado (gap minimo base_unit × 1)
 
-Artefato: incluir no output final um `harmony_report` (pass/fail + 3-5 ajustes sugeridos ou "ok").
+Score de coesao 0–100 calculado e exibido antes de gerar codigo.
+Artefato: `harmony_report` no output final (pass/fail por dimensao + score + ajustes aplicados).
+
+---
+
+## HARD GATE PROTOCOL — Portoes de Execucao Obrigatoria
+
+**Regra absoluta:** Cada etapa do fluxo e um PORTAO. Evidencia nao exibida = etapa nao executada. Nao prosseguir para etapa N+1 sem evidencia verificavel da etapa N na resposta atual.
+
+### Evidencias Obrigatorias por Etapa
+
+| Etapa | Evidencia Minima Obrigatoria |
+|-------|------------------------------|
+| 1a | `INPUT_TYPE: IMAGE` ou `INPUT_TYPE: HTML` declarado explicitamente |
+| 1b | Bloco de auto-descricao completo exibido ao usuario (Layout + Componentes + Tipografia + Paleta + Espacamento + Efeitos + Icones + Inventario Decorativo) |
+| 1b conf. | `user_confirmed: true` recebido OU correcao aplicada |
+| 1c | Inventario enumerado exibido — todos os campos: id, type, role, interactive, approx_bbox |
+| 2 | Objeto `mockAnalysis` exibido: structure, typography, colors, spacing, effects, icons |
+| **2.5** | **Relatorio de Auditoria Estetica completo (5 blocos + score de coesao)** |
+| 3 | `layoutMap` exibido: component_tree + grid_definition + responsive_breakpoints |
+| **4** | **Lista de queries NPM geradas + resultados com nome, versao e score de cada pacote** |
+| **5** | **Para cada icone do inventario: biblioteca encontrada + URL SVG valida** |
+| 6 | Caminho local de cada recurso em `./cache/resources/` confirmado |
+| **7** | **Top 3 repos com URL + stars + padrao de styling detectado** |
+| 8 | Estrutura de arquivos declarada + `styling_strategy` registrada |
+| 9 | Score de similaridade por dimensao exibido a cada iteracao |
+
+**Formato de bloqueio:**
+```
+[mock-to-react] BLOQUEADO na Etapa {N} — evidencia ausente: {tipo}
+→ Executando Etapa {N} agora antes de continuar
+```
+
+### Triggers NPM Obrigatorios (ETAPA 4)
+
+Ao detectar qualquer elemento abaixo na auto-descricao, a busca NPM e OBRIGATORIA:
+
+| Elemento detectado | Query NPM obrigatoria |
+|---|---|
+| botao / button | `"react button component accessible"` |
+| tabela / table / grid de dados | `"react table component headless"` |
+| formulario / form com validacao | `"react hook form"` + `"react form validation"` |
+| modal / dialog / popup | `"react modal accessible headless"` |
+| dropdown / select / combobox | `"react select combobox accessible"` |
+| calendario / date picker | `"react datepicker accessible"` |
+| slider / range input | `"react slider range accessible"` |
+| toast / notificacao / alert | `"react toast notification"` |
+| grafico / chart / dashboard | `"react chart recharts victory nivo"` |
+| carousel / slider de imagens | `"react carousel embla swiper"` |
+| drag and drop | `"react dnd sortable"` |
+| editor de texto rico | `"react rich text editor"` |
+| upload de arquivo | `"react dropzone file upload"` |
+| animacao / transicao complexa | `"framer motion react spring"` |
+| avatar / foto de perfil | `"react avatar fallback"` |
+| badge / tag / chip | `"react badge chip component"` |
+| progress bar / loading | `"react progress bar loading"` |
+| padrao SVG / background decorativo | `"react svg pattern background"` |
+| emoji picker | `"emoji picker react"` |
+| virtual list / scroll infinito | `"react virtual list windowing"` |
+
+**Se nenhum elemento da lista for detectado:** busca generica com os 3 tipos de componentes mais presentes na auto-descricao.
+**Proibido pular ETAPA 4 sob qualquer justificativa, incluindo "componente simples demais".**
+
+### Formato de Reporte com Portao (Etapas 4, 5, 7)
+
+```
+[mock-to-react] Etapa 4/10: buscando pacotes NPM ⚙️
+  → queries: ["react button accessible", "react card shadow"]
+  → resultados: react-aria (score 0.94), shadcn/ui (0.89), headlessui (0.87)
+[mock-to-react] Etapa 4/10: ✓ PORTAO ABERTO — 3 pacotes classificados
+
+[mock-to-react] Etapa 5/10: buscando icones ⚙️
+  → "settings gear": tabler-icons ✓ → https://cdn.jsdelivr.net/.../settings.svg
+  → "arrow right": heroicons ✓ → https://cdn.jsdelivr.net/.../arrow-right.svg
+[mock-to-react] Etapa 5/10: ✓ PORTAO ABERTO — 2/2 icones resolvidos
+
+[mock-to-react] Etapa 7/10: buscando referencias GitHub ⚙️
+  → top 3: headlessui (⭐22k, compound pattern), radix-ui (⭐18k, polymorphic), react-aria (⭐10k, hooks)
+[mock-to-react] Etapa 7/10: ✓ PORTAO ABERTO — padrao de referencia registrado
+```
 
 ---
 
@@ -76,16 +157,63 @@ Artefato: incluir no output final um `harmony_report` (pass/fail + 3-5 ajustes s
 **Este é o coração da skill. Prioridade máxima. Nunca dilui ou remove.**
 Replica fielmente qualquer visual fornecido em React pixel-perfect.
 Quando existe referência visual, este modo é obrigatório e exclusivo.
-→ Ver **Fluxo de 9 Etapas** abaixo.
+→ Ver **Fluxo de 10 Etapas** abaixo.
 
 ### 🎨 MODO CRIATIVO (ativado quando NÃO há imagem mas há pedido visual)
-Atua como diretor visual do projeto:
-1. **Biblioteca de Design Systems** — verificar primeiro se o usuário mencionou uma empresa/estilo (Notion, Vercel, Stripe, Apple, etc.) e buscar o DESIGN.md correspondente em **awesome-design-md** (ver seção abaixo)
-2. **Pesquisa de Referências** — se não há empresa mencionada, buscar inspirações reais (Dribbble, Awwwards, Mobbin, Behance) via WebSearch
-3. **Análise de Tendências** — identifica o que há de mais alto no mercado para o tipo de UI pedida (glassmorphism, neobrutalism, bento grid, minimal luxury, etc.)
-4. **Direção Visual Original** — propõe paleta, tipografia, layout, efeitos — reutilizando ao máximo do design system de referência, inventando apenas o que não está coberto
-5. **Aprovação** — apresenta a direção visual ao usuário antes de codificar (uma pergunta direta: "Essa direção serve ou quer ajustar?")
-6. **Construção** — usa o Fluxo de 9 Etapas com os tokens gerados na direção criativa
+Atua como diretor visual do projeto. Usa fan-out paralelo para pesquisa — 3 agentes simultâneos, não sequencial.
+
+**FASE 1 — FAN-OUT PARALELO (3 agentes ao mesmo tempo)**
+
+```
+[mock-to-react] CRIATIVO — fan-out de pesquisa iniciado ⚙️
+  → Agent A: design system library (awesome-design-md)
+  → Agent B: referências de mercado (Dribbble, Awwwards, Mobbin, Behance)
+  → Agent C: tendências técnicas + GitHub (componentes similares)
+```
+
+**Agent A — Design System Library:**
+- Se usuário mencionou empresa/estilo: buscar DESIGN.md em awesome-design-md
+- Se não mencionou: buscar as 2 empresas com UI mais próxima do tipo pedido (dashboard → Vercel+Linear, auth → Notion+Supabase, settings → Linear+Raycast)
+- Extrair: paleta hex, tipografia, spacing scale, border-radius, shadows
+
+**Agent B — Referências de Mercado:**
+- WebSearch: Dribbble + Awwwards + Mobbin para o tipo de UI pedido
+- Identificar tendência dominante: glassmorphism, neobrutalism, bento grid, minimal luxury, flat 3.0, etc.
+- Coletar 2-3 referências visuais descritivas
+
+**Agent C — GitHub + Stack:**
+- Buscar: `"React {tipo} component 2024 site:github.com"`
+- Extrair: biblioteca mais usada, padrão de styling recorrente, template popular
+- Retornar: stack recommendation com base em evidência real
+
+**FASE 2 — SYNTHESIZER (após os 3 agentes)**
+
+```
+[mock-to-react] CRIATIVO — sintetizando 3 agentes ⚙️
+  → design system: {Agent A}
+  → estética: {Agent B}
+  → stack: {Agent C}
+```
+
+Sintetizar em direção visual unificada. Prioridade: coerência entre as 3 fontes.
+
+**FASE 3 — PROPOSTA + APROVAÇÃO (única pergunta ao usuário)**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  mock-to-react  ▸  DIREÇÃO VISUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Referência:   {empresa} ({estética de mercado})
+ Paleta:       primary {#hex} · surface {#hex} · text {#hex}
+ Tipografia:   {família}, escala {nome}
+ Stack:        {biblioteca/framework de implementação}
+
+ Essa direção serve? [S] ou descreva o ajuste:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**FASE 4 — CONSTRUÇÃO**
+Usar o Fluxo de 10 Etapas com os tokens gerados na direção criativa.
 
 **Princípio de reaproveitamento (menos código = mais fidelidade):**
 - Paleta → usar hex do design system de referência antes de inventar cores
@@ -190,7 +318,7 @@ Quando o usuário mencionar empresa, produto ou estilo de design, buscar o DESIG
 ## Fluxos de Operacao
 
 ### 🎨 MODO PADRAO (UI React)
-Fluxo principal de 9 etapas focado exclusivamente em Front-end. A skill atua como especialista React, garantindo pixel-perfect e completude funcional da interface.
+Fluxo principal de 10 etapas focado exclusivamente em Front-end. A skill atua como especialista React, garantindo pixel-perfect e completude funcional da interface.
 
 ### 🌐 MODO ORQUESTRACAO (Arquitetura & Delegaçao)
 Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usuario pedir para "criar o projeto todo", a skill NÃO escreve o backend, mas atua como Despachante:
@@ -198,7 +326,7 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 2. **Delegaçao**: Aciona o sistema para que passe esse contrato para as skills de execução completa (`app-factory-multiagent`) e integrações (`ConnectPro`) quando necessário.
 3. **Consonancia**: O React gerado foca em consumir esse contrato futuro, com estados de loading, fetch simulados ou reais, e formulários completamente "cabeados".
 
-## Fluxo de 9 Etapas
+## Fluxo de 10 Etapas
 
 **ETAPA 1a -- VisionAgent: Detectar tipo de input**
 - HTML: detectar via `/<html|<div|<section/i` ou Buffer
@@ -257,6 +385,106 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Modo Imagem: rodar as 4 analises especializadas (layout, cores, tipografia, elementos decorativos — descritas na Etapa 1b acima)
 - Usar a auto-descricao (Etapa 1b) como contexto adicional para guiar a analise
 - Output: objeto `mockAnalysis` com structure, typography, colors, spacing, effects, icons
+
+**ETAPA 2.5 -- AestheticAgent: Auditoria de Inteligencia Estetica (GATE obrigatorio)**
+
+> Executa APOS tokens extraidos (Etapa 1b/2) e ANTES do mapa de layout (Etapa 3). Nao gera codigo. Avalia se os tokens formam um sistema visual coerente.
+> MODO COPIA: informativa — identifica problemas mas NAO altera tokens. Reportar sem corrigir.
+> MODO CRIATIVO: corretiva — tokens com falhas sao ajustados antes de avancar.
+
+**BLOCO 1 — Contraste (WCAG 2.1)**
+Calcular `contrast_ratio` para cada par (cor de texto, cor de fundo) dos tokens:
+- texto normal (< 18px): ratio >= 4.5 = PASS AA | ratio >= 7.0 = PASS AAA
+- texto grande (>= 18px ou >= 14px bold): ratio >= 3.0 = PASS AA
+- componente UI / icone: ratio >= 3.0 = PASS AA
+- MODO COPIA: registrar falhas como aviso, replicar conforme mock original
+- MODO CRIATIVO: corrigir ajustando lightness da cor ate atingir ratio >= 4.5 (manter hue/saturation)
+
+**BLOCO 2 — Harmonia de Cores (HSL)**
+Converter paleta para HSL. Identificar cor dominante (primary/CTA). Classificar cada cor secundaria:
+- Analogos: |ΔH| <= 30° → harmonico ✓
+- Complementar: |ΔH| entre 150° e 210° → harmonico ✓
+- Triadico: |ΔH| entre 115°–125° ou 235°–245° → harmonico ✓
+- Neutro: S < 15% → sempre harmonico ✓
+- Fora de esquema: nenhum dos acima → AVISO ⚠
+Verificar consistencia de saturacao: variacao maxima de S entre cores saturadas (S > 60%): <= 25pp — acima disso → AVISO
+Detectar conflito de temperatura: paleta com cores quentes (H 0–60, 300–360) + frias (H 180–300) sem neutro mediador → AVISO
+
+**BLOCO 3 — Hierarquia Tipografica**
+Extrair tamanhos de fonte unicos. Calcular razao entre pares consecutivos:
+- Minor Third (1.2): razao 1.18–1.22 | Major Third (1.25): 1.23–1.28
+- Perfect Fourth (1.333): 1.30–1.37 | Golden Ratio (1.618): 1.58–1.66
+- Razao < 1.10 entre qualquer par: FAIL — "hierarquia fraca"
+- Razao > 2.0: AVISO — "salto tipografico excessivo"
+Verificar pesos: heading principal >= 600, body = 400 (heading < 500 → AVISO; body > 500 → AVISO)
+Verificar line-height: body entre 1.4–1.8; headings entre 1.1–1.35 — fora disso → AVISO
+
+**BLOCO 4 — Ritmo de Espacamento**
+Detectar base unit: maioria divisivel por 8 → base=8; por 4 → base=4; sem padrao → INDEFINIDO (AVISO)
+Verificar aderencia ao grid:
+- > 30% dos valores off-grid: AVISO — "espacamento inconsistente"
+- > 60% off-grid: FAIL — "ausencia de sistema de espacamento"
+Verificar progressao: diffs constantes (linear ✓) ou proporcionais (geometrico ✓) ou aleatorios → AVISO "ad hoc"
+
+**BLOCO 5 — Equilibrio Visual**
+Dividir layout em 4 quadrantes (TL, TR, BL, BR). Estimar peso visual por zona:
+- peso ≈ (area / total) × saturacao_dominante × (bold=1.3, regular=1.0, light=0.8)
+- Diferenca entre quadrantes opostos > 40% sem elemento ancora → AVISO
+Verificar respiracao: gap < base_unit × 1 entre elementos adjacentes → AVISO "sufocado"
+Variacao de whitespace entre grupos > 3x → AVISO "ritmo visual quebrado"
+
+**Score de Coesao (0–100):**
+```
+contraste_ok    = (pares_PASS / total_pares) × 20
+harmonia_ok     = (cores_no_esquema / total_cores_nao_neutras) × 20
+tipografia_ok   = (niveis_sem_falha / total_niveis) × 20
+espacamento_ok  = (valores_on_grid / total_valores) × 20
+equilibrio_ok   = equilibrio_ok ? 20 : 10
+score = soma dos 5
+```
+- 90–100: "Sistema visual coeso — pronto para geracao"
+- 70–89:  "Sistema funcional — avisos nao-criticos registrados"
+- 50–69:  "COPIA: replicar assim mesmo | CRIATIVO: corrigir antes de gerar"
+- < 50:   "COPIA: alertar usuario | CRIATIVO: apresentar correcoes e pedir confirmacao"
+
+**Formato de output obrigatorio:**
+```
+[mock-to-react] Etapa 2.5/10: Auditoria Estetica ⚙️
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ AESTHETIC INTELLIGENCE AUDIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CONTRASTE (WCAG 2.1)
+   ✓ texto-primario / fundo:  ratio 7.2 — AAA
+   ✓ botao CTA / label:       ratio 4.8 — AA
+   ⚠ placeholder / input-bg: ratio 2.1 — FAIL (< 3.0)
+
+ HARMONIA DE CORES
+   ✓ esquema: complementar (primary #3B82F6 ↔ accent #F59E0B — ΔH=173°)
+   ⚠ #FF6B35 fora de esquema (ΔH=47°)
+
+ TIPOGRAFIA
+   ✓ escala: Perfect Fourth (razao 1.33 — 32→24→18→13px)
+   ⚠ line-height body: 1.28 — abaixo do minimo recomendado (1.4)
+
+ ESPACAMENTO
+   ✓ base unit: 8px | aderencia: 87% on-grid
+   ⚠ valores off-grid: [14px, 22px]
+
+ EQUILIBRIO VISUAL
+   ✓ assimetrico equilibrado — sidebar ancora peso esquerdo
+   ✓ whitespace respirado
+
+ SCORE DE COESAO: 78/100 — Sistema funcional
+ → 2 avisos nao-criticos | 1 falha de contraste
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[mock-to-react] Etapa 2.5/10: ✓ PORTAO ABERTO
+```
+
+**Regra de portao:**
+- SE score < 50 E modo == CRIATIVO → NAO prosseguir. Apresentar correcoes e pedir confirmacao (unico ponto de pergunta ao usuario neste contexto).
+- SE score < 50 E modo == COPIA → prosseguir, reportar aviso ao usuario.
+- SE score >= 50 → PORTAO ABERTO — prosseguir para ETAPA 3.
 
 **ETAPA 3 -- VisionAgent: Analise de layout e grid**
 - Mapear a estrutura de layout: grid/flex/absolute, colunas, linhas, areas
@@ -369,7 +597,7 @@ REGRAS DA ESTRUTURA:
 
 ## Referencias
 
-- **6 agentes:** VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent + orquestradores V2 e V3 — descritos no Fluxo de 9 Etapas acima
+- **6 agentes:** VisionAgent, ResourceAgent, GitHubAgent, CodeAgent, CompareAgent, FixerAgent + orquestradores V2 e V3 — descritos no Fluxo de 10 Etapas acima
 - **4 prompts de analise visual:** layout, cores, tipografia, elementos decorativos — detalhados na Etapa 1b acima
 - **Output format:** estrutura JSON com similarity %, quality metrics por dimensao, codigo final, screenshots — detalhado na Etapa 10 acima
 
@@ -454,6 +682,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: ConnectPro
+    when: faltar capability externa (web_search, browser_automation, email_confirmation, workflow_automation) ou credencial para buscar pacotes/refs/assets
+    payload: requested_capabilities, required_services, blocking_issues
   - skill_name: preview-bridge
     when: componente React gerado e pronto para visualização
     payload: generated_code, project_path

@@ -26,6 +26,10 @@ activation_rules:
     priority: high
   - rule: usuário pede retomada, histórico, contexto ou consolidação de memória
     priority: medium
+  - rule: orchestrator está prestes a chamar skill com dependsOn (injetar snapshot no handoff)
+    priority: high
+  - rule: usuário pede "dummy snapshot" ou "o que cada skill produziu"
+    priority: medium
 
 minimum_inputs:
   - project_context_or_session_signal
@@ -272,16 +276,75 @@ Quando: "o que a gente fez?", "qual o estado?", "o que está configurado?"
 
 ---
 
+## NAMESPACE DE SKILLS — Memória Cross-Skill
+
+Cada skill escreve resultados relevantes em um namespace próprio dentro da memória de sessão. Qualquer skill posterior pode ler o que outra produziu — sem re-executar ou perguntar ao usuário.
+
+**Formato de chave:** `{skill_name}/{key}`
+
+| Namespace | Chave | O que armazenar |
+|---|---|---|
+| `mock-to-react/` | `design_tokens` | JSON de tokens (cores, tipografia, spacing) |
+| `mock-to-react/` | `harmony_score` | Score de coesão + avisos da última auditoria |
+| `ConnectPro/` | `services_resolved` | Lista de serviços configurados nesta sessão |
+| `ConnectPro/` | `env_vars` | Nomes das variáveis (nunca os valores) |
+| `app-factory/` | `api_contract` | Contrato de API gerado (endpoints + entidades) |
+| `app-factory/` | `stack_chosen` | Stack escolhida + justificativa |
+| `engineering-mentor/` | `prd_approved` | Resumo do PRD aprovado |
+| `engineering-mentor/` | `issues` | Lista de issues gerados pelo /break |
+| `surge-core/` | `errors_fixed` | Erros corrigidos nesta sessão |
+| `preview-bridge/` | `preview_url` | URL do preview ativo |
+
+**Regras:**
+- Cada skill escreve APENAS no próprio namespace — nunca no de outra
+- Leitura é livre — qualquer skill pode consultar qualquer namespace
+- Máximo 500 chars por entrada. Sobrescrever é preferível a duplicar.
+- NUNCA armazenar valores de credenciais/tokens em qualquer namespace
+
+### MODO SNAPSHOT — estado cross-skill em um bloco
+
+Trigger: `dummy snapshot` / "o que cada skill produziu?" / chamado automaticamente pelo orchestrator antes de qualquer skill com `dependsOn`.
+
+```
+[dummy-memory] SNAPSHOT ⚙️
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ D.U.M.M.Y. OS  ▸  Session Snapshot
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ engineering-mentor/prd_approved  → "App de notas com auth email + Supabase"
+ mock-to-react/harmony_score      → 78/100 (1 aviso WCAG)
+ mock-to-react/design_tokens      → {primary:#3B82F6, base:8px, scale:PerfectFourth}
+ ConnectPro/services_resolved     → [supabase, resend]
+ app-factory/stack_chosen         → Next.js 14 + Supabase + Tailwind
+ app-factory/api_contract         → POST/GET/DELETE /notes
+ preview-bridge/preview_url       → http://localhost:3000
+ surge-core/errors_fixed          → ["TypeError: Cannot read 'user' of undefined"]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[dummy-memory] ✓ SNAPSHOT — {N} namespaces ativos
+```
+
+**Injeção automática no handoff (orchestrator):**
+Quando o orchestrator chama uma skill com `dependsOn`, inclui automaticamente o snapshot dos namespaces das skills dependidas:
+```
+[orchestrator] t4 app-factory — injetando contexto das dependências:
+  → engineering-mentor/prd_approved ✓
+  → mock-to-react/design_tokens ✓
+  → ConnectPro/env_vars ✓
+```
+
+---
+
 ## Quem Salva o Quê
 
-| Skill | Arquivo | Quando |
+| Skill | Arquivo / Namespace | Quando |
 |---|---|---|
-| ConnectPro | env.md | Após resolver credencial |
+| ConnectPro | env.md + `ConnectPro/env_vars` | Após resolver credencial |
 | ConnectPro | decisions.md | Ação com custo confirmada pelo usuário |
-| app-factory-multiagent | state.md | Após construir feature/componente |
-| engineering-mentor | decisions.md | Após decisão arquitetural |
-| surge-core | errors.md | Após corrigir erro |
-| preview-bridge | state.md | Preview validado com URL |
+| app-factory-multiagent | state.md + `app-factory/api_contract` + `app-factory/stack_chosen` | Após construir feature/componente |
+| engineering-mentor | decisions.md + `engineering-mentor/prd_approved` + `engineering-mentor/issues` | Após decisão arquitetural |
+| surge-core | errors.md + `surge-core/errors_fixed` | Após corrigir erro |
+| preview-bridge | state.md + `preview-bridge/preview_url` | Preview validado com URL |
+| mock-to-react | `mock-to-react/design_tokens` + `mock-to-react/harmony_score` | Após gerar componente |
 | qualquer skill | user/preferences.md | Usuário menciona preferência |
 | toda skill | global/execution-log.md | Ao concluir (sucesso ou falha) |
 
