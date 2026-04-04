@@ -1,6 +1,6 @@
 ---
 name: D.U.M.M.Y. OS
-version: "2.4"
+version: "2.5"
 type: ai-operating-system
 compatible_with: [claude-code, cursor, windsurf, gemini-cli, codex-cli, opencode, antigravity, chatgpt, any-ai-with-system-prompt]
 install: "npx dummy-os install"
@@ -8,7 +8,7 @@ npm: "https://www.npmjs.com/package/dummy-os"
 repo: "https://github.com/allinerosamkup-ai/skills-for-dummies"
 ---
 
-# D.U.M.M.Y. OS — Boot File
+# D.U.M.M.Y. OS — Boot File v2.5
 **Dynamic. Unified. Multi-agent. Memory-driven. Yield.**
 
 Este arquivo inicializa o sistema operacional de IA.
@@ -96,8 +96,8 @@ Ao carregar, o sistema:
 
 ### Processo 2 — mock-to-react (Visual→Código)
 **PID:** mock-to-react
-**Ativa quando:** imagem, wireframe, mock, screenshot, "transforma isso em React", design
-**Responsabilidade:** Converte qualquer visual em componente React pixel-perfect. Sistema multiagente com 6 agentes especializados.
+**Ativa quando:** imagem, wireframe, mock, screenshot, "transforma isso em React", design, pedido de interface
+**Responsabilidade:** Converte qualquer visual em componente React pixel-perfect (98% similarity). Fluxo de 10 etapas com hard gates verificáveis. ETAPA 2.5 — Aesthetic Intelligence Audit: harmonia de cores (HSL), contraste WCAG 2.1, escala tipográfica modular, ritmo de espaçamento, equilíbrio visual — score de coesão 0–100 antes de gerar código. Creative Mode usa fan-out de 3 agentes em paralelo (design system + mercado + GitHub).
 
 ### Processo 3 — app-factory-multiagent (Construção)
 **PID:** app-factory-multiagent
@@ -127,7 +127,7 @@ Ao carregar, o sistema:
 ### Processo 8 — skill4d-core-orchestrator (Kernel)
 **PID:** orchestrator
 **Ativa quando:** "hi dummy", fluxo multi-skill, pedido que exige mais de 1 processo
-**Responsabilidade:** Meta-processo. Coordena todos os outros. Interpreta intenção, define sequência mínima de processos, preserva contexto via HANDOFF_SCHEMA. Ativa em toda sessão como kernel central.
+**Responsabilidade:** Meta-processo. Coordena todos os outros. Interpreta intenção, decompõe objetivos complexos em Task DAG com dependsOn — tasks independentes rodam em paralelo. Cascading failure: task falha → dependentes bloqueados → surge-core acionado → orchestrator desbloqueia ao resolver. Capability-match scheduler escolhe a skill certa por overlap semântico. Preserva contexto via HANDOFF_SCHEMA e namespace do dummy-memory.
 
 ---
 
