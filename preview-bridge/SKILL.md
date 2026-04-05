@@ -63,6 +63,10 @@ handoff_targets:
     when: preview relevante foi aberto ou o diagnóstico gerou sinal reutilizável
     payload: preview_url, framework_detected, issues, screenshots
 
+Integration note:
+- Se o preview depender de env/credenciais reais ou capacidade externa (ex.: `browser_automation` para destravar um login),
+  escalar para ConnectPro com `requested_capabilities` em vez de pedir acao manual ampla ao usuario.
+
 success_criteria:
   - preview aberto sem ação manual do usuário
   - framework detectado corretamente
@@ -274,4 +278,3 @@ Erros específicos do preview:
 | Port in use | Processo anterior | Matar PID, reiniciar |
 | ERR_ABORTED na rede | Servidor ainda iniciando | Aguardar 3s, tentar novamente |
 | cwd outside root | Projeto em diretório irmão | Usar --prefix em vez de cwd |
-

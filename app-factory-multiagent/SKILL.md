@@ -63,6 +63,10 @@ handoff_targets:
     when: integração externa bloquear progresso
   - skill_name: engineering-mentor
     when: decisão arquitetural ambígua impedir continuidade
+
+Integration note:
+- Se a fabrica precisar de capacidades externas (ex.: `web_search`, `browser_automation`, `email_confirmation`, `workflow_automation`),
+  deve escalar para ConnectPro com `requested_capabilities` e retomar o build apos a resolucao.
 ```
 
 ## When to Use

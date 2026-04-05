@@ -1048,6 +1048,34 @@ Nunca deixar o usuário sem feedback por mais de uma skill de distância.
 
 ---
 
+## Protocolo de Integracao (Skills se puxam)
+
+Regra: cada skill deve ser inteligente individualmente, mas nao deve "morrer sozinha". Quando travar, ela devolve um handoff claro para o kernel, e o kernel chama a skill que supre a lacuna.
+
+### Quando uma skill deve escalar para o kernel
+- Falta de capacidade externa: precisa de `web_search`, `browser_automation`, `email_confirmation`, `workflow_automation`, `mcp_discovery`.
+- Falta de credencial/MCP/API/CLI: precisa de ConnectPro para provisionar.
+- Ambiguidade conceitual: precisa de engineering-mentor para decidir.
+- Erro observavel (runtime/build/preview/diff): precisa de surge-core para corrigir.
+
+### O que a skill deve retornar quando estiver bloqueada
+Sempre incluir um envelope (ver `HANDOFF_SCHEMA.md`) com:
+- `blocking_issues[]` (type/severity/message)
+- `requested_capabilities[]` (quando aplicavel)
+- `expected_next_step`: "Kernel: chamar {ConnectPro|surge-core|engineering-mentor} e depois retomar {skill_original}"
+- `fallback_if_blocked`
+
+### Como o kernel resolve e retoma
+Ordem padrao:
+1. Se `blocking_issues` indicam credencial/capability → chamar ConnectPro com `required_services` e/ou `requested_capabilities`.
+2. Se o problema for erro tecnico observavel → chamar surge-core.
+3. Se for decisao/escopo → chamar engineering-mentor.
+4. Retomar a skill original com o envelope atualizado (artefatos + decisoes + capacidades resolvidas).
+
+Isso e o que faz o ecossistema parecer um unico sistema (e nao prompts soltos).
+
+---
+
 ## Regra de Precedência — Pedidos Mistos
 
 Quando o pedido combina visual + arquitetura (ex: "me manda uma imagem e quero estruturar o app"):
@@ -1140,6 +1168,9 @@ O usuário não chama ConnectPro diretamente. O orquestrador chama.
 ConnectPro não pede ajuda ao usuário — escala modos internamente até resolver.
 Faz uma pergunta ao usuário **só** se for absolutamente impossível prosseguir.
 
+ConnectPro e incremental: ele pode ser chamado varias vezes ao longo do projeto.
+Se ja existir uma conexao salva, ele adiciona apenas as novas capacidades/servicos solicitados.
+
 ```
 usuário → "cria app com Stripe"
          ↓
@@ -1205,6 +1236,22 @@ Para cada serviço necessário:
 ```
 
 Nenhum desses passos é anunciado ao usuário. Só o resultado final é reportado.
+
+---
+
+## Capability-First (quando o usuario nao sabe o nome da ferramenta)
+
+Quando o usuario descreve "o que precisa" sem citar um servico (ex.: "preciso buscar referencias na web", "preciso automatizar login no navegador"),
+ConnectPro deve operar por capacidades.
+
+Exemplos de `capabilities`:
+- `web_search` (pesquisa e coleta de referencias/pacotes/padroes)
+- `browser_automation` (dashboard/login/scrape)
+- `email_confirmation` (captura de codigo/magic link)
+- `workflow_automation` (n8n como auxiliador)
+- `mcp_discovery` (descobrir MCPs via registry)
+
+Regra: se nao houver conector no catalogo, consultar `mcp__mcp-registry__search_mcp_registry` e provisionar via `mcp_direct` quando possivel.
 
 ---
 
@@ -1411,6 +1458,25 @@ Nunca executar silenciosamente. O usuário precisa acompanhar cada passo.
 
 ---
 
+## Padrao Estetico (Harmonia Universal)
+
+Objetivo: garantir um padrao visual consistente e harmonicamente "bom" quando o design nao esta 100% especificado, sem violar o pixel-perfect quando existe imagem.
+
+Regras:
+- MODO COPIA: a imagem manda. Harmonia nao autoriza alterar o visual visivel. Harmonia so pode atuar em estados (hover/active/disabled/loading), responsividade e partes nao especificadas/ocultas na imagem.
+- MODO CRIATIVO: harmonia e obrigatoria. Se ficar incoerente (tipografia ruim, espacamento aleatorio, cores brigando), corrigir antes de entregar.
+
+Checklist minimo (nao negociavel):
+- Tipografia: no maximo 2 familias; escala coerente (ex.: 12/14/16/20/24/32); pesos usados com parcimonia; line-height consistente.
+- Espacamento: base unit consistente (4/8) e uso repetido (8/16/24/32); evitar gaps aleatorios.
+- Alinhamento: grids/colunas claras; edges alinhadas; icones/textos com baseline coerente.
+- Cores: roles semanticos claros (bg/surface/text/primary/border); contraste minimo legivel; nao inventar tons sem motivo.
+- Efeitos: sombras/radius consistentes (1-2 niveis); nao misturar estilos.
+
+Artefato: incluir no output final um `harmony_report` (pass/fail + 3-5 ajustes sugeridos ou "ok").
+
+---
+
 ## Modos de Operação
 
 ### 🎯 MODO CÓPIA (padrão — ativado quando há imagem/mock)
@@ -1580,6 +1646,19 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Se usuario corrigir a descricao, usar a versao corrigida nas etapas seguintes
 - Se usuario confirmar, prosseguir com a descricao e tokens gerados
 
+**ETAPA 1c -- VisionAgent: Inventario Visual (GATE obrigatorio)**
+- Antes de qualquer busca/codigo: gerar um inventario completo e enumerado dos elementos visiveis.
+- Nao avancar para ETAPA 2 sem este inventario.
+- Formato minimo por item:
+  - id: string (estavel, ex.: header_title, card_1, cta_button)
+  - type: text | button | input | icon | image | container | divider | decorative
+  - role: semantico (ex.: primary_action, navigation, card, heading, body)
+  - content: texto/label (se houver)
+  - interactive: true|false
+  - approx_bbox: { x, y, w, h } (estimado)
+  - style_hints: { font, color, radius, shadow } (estimado)
+- O inventario precisa incluir TODOS os decorativos listados na ETAPA 1b.
+
 **ETAPA 2 -- VisionAgent: Analise tecnica profunda**
 - Modo HTML: parsear DOM, extrair estrutura, estilos, tipografia, cores, componentes
 - Modo Imagem: rodar as 4 analises especializadas (layout, cores, tipografia, elementos decorativos — descritas na Etapa 1b acima)
@@ -1594,6 +1673,12 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Output: `layoutMap` com component_tree, grid_definition, responsive_breakpoints
 
 **ETAPA 4 -- ResourceAgent: Buscar pacotes NPM**
+- Regra: esta etapa NAO pode ser pulada quando houver qualquer um dos casos:
+  - elementos no inventario com `type` icon/complex_component e sem implementacao obvia
+  - efeitos nao-triviais (blur/backdrop-filter/gradientes complexos/masks)
+  - componentes de alto nivel (date picker, chart, table complexa, upload, editor rich-text)
+  - baixa confianca do CodeAgent em implementar do zero
+- Output minimo: `packages[]`, `queries[]` (o que foi buscado e por que).
 - API: `https://registry.npmjs.com/-/v1/search?text={query}&size=10`
 - Gerar queries a partir da auto-descricao (ex: "card component react", "shadow react")
 - Incluir queries para elementos decorativos do inventario (ex: "svg pattern react", "emoji picker react", "gradient animation react")
@@ -1611,6 +1696,11 @@ Se a imagem sugerir um sistema complexo (ex: app de tarefas, dashboard) e o usua
 - Usar `package.json` de cada pacote para encontrar entry point (module > main > index.js)
 
 **ETAPA 7 -- GitHubAgent: Buscar componentes similares**
+- Regra: esta etapa NAO pode ser pulada quando houver qualquer um dos casos:
+  - componente complexo (tabela, virtual list, drag-drop, charts, editor, wizard)
+  - diffs persistentes apos 2 iteracoes no loop (ETAPA 9)
+  - necessidade de patterns de acessibilidade/keyboard navigation
+- Output minimo: `github_references[]` (repo + arquivo + motivo do uso).
 - API: `https://api.github.com/search/code?q={query}&language:jsx`
 - Queries geradas a partir da auto-descricao: "React component {tipo}", "responsive {layout} component"
 - Extrair codigo dos top 5 repos (via `/repos/{owner}/{repo}/contents/{path}`)
@@ -1638,6 +1728,11 @@ MANDATO DE COMPLETUDE (nao negociavel):
 - Proibido: alterar cores, tipografia, espacamentos, posicionamentos ou identidade visual
 - Gerar artefatos de tema compatíveis com a engine escolhida (ex.: `tailwind.config.js`, `tokens.css`, `theme.ts`)
 - Registrar `styling_strategy` no output final explicando por que aquela engine foi escolhida
+
+**ETAPA 8b -- HarmonyGate (GATE obrigatorio)**
+- MODO COPIA: apenas validar (nao "embelezar") e sugerir ajustes restritos a estados/responsividade.
+- MODO CRIATIVO: ajustar tokens e composicao ate passar no checklist de harmonia.
+- Output: `harmony_report` + (se aplicavel) ajustes aplicados em tokens/spacing/type-scale.
 
 ESTRUTURA DE OUTPUT (pronta para colar no projeto):
   src/
@@ -1667,6 +1762,7 @@ REGRAS DA ESTRUTURA:
       espacamento: peso 10%  (padding, margin, gap)
       efeitos:     peso 10%  (sombras, bordas, opacidade)
       completude:  peso 15%  (TODOS os elementos do inventario presentes? elemento faltando = penalidade imediata)
+      harmonia:    peso 5%   (no modo criativo sempre; no modo copia so para partes nao especificadas pela imagem)
     se similaridade < 98%:
       diffs = identificar diferencas por categoria
       se convergencia lenta (melhora < 0.5% apos 3+ iteracoes):
@@ -1765,6 +1861,9 @@ failure_policy:
   must_propose_next_action: true
 
 handoff_targets:
+  - skill_name: ConnectPro
+    when: faltar capability externa (web_search, browser_automation, email_confirmation, workflow_automation) ou credencial para buscar pacotes/refs/assets
+    payload: requested_capabilities, required_services, blocking_issues
   - skill_name: preview-bridge
     when: componente React gerado e pronto para visualização
     payload: generated_code, project_path
@@ -1870,6 +1969,10 @@ handoff_targets:
     when: integração externa bloquear progresso
   - skill_name: engineering-mentor
     when: decisão arquitetural ambígua impedir continuidade
+
+Integration note:
+- Se a fabrica precisar de capacidades externas (ex.: `web_search`, `browser_automation`, `email_confirmation`, `workflow_automation`),
+  deve escalar para ConnectPro com `requested_capabilities` e retomar o build apos a resolucao.
 ```
 
 ## When to Use
@@ -2083,6 +2186,10 @@ handoff_targets:
     when: preview relevante foi aberto ou o diagnóstico gerou sinal reutilizável
     payload: preview_url, framework_detected, issues, screenshots
 
+Integration note:
+- Se o preview depender de env/credenciais reais ou capacidade externa (ex.: `browser_automation` para destravar um login),
+  escalar para ConnectPro com `requested_capabilities` em vez de pedir acao manual ampla ao usuario.
+
 success_criteria:
   - preview aberto sem ação manual do usuário
   - framework detectado corretamente
@@ -2294,7 +2401,6 @@ Erros específicos do preview:
 | Port in use | Processo anterior | Matar PID, reiniciar |
 | ERR_ABORTED na rede | Servidor ainda iniciando | Aguardar 3s, tentar novamente |
 | cwd outside root | Projeto em diretório irmão | Usar --prefix em vez de cwd |
-
 
 
 <!-- skill: surge-core -->
@@ -2973,5 +3079,104 @@ Engineering-mentor pode rodar em paralelo com outras skills quando:
 - O usuário pedir orientação enquanto app-factory-multiagent está buildando
 
 Sinal ao orquestrador: `"parallel_safe": true` no output quando a análise não bloqueia o fluxo principal.
+
+
+
+<!-- skill: sentry-core -->
+---
+name: sentry-core
+description: "Use when the user wants production-grade error monitoring and incident visibility (Sentry): SDK install, DSN wiring, release/source maps, and validation. Routes credential/MCP needs to ConnectPro."
+---
+
+# Sentry Core — Observabilidade Real (Erro, Performance, Releases)
+
+Objetivo: habilitar Sentry de ponta a ponta (SDK + config + releases) com minimo atrito.
+
+Regra: se faltar credencial/DSN/token, nao pedir lista de passos. Escalar para ConnectPro com `requested_capabilities` e `required_services`.
+
+## Contract Snapshot
+
+```yaml
+name: sentry-core
+role: observabilidade e monitoramento
+objective: instalar/configurar Sentry no projeto alvo e validar que eventos chegam
+
+activation_rules:
+  - rule: usuario menciona sentry, monitoring, error tracking, "ver erros em producao", alertas
+    priority: high
+  - rule: surge-core detectou erro recorrente e recomendou monitoramento
+    priority: medium
+  - rule: preview-bridge abriu app mas faltam sinais de runtime/erros persistentes
+    priority: medium
+
+minimum_inputs:
+  - project_path_or_repo_context
+
+optional_inputs:
+  - stack_hint
+  - environment (dev|staging|prod)
+  - org_project_slug
+
+execution_policy:
+  ask_minimum: true
+  preserve_context: true
+  prefer_partial_delivery: true
+  never_leak_secrets: true
+  call_preview_if_visual: true
+  call_surge_if_execution_occurs: true
+
+output_schema:
+  status: success | partial | blocked | failed
+  summary: o que foi configurado + como validar
+  artifacts:
+    - config_changes
+    - env_requirements
+    - verification_steps
+  issues:
+    - missing_credentials
+    - unsupported_stack
+    - build_failure
+  next_step: preview-bridge | surge-core | ConnectPro | user
+  confidence_score: 0.0-1.0
+
+handoff_targets:
+  - skill_name: ConnectPro
+    when: faltam DSN/auth token, precisa criar projeto Sentry, ou precisa browser_automation/login
+    payload: required_services, requested_capabilities, blocking_issues
+  - skill_name: preview-bridge
+    when: Sentry configurado e precisa validar no runtime
+    payload: project_path, verification_action
+  - skill_name: surge-core
+    when: build/runtime quebra apos instalar Sentry
+    payload: logs, error_symptom
+
+success_criteria:
+  - SDK instalado e inicializacao presente no ponto correto do stack
+  - DSN/keys injetados via env sem vazamento
+  - evento de teste confirmado (captured exception) ou instrucao de validacao objetiva
+
+observability_signals:
+  - signal: sentry_installed
+    description: dependencia instalada e import/init adicionados
+  - signal: sentry_dsn_wired
+    description: DSN presente via env/config
+  - signal: sentry_event_verified
+    description: evidencia de envio/recebimento do evento
+```
+
+## Fluxo Obrigatorio
+
+1. Detectar stack (Next.js/React/Node/Express/Python/etc) e ponto de entrada.
+2. Garantir credenciais:
+   - se nao houver `SENTRY_DSN`/token: handoff para ConnectPro (`required_services: ["sentry"]`, `requested_capabilities: ["browser_automation", "web_search"]`).
+3. Instalar SDK apropriado e adicionar init.
+4. Configurar `environment`, `release` e (quando aplicavel) source maps.
+5. Validar:
+   - abrir preview e disparar um erro controlado (somente em dev) OU registrar passo de verificacao no proprio app.
+
+## Notas de Autonomia
+
+- Nunca salvar DSN/tokens em memoria.
+- Se o usuario nao tiver conta/projeto Sentry, ConnectPro pode criar (com confirmacao se houver custo).
 
 

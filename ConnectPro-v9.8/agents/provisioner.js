@@ -119,9 +119,18 @@ function inferServiceFromStep(step) {
   return null;
 }
 
+function normalizeCapability(capability) {
+  return String(capability || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+}
+
 async function runProvisioner(plan, userId, registry = null) {
   const results = [];
   const servicePlans = Array.isArray(plan?.servicePlans) ? plan.servicePlans : [];
+  const capabilities = Array.isArray(plan?.capabilities) ? plan.capabilities : [];
   const steps = Array.isArray(plan?.steps) ? plan.steps : [];
 
   for (const servicePlan of servicePlans) {
@@ -154,6 +163,37 @@ async function runProvisioner(plan, userId, registry = null) {
   }
 
   if (servicePlans.length > 0) {
+    // Provision capabilities (capability-first) as additional connectors when requested.
+    // These may map to an MCP/tool via the registry even when no explicit service exists.
+    for (const capability of capabilities) {
+      const normalized = normalizeCapability(capability);
+      if (!normalized) continue;
+
+      const connector = await resolveConnectorForService(normalized);
+      if (!connector) continue;
+
+      const orderedStrategies = getOrderedStrategies(connector);
+      let provisioned = null;
+      for (const strategy of orderedStrategies) {
+        provisioned = await tryStrategy({
+          connector,
+          strategy,
+          step: `connect_${connector.service}`,
+          userId,
+          registry
+        });
+        if (provisioned) break;
+      }
+
+      if (!provisioned) {
+        provisioned = await fallbackProvision(`connect_${connector.service}`, userId);
+      }
+
+      if (provisioned) {
+        results.push(provisioned);
+      }
+    }
+
     return { services: results };
   }
 
