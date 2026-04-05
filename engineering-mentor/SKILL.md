@@ -28,7 +28,10 @@ Provide working, complete, readable code. Production-oriented. Avoid unnecessary
 
 ### DEBUGGER
 Activate for: diagnosing issues.
-Follow: (1) identify likely cause, (2) explain why, (3) show how to test, (4) provide fix, (5) suggest prevention.
+
+**Stop-the-line rule:** ao detectar qualquer falha — parar de adicionar features, preservar evidências, diagnosticar antes de qualquer correção. Erros compostos são piores que o erro original.
+
+Follow: (1) **reproduzir** o erro de forma confiável, (2) **localizar** a camada exata (UI / API / banco / build), (3) identificar causa raiz (não sintoma), (4) corrigir a causa raiz, (5) adicionar teste que falha sem o fix e passa com ele.
 
 ### REFACTORER
 Activate for: improving existing systems.
@@ -158,6 +161,23 @@ Pega o `spec.md` aprovado e fragmenta em issues salvas em `.dummy/issues/`:
 - Cada página → 1 issue (`page-{nome}.md`)
 - Cada comportamento → 1 issue separada (`behavior-{nome}.md`)
 
+**Slicing vertical (não horizontal):**
+
+```
+❌ HORIZONTAL (evitar):
+  Issue 1: todo o schema de banco
+  Issue 2: todos os endpoints de API
+  Issue 3: todos os componentes UI
+  Issue 4: conectar tudo
+
+✓ VERTICAL (correto):
+  Issue 1: usuário cria conta (schema + API + UI de registro)
+  Issue 2: usuário faz login (auth + API + UI de login)
+  Issue 3: usuário cria tarefa (schema + API + UI de criação)
+```
+
+Cada slice vertical entrega funcionalidade testável de ponta a ponta.
+
 **Priorização cronológica:**
 - **Fase 1:** protótipo visual — front-end estático para validação de UI
 - **Fase 2:** lógica funcional — implementação após UI aprovada
@@ -180,6 +200,8 @@ Para cada issue, antes de qualquer código:
 5. Listar **exatamente** quais arquivos serão tocados
 
 **Regra crítica:** arquivos fora da lista são **proibidos** de ser modificados durante o `/execute`. Se surgir necessidade de tocar um arquivo não listado, parar, atualizar o plano e confirmar antes de continuar.
+
+**Chesterton's Fence:** antes de remover ou refatorar qualquer código existente, entender por que está ali. Se não houver explicação clara → não tocar. Código sem contexto aparente geralmente tem motivo não documentado.
 
 **Formato de output obrigatório (XML com critérios de verificação):**
 
@@ -238,6 +260,54 @@ Consultar `/references/architecture.md` e `/references/design-system.md` se exis
 [engineering-mentor] /execute — {issue-name} — iniciando implementação ⚙️
 [engineering-mentor] /execute ✓ — {issue-name} entregue | arquivos: {lista} | próxima issue: {nome}
 ```
+
+---
+
+## Common Rationalizations (desculpas para pular etapas)
+
+| Racionalização | Realidade |
+|---|---|
+| "Vou descobrindo enquanto faço" | É assim que se chega em código emaranhado que ninguém consegue manter. 10 min de /spec economiza horas. |
+| "As tasks são óbvias, não preciso escrever" | Escreva mesmo assim. Tasks explícitas revelam dependências ocultas e casos esquecidos. |
+| "Planejamento é overhead" | Planejamento É a task. Implementar sem plano é só digitar. |
+| "Já sei qual é o bug, vou direto ao fix" | 70% das vezes funciona. Os outros 30% custam horas. Reproduza primeiro. |
+| "O teste que falha provavelmente está errado" | Verifique essa suposição. Se o teste está errado, corrija o teste — não pule. |
+| "Funciona na minha máquina" | Ambientes diferem. Verifique CI, config, dependências. |
+| "O arquivo fora do plano precisa de um ajuste rápido" | Parar. Atualizar o plano. Confirmar. "Ajustes rápidos" em arquivos não planejados são a origem do efeito cobertor. |
+
+## Red Flags
+
+- Começar código sem spec aprovada
+- Tasks com "implementar a feature" sem critérios de aceitação
+- Nenhum passo de verificação no plano
+- Todas as issues são grandes (> 5 arquivos)
+- Nenhum checkpoint entre fases
+- Arquivo sendo editado que não estava no `/plan`
+- Fix aplicado sem o bug ter sido reproduzido de forma confiável
+- Teste removido ou ignorado para "desbloquear" o build
+- Dois comportamentos distintos na mesma issue
+
+## Verification (por comando)
+
+**Após `/spec`:**
+- [ ] Spec cobre: objetivo, páginas, componentes por página, dicionário de comportamentos
+- [ ] Usuário aprovou explicitamente antes do `/break`
+
+**Após `/break`:**
+- [ ] Cada comportamento tem sua própria issue
+- [ ] Fase 1 (UI) separada de Fase 2 (lógica)
+- [ ] Nenhuma issue > 5 arquivos estimados
+
+**Após `/plan`:**
+- [ ] Lista de arquivos exata e fechada
+- [ ] Caminho feliz + edge cases + cenários de erro documentados
+- [ ] Busca interna (`grep`) executada — reuse identificado ou confirmado inexistente
+- [ ] Schema de banco listado (ou "none")
+
+**Após `/execute`:**
+- [ ] Apenas arquivos do plano foram tocados
+- [ ] Build passa sem erros
+- [ ] Comportamento verificável end-to-end
 
 ---
 
