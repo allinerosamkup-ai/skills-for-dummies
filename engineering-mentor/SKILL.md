@@ -174,12 +174,12 @@ Pega o `spec.md` aprovado e fragmenta em issues salvas em `.dummy/issues/`:
 Para cada issue, antes de qualquer código:
 
 1. **Busca interna:** `grep` no codebase para funções/componentes reutilizáveis → não duplicar
-2. **Busca externa:** docs de dependências relevantes quando necessário
+2. **Busca externa:** consultar docs das dependências relevantes para a issue (ex: Supabase Auth, Next.js routing, Zod schema) — só quando necessário, não por padrão
 3. Definir: **Caminho Feliz** + **Edge Cases** + **Cenários de Erro**
 4. Listar tabelas e colunas de banco a criar ou alterar
 5. Listar **exatamente** quais arquivos serão tocados
 
-**Regra crítica:** arquivos fora da lista são **proibidos** de ser modificados durante o `/execute`.
+**Regra crítica:** arquivos fora da lista são **proibidos** de ser modificados durante o `/execute`. Se surgir necessidade de tocar um arquivo não listado, parar, atualizar o plano e confirmar antes de continuar.
 
 **Formato de output obrigatório (XML com critérios de verificação):**
 
@@ -209,10 +209,30 @@ Para cada issue, antes de qualquer código:
 
 Princípios obrigatórios para toda implementação:
 
-- **Thin Client, Fat Server:** o frontend só captura e envia intenções — regras de negócio, validações e API keys ficam no backend
-- **Modularização por Comportamento:** código organizado em pastas por funcionalidade — alteração em um comportamento não quebra outro
-- Consultar `/references/architecture.md` e `/references/design-system.md` se existirem no projeto
-- Agentes especializados: `model-writer` (DB/schema), `component-writer` (UI), nunca um agente faz tudo
+**Thin Client, Fat Server:** o frontend só captura e envia intenções do usuário. Regras de negócio, validações, queries e API keys ficam no backend. Nada que possa ser burlado no browser.
+
+**Estrutura de pastas — 2 níveis obrigatórios:**
+```
+pages/
+  login/                      ← Nível 1: uma pasta por tela
+    fazer-login/               ← Nível 2: uma pasta por comportamento
+    recuperar-senha/           ← isolado — bug aqui não toca fazer-login
+  dashboard/
+    filtrar-dados/
+    exportar-relatorio/
+components/                   ← componentes compartilhados entre telas
+references/
+  architecture.md             ← regras de isolamento e padrão client-server
+  design-system.md            ← consistência visual
+```
+
+**Por que 2 níveis?** Cada comportamento é soberano na sua pasta. Alterar `recuperar-senha` não pode tocar `fazer-login`. Isso elimina o "efeito cobertor de pobre" — a situação onde consertar uma coisa quebra outra.
+
+**Agentes especializados — nunca um faz tudo:**
+- `model-writer` — mexe apenas na camada de banco (schema, migrations, queries)
+- `component-writer` — mexe apenas em componentes de UI
+
+Consultar `/references/architecture.md` e `/references/design-system.md` se existirem antes de qualquer código.
 
 ```
 [engineering-mentor] /execute — {issue-name} — iniciando implementação ⚙️
@@ -277,94 +297,44 @@ handoff_targets:
 
 ## Monorepo & AI Collaboration Patterns
 
-### CLAUDE.md Hierárquico (Multiple Small MDs)
+### CLAUDE.md Hierárquico
 
-**Princípio:** Em vez de um CLAUDE.md gigante na raiz, crie um por pacote. Claude Code lê em cascata — raiz primeiro, depois subpastas conforme a localização dos arquivos editados.
+Um CLAUDE.md por pacote — não um "God File" na raiz. Claude Code lê em cascata: raiz primeiro, depois subpasta conforme o arquivo editado.
 
 ```
 project/
-  CLAUDE.md              ← regras universais do monorepo
+  CLAUDE.md          ← stack, regras universais, como rodar
   apps/
-    web/
-      CLAUDE.md          ← só regras do frontend
-    backend/
-      CLAUDE.md          ← só regras do backend/API
+    web/CLAUDE.md    ← regras do frontend
+    backend/CLAUDE.md← regras do backend/API
   packages/
-    database/
-      CLAUDE.md          ← só convenções de schema/migrations
+    database/CLAUDE.md← convenções de schema/migrations
 ```
 
-**Por que fazer assim:**
-- O agente processa só o contexto relevante para o arquivo que está editando
-- Cada MD é menor, mais fácil de manter e menos propenso a contradições
-- Times diferentes podem ownar seus próprios MDs
-- Evita o "God File" onde tudo fica junto e ninguém atualiza
-
-**O que colocar em cada nível:**
-- Raiz: stack decisions, regras universais, como rodar o projeto
-- Subpacote: padrões de código daquele pacote, lista de arquivos, convenções locais
+Cada MD menor = agente processa só contexto relevante, sem contradições, sem overhead.
 
 ### Agentes Paralelos com Git Worktrees
 
-Use `superpowers:dispatching-parallel-agents` para o workflow completo. Princípio: cada Claude trabalha em um worktree isolado (`git worktree add`) para evitar conflitos de arquivos. Usar somente quando as tarefas forem genuinamente independentes.
+Cada agente trabalha em um worktree isolado (`git worktree add`) — sem conflitos de arquivo. Usar somente quando as tarefas forem genuinamente independentes.
 
 ---
 
 ## Agent Coordination (Multi-Tool)
 
-Activate this protocol at the start of any BUILD MODE or implementation task, and whenever working on a project where another AI tool (Cursor, Codex, another Claude instance) may be active.
+Ativar no início de qualquer BUILD MODE ou quando outro agente (Cursor, Codex, outra instância Claude) pode estar ativo no mesmo projeto.
 
-### State Files
+Estado de coordenação em `~/.claude/agent-state/`:
+- `agents.json` — quem está ativo
+- `locks.json` — quais arquivos estão sendo editados
+- `inbox.json` — mensagens entre agentes
 
-All coordination state lives at `~/.claude/agent-state/`. Create this directory if it does not exist.
+**Ao iniciar:** registrar em `agents.json`, ler `locks.json` (avisar usuário se arquivo que planeja editar está lockado), ler `inbox.json` (exibir mensagens não lidas).
 
-```
-~/.claude/agent-state/
-  agents.json   ← who is active right now
-  locks.json    ← which files are being edited
-  inbox.json    ← messages between agents
-```
+**Antes de editar qualquer arquivo:** adicionar lock em `locks.json` com expiração de 15 min. Remover ao concluir.
 
-### On Session Start
+**Ao encerrar:** remover locks e entrada em `agents.json`. Locks expirados (data passada) são considerados stale — remover antes de criar novo lock no mesmo arquivo.
 
-1. Create `~/.claude/agent-state/` if missing.
-2. Register yourself in `agents.json`:
-   ```json
-   { "id": "claude-code-<timestamp>", "tool": "claude-code", "project": "<absolute-project-path>", "started": "<ISO timestamp>", "status": "working" }
-   ```
-3. Read `locks.json` — if any file you plan to edit is locked by another agent, **warn the user** before proceeding. Show who holds the lock and when it expires.
-4. Read `inbox.json` — display any unread messages where `"to"` matches your agent ID or `"tool": "claude-code"` and the project matches. Mark them as `"read": true` after displaying.
-
-### Before Editing Any File
-
-1. Add a lock entry to `locks.json`:
-   ```json
-   { "path": "<relative file path>", "owner": "<your agent id>", "since": "<ISO timestamp>", "expires": "<ISO timestamp + 15min>" }
-   ```
-2. Write an inbox message notifying other agents active on the same project:
-   ```json
-   { "from": "<your agent id>", "to": "all", "subject": "lock-acquired", "body": "Editing <file path>", "at": "<ISO timestamp>", "read": false }
-   ```
-
-### After Finishing Each File
-
-- Remove your lock entry from `locks.json` for that file.
-
-### On Session End
-
-1. Remove all lock entries you own from `locks.json`.
-2. Remove yourself from `agents.json`.
-3. Write a final inbox message: `"subject": "agent-done"`, `"body": "Session complete for <project>"`.
-
-### Lock Expiry Rule
-
-Any lock with `"expires"` in the past is considered stale and should be removed before acquiring a new one for the same file. This prevents deadlocks if an agent crashed without cleanup.
-
-### For Cursor / Codex Users
-
-To make Cursor or Codex participate in this coordination, add the following to their system prompt or rules file:
-
-> Before editing any file in this project, read `~/.claude/agent-state/locks.json`. If the file is locked, warn the user. When starting to edit, add an entry to `locks.json` with your tool name and a 15-minute expiry. When done, remove your entry. Register yourself in `agents.json` at session start and remove yourself at session end. Check `inbox.json` for messages from other agents on the same project.
+**Para Cursor/Codex:** adicionar ao system prompt/rules: *"Antes de editar qualquer arquivo, verificar `~/.claude/agent-state/locks.json`. Se lockado, avisar o usuário. Ao editar, criar entry em locks.json com expiração 15min. Registrar em agents.json no início, remover ao encerrar."*
 
 ---
 
