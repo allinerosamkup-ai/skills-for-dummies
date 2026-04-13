@@ -1,4 +1,4 @@
-# D.U.M.M.Y. OS — Auto-injected by `npx dummy-os install --tool opencode`
+# D.U.M.M.Y. OS — Auto-injected by `npx dummy-os install --tool gemini-cli`
 
 ---
 name: D.U.M.M.Y. OS

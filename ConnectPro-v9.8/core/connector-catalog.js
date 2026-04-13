@@ -140,8 +140,9 @@ const STRATEGY_PRIORITY = {
   mcp_direct: 1,
   api_http: 2,
   browser_auto: 3,
-  cli: 4,
-  codebase_cli: 4,
+  email_loop: 4,
+  cli: 5,
+  codebase_cli: 5,
   tutorial_manual: 5
 };
 

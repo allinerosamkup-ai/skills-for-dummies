@@ -107,12 +107,12 @@ Ao carregar, o sistema:
 ### Processo 4 — preview-bridge (Execução)
 **PID:** preview-bridge
 **Ativa quando:** após qualquer construção, "me mostra rodando", "abre o preview"
-**Responsabilidade:** Detecta framework, configura ambiente, abre preview sem intervenção manual. Resolve conflitos de porta, cria .env se necessário.
+**Responsabilidade:** Abre preview realmente vivo sem intervenção manual. Detecta framework, serve HTML estático mesmo sem `package.json`, atualiza artefatos em memória sem exigir save, faz CSS hot swap/soft HTML refresh, resolve conflitos de porta, valida HTTP/browser e cria `.env` placeholder quando necessário.
 
 ### Processo 5 — surge-core (Monitor)
 **PID:** surge-core
 **Ativa quando:** SEMPRE — em paralelo com qualquer outro processo
-**Responsabilidade:** Observação e autocorreção contínua. Não espera ser chamado. Cria caminhos onde não existem. Escala apenas quando esgota 3 tentativas.
+**Responsabilidade:** Observação, auditoria e autocorreção contínua. Fica rodando no app em busca de erros, confere se a distribuição de tarefas segue a spec/instrução, valida cada sprint no limite com notas e evidências, devolve falhas ao orquestrador para replanejar/reexecutar, cria caminhos onde não existem e evolui correções recorrentes em skills/snippets. Escala apenas quando esgota tentativas no mesmo bloqueio ou exige decisão humana.
 
 ### Processo 6 — engineering-mentor (Arquitetura)
 **PID:** eng-mentor

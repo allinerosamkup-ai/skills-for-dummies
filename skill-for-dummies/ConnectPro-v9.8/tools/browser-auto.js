@@ -105,6 +105,13 @@ function isDevBrowserAvailable({ executable = 'dev-browser', runner = spawnSync 
   return !result.error && result.status === 0;
 }
 
+function canUseConnectProBrowser({ browserAutomation, internalRunner }) {
+  if (internalRunner) return true;
+  if (browserAutomation?.mode === 'headless') return true;
+  if (process.env.CONNECTPRO_CHROME_DEBUG_URL) return true;
+  return String(process.env.CONNECTPRO_ALLOW_DEFAULT_CHROME_DEBUG || '').toLowerCase() === 'true';
+}
+
 async function runDevBrowserScript(
   { script, connect = false, headless = false, executable = 'dev-browser', cwd, timeoutMs = 30000 },
   { runner = spawnSync } = {}
@@ -171,48 +178,50 @@ async function runBrowserAutomationForStep(
     ? browserAutomation.script({ step, service: resolved.service })
     : browserAutomation.script;
 
-  try {
-    const internalExecution = await runConnectProBrowser(
-      {
-        script,
-        connect: browserAutomation.mode !== 'headless',
-        headless: browserAutomation.mode === 'headless'
-      },
-      internalRunner ? { implementation: internalRunner } : undefined
-    );
-
-    const internalResult = {
-      success: true,
-      service: resolved.service,
-      mode: 'browser_auto',
-      engine: internalExecution.engine,
-      credentials: normalizeCredentials(internalExecution.data),
-      raw: internalExecution.data
-    };
-
-    if (internalExecution.data?.confirmationRequired && resolved.emailLoop && resolvedEmailProvider) {
-      internalResult.verification = await runEmailLoop(
+  if (canUseConnectProBrowser({ browserAutomation, internalRunner })) {
+    try {
+      const internalExecution = await runConnectProBrowser(
         {
-          connector: resolved,
-          service: resolved.service
+          script,
+          connect: browserAutomation.mode !== 'headless',
+          headless: browserAutomation.mode === 'headless'
         },
-        {
-          provider: resolvedEmailProvider,
-          completionHandler: ({ artifact, message }) =>
-            resolvedCompletionHandler({
-              artifact,
-              message,
-              confirmationContext: {
-                ...(resolved.confirmationContext || {}),
-                ...(internalExecution.data?.confirmationContext || {})
-              }
-            })
-        }
+        internalRunner ? { implementation: internalRunner } : undefined
       );
-    }
 
-    return internalResult;
-  } catch {}
+      const internalResult = {
+        success: true,
+        service: resolved.service,
+        mode: 'browser_auto',
+        engine: internalExecution.engine,
+        credentials: normalizeCredentials(internalExecution.data),
+        raw: internalExecution.data
+      };
+
+      if (internalExecution.data?.confirmationRequired && resolved.emailLoop && resolvedEmailProvider) {
+        internalResult.verification = await runEmailLoop(
+          {
+            connector: resolved,
+            service: resolved.service
+          },
+          {
+            provider: resolvedEmailProvider,
+            completionHandler: ({ artifact, message }) =>
+              resolvedCompletionHandler({
+                artifact,
+                message,
+                confirmationContext: {
+                  ...(resolved.confirmationContext || {}),
+                  ...(internalExecution.data?.confirmationContext || {})
+                }
+              })
+          }
+        );
+      }
+
+      return internalResult;
+    } catch {}
+  }
 
   if (!isDevBrowserAvailable({ runner: availabilityRunner })) {
     return { success: false, reason: 'browser-automation-unavailable', service: resolved.service };
@@ -264,6 +273,7 @@ async function runBrowserAutomationForStep(
 module.exports = {
   createDefaultEmailCompletionHandler,
   buildDevBrowserArgs,
+  canUseConnectProBrowser,
   extractJsonFromOutput,
   isDevBrowserAvailable,
   runDevBrowserScript,

@@ -46,8 +46,8 @@ When you load D.U.M.M.Y. OS, your AI gains 8 specialized processes:
 | **ConnectPro** | Resolves OAuth, API keys, databases — zero manual config. MCP → API → browser automation → CLI. Email loop completes verifications automatically. |
 | **app-factory** | Builds complete full-stack apps (Next.js, Expo, Supabase) |
 | **mock-to-react** | Turns any image or Figma design into pixel-perfect React |
-| **preview-bridge** | Opens live preview for any web project automatically |
-| **surge-core** | Monitors everything, auto-fixes errors within safe autonomy limits |
+| **preview-bridge** | Opens a truly live preview for web projects and static HTML artifacts automatically |
+| **surge-core** | Monitors apps, creates missing paths, audits task/spec alignment, validates every sprint at the limit, and evolves reusable fixes |
 | **engineering-mentor** | Generates PRD + SPEC before building. Senior architect for every decision. |
 | **dummy-memory** | Persists context between sessions — the AI never forgets |
 

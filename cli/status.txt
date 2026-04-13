@@ -15,8 +15,8 @@ Installed skills:
     ✓ ConnectPro-v9.8 v3.2
     ✓ mock-to-react vunknown
     ✓ app-factory-multiagent vunknown
-    ✓ preview-bridge v3.0
-    ✓ surge-core v4.1
+    ✓ preview-bridge v3.1
+    ✓ surge-core v4.2
     ✓ engineering-mentor vunknown
 
   cursor → C:\Users\allin\.cursor\rules
@@ -25,8 +25,8 @@ Installed skills:
     ✓ ConnectPro-v9.8 v3.2
     ✓ mock-to-react vunknown
     ✓ app-factory-multiagent vunknown
-    ✓ preview-bridge v3.0
-    ✓ surge-core v4.1
+    ✓ preview-bridge v3.1
+    ✓ surge-core v4.2
     ✓ engineering-mentor vunknown
 
 Project memory:

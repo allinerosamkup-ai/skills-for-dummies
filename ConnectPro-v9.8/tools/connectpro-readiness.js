@@ -1,6 +1,8 @@
 const { CONNECTOR_CATALOG, getOrderedStrategies } = require('../core/connector-catalog');
 const { canUseMcpInboxProvider, getBundledInboxBridgeConfig } = require('./inbox-provider');
 const { getBundledMcpBridgeConfig, resolveMcpProvider } = require('./mcp-direct');
+const { getCliStrategyStatus } = require('./cli-strategy');
+const { isDevBrowserAvailable } = require('./browser-auto');
 
 function getInboxProviderStatus({ mcpProvider } = {}) {
   if (process.env.CONNECTPRO_INBOX_COMMAND) {
@@ -49,6 +51,26 @@ function isBrowserAvailable() {
   }
 }
 
+function isBrowserRuntimeAvailable(connector) {
+  if (!isBrowserAvailable()) {
+    return { available: false, source: 'playwright-missing' };
+  }
+
+  if (connector.browserAutomation?.mode === 'headless') {
+    return { available: true, source: 'playwright-headless' };
+  }
+
+  if (process.env.CONNECTPRO_CHROME_DEBUG_URL) {
+    return { available: true, source: 'chrome-debug-url' };
+  }
+
+  if (isDevBrowserAvailable()) {
+    return { available: true, source: 'dev-browser' };
+  }
+
+  return { available: false, source: 'browser-runtime-unavailable' };
+}
+
 function getStrategyStatus(connector, strategy, providerStatus) {
   if (strategy === 'mcp_direct') {
     return {
@@ -67,10 +89,19 @@ function getStrategyStatus(connector, strategy, providerStatus) {
   }
 
   if (strategy === 'browser_auto') {
+    if (!connector.browserAutomation?.script) {
+      return {
+        name: strategy,
+        available: false,
+        source: 'no-browser-script'
+      };
+    }
+
+    const browserRuntime = isBrowserRuntimeAvailable(connector);
     return {
       name: strategy,
-      available: isBrowserAvailable(),
-      source: 'connectpro-browser'
+      available: browserRuntime.available,
+      source: browserRuntime.source
     };
   }
 
@@ -80,6 +111,10 @@ function getStrategyStatus(connector, strategy, providerStatus) {
       available: providerStatus.inbox.available && Boolean(connector.emailLoop),
       source: providerStatus.inbox.source
     };
+  }
+
+  if (strategy === 'cli' || strategy === 'codebase_cli') {
+    return getCliStrategyStatus(connector, strategy);
   }
 
   return {

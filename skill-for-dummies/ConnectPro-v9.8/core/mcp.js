@@ -3,7 +3,11 @@ module.exports = {
     const services = Array.isArray(raw?.services) ? raw.services : [];
     const proxyCredentials = services.map((service) => ({
       service: service.service,
-      proxyKey: service.proxyKey
+      proxyKey: service.proxyKey,
+      strategy: service.strategy || null,
+      mode: service.mode || null,
+      engine: service.engine || null,
+      envVars: Object.keys(service.env || {}).sort()
     }));
 
     return {
@@ -13,6 +17,7 @@ module.exports = {
       capabilities: services.map(s => s.service),
       proxyCredential: proxyCredentials[0]?.proxyKey,
       proxyCredentials,
+      envFile: raw?.envFile || null,
       status: "active",
       createdAt: new Date()
     };

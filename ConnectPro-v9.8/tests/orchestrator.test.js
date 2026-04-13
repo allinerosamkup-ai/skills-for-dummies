@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('path');
 
 function localPath(...parts) {
@@ -47,6 +49,7 @@ test('runConnectPro provisions multiple services and persists the MCP envelope',
   }
 
   const saved = [];
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'connectpro-orchestrator-'));
 
   stubModule(claudePath, async (prompt, json = true) => {
     if (prompt.includes('Agent Analyzer')) {
@@ -107,7 +110,7 @@ test('runConnectPro provisions multiple services and persists the MCP envelope',
   });
 
   const { runConnectPro } = require(orchestratorPath);
-  const result = await runConnectPro('Quero Stripe e Supabase', 'user-1');
+  const result = await runConnectPro('Quero Stripe e Supabase', 'user-1', { projectPath: tmpDir });
 
   assert.equal(result.success, true);
   assert.deepEqual([...result.mcp.capabilities].sort(), ['stripe', 'supabase']);

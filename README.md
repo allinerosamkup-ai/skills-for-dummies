@@ -71,8 +71,8 @@ Working app. One prompt.
 | **ConnectPro** | OAuth, API keys, database, Supabase, Stripe | Provisions credentials automatically via MCP → API → browser automation → CLI. Email loop captures verification emails automatically. |
 | **mock-to-react** | image, wireframe, screenshot | 10-step multiagent system. Pixel-perfect copy from any visual. Aesthetic Intelligence Audit (color harmony, typography scale, WCAG contrast, spacing rhythm). Hard gates enforce every step. Fan-out parallel research in creative mode. |
 | **app-factory-multiagent** | "build an app", full-stack, auth + database | Builds complete applications — Next.js web, Expo mobile, Node/Python backend |
-| **preview-bridge** | after any build | Auto-detects framework, resolves port conflicts, opens live preview |
-| **surge-core** | always active | Monitors everything. Auto-corrects errors within defined autonomy limits. |
+| **preview-bridge** | after any build | Opens a truly live preview, supports static HTML without `package.json`, virtual no-save updates, CSS hot swap, port fallback, screenshots, and runtime checks |
+| **surge-core** | always active | Monitors the running app, creates missing paths, audits task distribution against the spec, validates every sprint under boundary pressure, auto-corrects failures, and evolves reusable fixes into skills/snippets. |
 | **engineering-mentor** | architectural decisions, undefined projects | Senior architect judgment. Generates PRD + SPEC before building. Non-blocking. |
 | **orchestrator** | hi dummy, multi-skill flow | Kernel. Interprets intent, auto-decomposes complex goals into a Task DAG with explicit `dependsOn` chains. Independent tasks run in parallel. Cascading failure recovery via surge-core. Capability-match scheduler routes to the best skill automatically. |
 
@@ -336,6 +336,15 @@ D.U.M.M.Y. OS remembers between sessions:
 
 The kernel loads relevant memory at the start of every session automatically.
 `.dummy/memory/` is protected by `.gitignore` — credentials never reach git.
+
+### Fast checkpoint (anti token cutoff)
+
+When a session expires mid-flight, the OS should still retain the last known state. The plugin adds a fast
+checkpoint tool that writes a redacted JSONL line to `.dummy/memory/SESSION.md` after each task or before
+long operations:
+
+- Tool: `dummyos.memory.checkpoint`
+- File: `.dummy/memory/SESSION.md` (auto-rotates by size)
 
 ```bash
 dummy init         # initialize memory for current project

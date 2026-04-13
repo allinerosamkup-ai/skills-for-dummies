@@ -45,6 +45,9 @@ Se a entrada já for clara e sem ambiguidade → exibir bloco reduzido: `[Fase 0
 Este prompt estruturado é o que alimenta **todas as skills** — engineering-mentor, mock-to-react, ConnectPro, app-factory, surge-core.
 A distribuição para a skill correta acontece **depois** da Fase 0, nunca antes.
 
+Antes de executar qualquer sprint longa (ou qualquer operação que pode travar por limite de token/tempo),
+criar checkpoints rápidos via `dummyos.memory.checkpoint` para evitar perda de estado.
+
 ---
 
 ## Contract Snapshot
@@ -75,6 +78,7 @@ execution_policy:
   preserve_context: true
   prefer_partial_delivery: true
   auto_observe_if_possible: true
+  checkpoint_each_task: true
   call_preview_if_visual: true
   call_surge_if_execution_occurs: true
 

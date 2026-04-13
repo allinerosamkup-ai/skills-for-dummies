@@ -13,6 +13,9 @@ ONE-SHOT é a lei. Status line é REGRA #1. (Definições em CLAUDE.md — não 
 
 ---
 
+Antes de executar qualquer sprint longa (ou qualquer operação que pode travar por limite de token/tempo),
+criar checkpoints rápidos via `dummyos.memory.checkpoint` para evitar perda de estado.
+
 ## Contract Snapshot
 
 ```yaml
@@ -41,6 +44,7 @@ execution_policy:
   preserve_context: true
   prefer_partial_delivery: true
   auto_observe_if_possible: true
+  checkpoint_each_task: true
   call_preview_if_visual: true
   call_surge_if_execution_occurs: true
 
