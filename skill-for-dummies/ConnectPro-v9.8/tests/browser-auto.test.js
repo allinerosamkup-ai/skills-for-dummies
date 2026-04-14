@@ -76,6 +76,31 @@ test('browser-auto prefers connectpro-browser before dev-browser when both are a
   assert.equal(result.credentials.realKey, 'internal_key');
 });
 
+test('browser-auto skips CDP connection when no browser runtime is declared', async () => {
+  const browserAuto = require(localPath('tools', 'browser-auto.js'));
+
+  const result = await browserAuto.runBrowserAutomationForStep(
+    {
+      connector: {
+        service: 'vercel',
+        browserAutomation: {
+          mode: 'connect',
+          script: () => 'console.log("noop")'
+        }
+      }
+    },
+    {
+      availabilityRunner: () => ({
+        error: new Error('dev-browser missing'),
+        status: null
+      })
+    }
+  );
+
+  assert.equal(result.success, false);
+  assert.equal(result.reason, 'browser-automation-unavailable');
+});
+
 test('browser-auto triggers email loop when browser step requires confirmation', async () => {
   const browserAuto = require(localPath('tools', 'browser-auto.js'));
 

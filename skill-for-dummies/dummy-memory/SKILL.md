@@ -38,6 +38,7 @@ optional_inputs:
 execution_policy:
   non_blocking: true
   never_save_credentials: true
+  checkpoint_often: true
   save_on_meaningful_events: true
   load_on_session_start: true
   support_dream_consolidation: true
@@ -122,6 +123,32 @@ Todo modo de execução deve reportar progresso:
 Nunca executar silenciosamente — mesmo salvando em background, confirmar conclusão.
 
 ---
+
+## Checkpoint Rápido (Anti-Token-Cutoff)
+
+Problema: sessão expira e o chat pode morrer antes do `SAVE` grande.
+Solução: checkpoint leve e frequente em `.dummy/memory/SESSION.md`.
+
+Regra: após cada tarefa concluída (e antes de operações longas), escrever um checkpoint.
+
+Preferência quando disponível:
+`dummyos.memory.checkpoint` (tool do `dummyos-plugin`).
+
+Formato recomendado:
+```
+dummyos.memory.checkpoint {
+  event: "task_complete",
+  phase: "{start|progress|done}",
+  summary: "{1 linha do que mudou}",
+  tags: ["{skill}", "{task}"],
+  data: { files_changed: [...], commands: [...], issues: [...] }
+}
+```
+
+Limites:
+- Nunca incluir valores de token/secret
+- `summary` 1 linha
+- `data` pequeno
 
 ## Três Modos
 

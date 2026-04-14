@@ -12,7 +12,8 @@
     "playwright": "^1.59.1"
   },
   "scripts": {
-    "start": "node bin/dummyos-plugin.js start"
+    "start": "node bin/dummyos-plugin.js start",
+    "test": "node tests/preview.test.js && node tests/memory.test.js"
   },
   "engines": {
     "node": ">=18"

@@ -23,13 +23,34 @@ const page = await browser.getPage("connectpro");
 EOF
 ```
 
-**Fallback se dev-browser não disponível:**
+**Fallback quando `dev-browser` não está disponível: Chrome DevTools MCP (`chrome-devtools-mcp`)**
+
+O `chrome-devtools-mcp` permite reusar uma sessão real do Chrome (incluindo login) e acessar sinais
+que o ConnectPro precisa (DOM, console, network, screenshots) via MCP server.
+
+Config MCP (nome sugerido do server: `chrome-devtools`):
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  }
+}
 ```
-mcp__Claude_in_Chrome__navigate    → ir para URL
-mcp__Claude_in_Chrome__find        → localizar elemento
-mcp__Claude_in_Chrome__form_input  → preencher campo
-mcp__Claude_in_Chrome__javascript_tool → executar JS
-mcp__Claude_in_Chrome__read_page   → ler conteúdo
+
+Tools típicas (o prefixo exato depende do seu cliente MCP, mas costuma ser `mcp__chrome-devtools__*`):
+```
+mcp__chrome-devtools__new_page             → abrir aba e navegar
+mcp__chrome-devtools__navigate_page        → ir para URL / reload / back / forward
+mcp__chrome-devtools__take_snapshot        → snapshot do DOM com uids (base para click/fill)
+mcp__chrome-devtools__click                → clicar por uid
+mcp__chrome-devtools__fill                 → preencher input por uid
+mcp__chrome-devtools__evaluate_script      → executar JS e extrair valores
+mcp__chrome-devtools__list_console_messages→ listar erros/warnings/info
+mcp__chrome-devtools__list_network_requests→ listar requests
+mcp__chrome-devtools__take_screenshot      → evidência visual
 ```
 
 ---

@@ -1,10 +1,371 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const http = require('http');
+const { randomUUID } = require('crypto');
 
 function normalizePath(p) {
   if (!p) return null;
   return path.resolve(String(p));
+}
+
+function redactSecretsFromString(text) {
+  let value = String(text || '');
+
+  const replacements = [
+    // Stripe
+    [/\bsk_(live|test)_[0-9a-zA-Z]{8,}\b/g, 'sk_$1_[REDACTED]'],
+    // Supabase
+    [/\bsb_[0-9a-zA-Z_]{8,}\b/g, 'sb_[REDACTED]'],
+    // GitHub
+    [/\bghp_[0-9A-Za-z]{20,}\b/g, 'ghp_[REDACTED]'],
+    [/\bgithub_pat_[0-9A-Za-z_]{20,}\b/g, 'github_pat_[REDACTED]'],
+    // Vercel
+    [/\bvercel_[0-9A-Za-z]{20,}\b/g, 'vercel_[REDACTED]'],
+    // JWT-like
+    [/\beyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\b/g, '[REDACTED_JWT]'],
+    // Bearer tokens
+    [/\bBearer\s+[A-Za-z0-9._-]{12,}\b/g, 'Bearer [REDACTED]']
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    value = value.replace(pattern, replacement);
+  }
+
+  return value;
+}
+
+function redactSecrets(input, { maxStringLength = 4000, maxDepth = 4 } = {}) {
+  if (input == null) return input;
+  if (maxDepth <= 0) return '[TRUNCATED]';
+
+  if (typeof input === 'string') {
+    const clipped = input.length > maxStringLength ? `${input.slice(0, maxStringLength)}…` : input;
+    return redactSecretsFromString(clipped);
+  }
+
+  if (typeof input === 'number' || typeof input === 'boolean') return input;
+
+  if (Array.isArray(input)) {
+    return input.slice(0, 50).map((entry) => redactSecrets(entry, { maxStringLength, maxDepth: maxDepth - 1 }));
+  }
+
+  if (typeof input === 'object') {
+    const out = {};
+    const entries = Object.entries(input).slice(0, 50);
+    for (const [key, value] of entries) {
+      if (String(key).toLowerCase().includes('token') || String(key).toLowerCase().includes('secret')) {
+        out[key] = '[REDACTED]';
+        continue;
+      }
+      out[key] = redactSecrets(value, { maxStringLength, maxDepth: maxDepth - 1 });
+    }
+    return out;
+  }
+
+  return redactSecretsFromString(String(input));
+}
+
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function rotateFileIfNeeded(filePath, maxBytes) {
+  try {
+    if (!fs.existsSync(filePath)) return { rotated: false };
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) return { rotated: false };
+    if (stat.size <= maxBytes) return { rotated: false };
+
+    const dir = path.dirname(filePath);
+    const base = path.basename(filePath);
+    const rotatedPath = path.join(dir, base.replace(/\.md$/i, '.prev.md'));
+    try {
+      fs.rmSync(rotatedPath, { force: true });
+    } catch {}
+    fs.renameSync(filePath, rotatedPath);
+    return { rotated: true, rotatedPath, previousSize: stat.size };
+  } catch (error) {
+    return { rotated: false, error: String(error.message || error) };
+  }
+}
+
+function appendCheckpoint(projectPath, record, { maxBytes = 256 * 1024 } = {}) {
+  const root = normalizePath(projectPath || process.env.DUMMYOS_PROJECT_ROOT || process.cwd());
+  const memoryDir = path.join(root, '.dummy', 'memory');
+  ensureDir(memoryDir);
+  const filePath = path.join(memoryDir, 'SESSION.md');
+
+  const rotation = rotateFileIfNeeded(filePath, maxBytes);
+  const line = `${JSON.stringify(record)}\n`;
+  fs.appendFileSync(filePath, line, 'utf8');
+
+  return {
+    path: filePath,
+    bytesAppended: Buffer.byteLength(line, 'utf8'),
+    rotated: Boolean(rotation.rotated),
+    rotatedPath: rotation.rotatedPath || null
+  };
+}
+
+const PREVIEW_REGISTRY = new Map();
+const PREVIEW_EVENT_PATH = '/_dummyos_preview/events';
+const PREVIEW_CLIENT_MARKER = 'dummyos-preview-client';
+
+function normalizeWebPath(rawPath) {
+  const clean = String(rawPath || '')
+    .split('?')[0]
+    .split('#')[0]
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '');
+
+  const normalized = path.posix.normalize(clean || '.');
+  if (normalized === '.' || normalized === '/') return '';
+  if (normalized.startsWith('../') || normalized === '..') return null;
+  return normalized;
+}
+
+function isPathInside(parent, child) {
+  const rel = path.relative(parent, child);
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+function isBlockedPreviewPath(relativePath) {
+  const parts = normalizeWebPath(relativePath)?.split('/') || [];
+  if (parts.some((part) => ['.git', '.dummy', 'node_modules'].includes(part))) return true;
+  const base = parts[parts.length - 1] || '';
+  return base === '.env' || base.startsWith('.env.');
+}
+
+function getContentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const types = {
+    '.html': 'text/html; charset=utf-8',
+    '.htm': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.mjs': 'text/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.ico': 'image/x-icon',
+    '.txt': 'text/plain; charset=utf-8'
+  };
+  return types[ext] || 'application/octet-stream';
+}
+
+function getReloadKind(relativePath) {
+  const ext = path.extname(relativePath || '').toLowerCase();
+  if (ext === '.css') return 'css';
+  if (ext === '.html' || ext === '.htm') return 'html';
+  if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico'].includes(ext)) return 'asset';
+  return 'reload';
+}
+
+function injectPreviewClient(html) {
+  const source = String(html || '');
+  if (source.includes(PREVIEW_CLIENT_MARKER)) return source;
+
+  const script = `<script id="${PREVIEW_CLIENT_MARKER}">
+(() => {
+  if (window.__DUMMYOS_PREVIEW_CONNECTED__) return;
+  window.__DUMMYOS_PREVIEW_CONNECTED__ = true;
+
+  const stamp = () => String(Date.now());
+  const bust = (input) => {
+    const url = new URL(input, window.location.href);
+    url.searchParams.set('__dummyos_t', stamp());
+    return url.toString();
+  };
+
+  const refreshCss = () => {
+    document.querySelectorAll('link[rel~="stylesheet"]').forEach((link) => {
+      link.href = bust(link.href);
+    });
+  };
+
+  const refreshAssets = () => {
+    document.querySelectorAll('img, source').forEach((node) => {
+      const attr = node.getAttribute('src') ? 'src' : 'srcset';
+      const value = node.getAttribute(attr);
+      if (value) node.setAttribute(attr, bust(value));
+    });
+  };
+
+  const refreshHtml = async () => {
+    const response = await fetch(bust(window.location.href), { cache: 'reload' });
+    const text = await response.text();
+    document.open();
+    document.write(text);
+    document.close();
+  };
+
+  const source = new EventSource('${PREVIEW_EVENT_PATH}');
+  source.addEventListener('change', async (event) => {
+    let payload = {};
+    try { payload = JSON.parse(event.data || '{}'); } catch {}
+
+    if (payload.kind === 'css') {
+      refreshCss();
+      return;
+    }
+
+    if (payload.kind === 'asset') {
+      refreshAssets();
+      refreshCss();
+      return;
+    }
+
+    if (payload.kind === 'html') {
+      await refreshHtml();
+      return;
+    }
+
+    window.location.reload();
+  });
+})();
+</script>`;
+
+  if (/<\/body>/i.test(source)) {
+    return source.replace(/<\/body>/i, `${script}\n</body>`);
+  }
+  return `${source}\n${script}`;
+}
+
+function sendPreviewEvent(preview, payload) {
+  const message = `event: change\ndata: ${JSON.stringify(payload)}\n\n`;
+  for (const client of preview.clients) {
+    client.write(message);
+  }
+}
+
+function serveBuffer(res, body, contentType, shouldInject) {
+  const textBody = shouldInject ? injectPreviewClient(body.toString('utf8')) : body;
+  res.writeHead(200, {
+    'content-type': contentType,
+    'cache-control': 'no-store'
+  });
+  res.end(textBody);
+}
+
+function createPreviewHttpServer(preview) {
+  return http.createServer((req, res) => {
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+
+    if (url.pathname === PREVIEW_EVENT_PATH) {
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-store',
+        connection: 'keep-alive'
+      });
+      res.write('\n');
+      preview.clients.add(res);
+      req.on('close', () => preview.clients.delete(res));
+      return;
+    }
+
+    const requested = normalizeWebPath(decodeURIComponent(url.pathname));
+    if (requested === null || isBlockedPreviewPath(requested)) {
+      res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end('Forbidden');
+      return;
+    }
+
+    const relativePath = requested || preview.indexFile;
+    const lookupPath = relativePath.endsWith('/') ? `${relativePath}${preview.indexFile}` : relativePath;
+    const virtualBody = preview.virtualFiles.get(lookupPath);
+
+    if (virtualBody !== undefined) {
+      const contentType = getContentType(lookupPath);
+      serveBuffer(res, Buffer.from(String(virtualBody)), contentType, contentType.startsWith('text/html'));
+      return;
+    }
+
+    let filePath = path.resolve(preview.rootPath, lookupPath);
+    if (!isPathInside(preview.rootPath, filePath)) {
+      res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end('Forbidden');
+      return;
+    }
+
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, preview.indexFile);
+    }
+
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end('Not found');
+      return;
+    }
+
+    const contentType = getContentType(filePath);
+    serveBuffer(res, fs.readFileSync(filePath), contentType, contentType.startsWith('text/html'));
+  });
+}
+
+function listen(server, port, host) {
+  return new Promise((resolve, reject) => {
+    const onError = (err) => {
+      server.off('listening', onListening);
+      reject(err);
+    };
+    const onListening = () => {
+      server.off('error', onError);
+      resolve(server.address());
+    };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(port, host);
+  });
+}
+
+async function listenOnAvailablePort(preview, requestedPort, host) {
+  const requested = Number(requestedPort ?? 5555);
+  const firstPort = Number.isFinite(requested) ? Math.max(0, Math.min(65535, requested)) : 5555;
+  const maxAttempts = firstPort === 0 ? 1 : 25;
+  let lastError = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const port = firstPort === 0 ? 0 : firstPort + attempt;
+    const server = createPreviewHttpServer(preview);
+    try {
+      const address = await listen(server, port, host);
+      return { server, port: address.port, requestedPort: firstPort };
+    } catch (err) {
+      lastError = err;
+      if (err?.code !== 'EADDRINUSE') throw err;
+    }
+  }
+
+  throw lastError || new Error('No available preview port found');
+}
+
+function createPreviewWatcher(preview) {
+  if (preview.watch === false) return null;
+
+  const emit = (filename) => {
+    if (!filename) return;
+    const relativePath = normalizeWebPath(String(filename));
+    if (!relativePath || isBlockedPreviewPath(relativePath)) return;
+    clearTimeout(preview.changeTimer);
+    preview.changeTimer = setTimeout(() => {
+      sendPreviewEvent(preview, {
+        path: relativePath,
+        kind: getReloadKind(relativePath),
+        source: 'disk'
+      });
+    }, preview.reloadDelayMs);
+  };
+
+  try {
+    return fs.watch(preview.rootPath, { recursive: true }, (_event, filename) => emit(filename));
+  } catch {
+    return fs.watch(preview.rootPath, (_event, filename) => emit(filename));
+  }
 }
 
 function safeRequireFromRepo(relPath) {
@@ -131,6 +492,17 @@ async function toolProjectDetect(args) {
   const pkgPath = path.join(projectPath, 'package.json');
 
   if (!fs.existsSync(pkgPath)) {
+    const indexPath = path.join(projectPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return {
+        ok: true,
+        projectPath,
+        name: path.basename(projectPath),
+        framework: 'html',
+        sentry: detectSentryFromPackage({})
+      };
+    }
+
     return {
       ok: false,
       reason: 'package.json not found',
@@ -145,6 +517,185 @@ async function toolProjectDetect(args) {
     name: pkg.name || null,
     framework: detectFrameworkFromPackage(pkg),
     sentry: detectSentryFromPackage(pkg)
+  };
+}
+
+async function toolMemoryCheckpoint(args) {
+  const projectPath = normalizePath(args.projectPath || process.env.DUMMYOS_PROJECT_ROOT || process.cwd());
+  const event = String(args.event || '').trim();
+  if (!event) {
+    return { ok: false, reason: 'missing event' };
+  }
+
+  const record = {
+    ts: new Date().toISOString(),
+    projectPath,
+    event,
+    phase: args.phase ? String(args.phase) : null,
+    summary: args.summary ? redactSecrets(args.summary) : null,
+    tags: Array.isArray(args.tags) ? args.tags.slice(0, 20).map((tag) => String(tag)) : null,
+    data: args.data ? redactSecrets(args.data) : null
+  };
+
+  const maxBytes = Number.isFinite(Number(args.maxBytes)) ? Math.max(1024, Number(args.maxBytes)) : undefined;
+  const result = appendCheckpoint(projectPath, record, maxBytes ? { maxBytes } : undefined);
+
+  return {
+    ok: true,
+    ...result,
+    record: {
+      ts: record.ts,
+      event: record.event,
+      phase: record.phase
+    }
+  };
+}
+
+async function toolPreviewStart(args) {
+  const projectPath = normalizePath(args.projectPath || process.env.DUMMYOS_PROJECT_ROOT || process.cwd());
+  const rootInput = args.root || '.';
+  const rootPath = path.resolve(projectPath, String(rootInput));
+  const indexFile = normalizeWebPath(args.indexFile || 'index.html') || 'index.html';
+
+  if (!fs.existsSync(rootPath) || !fs.statSync(rootPath).isDirectory()) {
+    return {
+      ok: false,
+      reason: 'preview root not found',
+      projectPath,
+      rootPath
+    };
+  }
+
+  const virtualFiles = new Map();
+  if (args.html !== undefined) {
+    virtualFiles.set(indexFile, String(args.html));
+  }
+  if (args.virtualFiles && typeof args.virtualFiles === 'object') {
+    for (const [filePath, content] of Object.entries(args.virtualFiles)) {
+      const normalized = normalizeWebPath(filePath);
+      if (normalized && !isBlockedPreviewPath(normalized)) {
+        virtualFiles.set(normalized, String(content));
+      }
+    }
+  }
+
+  const preview = {
+    id: randomUUID(),
+    projectPath,
+    rootPath,
+    indexFile,
+    requestedRoot: String(rootInput),
+    clients: new Set(),
+    virtualFiles,
+    watch: args.watch !== false,
+    reloadDelayMs: Number.isFinite(Number(args.reloadDelayMs))
+      ? Math.max(0, Math.min(5000, Number(args.reloadDelayMs)))
+      : 300,
+    createdAt: new Date().toISOString(),
+    server: null,
+    watcher: null,
+    changeTimer: null
+  };
+
+  const host = String(args.host || '127.0.0.1');
+  const requestedPort = Number(args.port ?? args.preferredPort ?? 5555);
+  const started = await listenOnAvailablePort(preview, requestedPort, host);
+  preview.server = started.server;
+  preview.port = started.port;
+  preview.requestedPort = started.requestedPort;
+  preview.host = host;
+  preview.url = `http://${host}:${started.port}/`;
+  preview.watcher = createPreviewWatcher(preview);
+  PREVIEW_REGISTRY.set(preview.id, preview);
+
+  return {
+    ok: true,
+    previewId: preview.id,
+    projectPath,
+    rootPath,
+    url: preview.url,
+    port: preview.port,
+    requestedPort: preview.requestedPort,
+    indexFile,
+    capabilities: {
+      staticServer: true,
+      liveEvents: true,
+      softHtmlRefresh: true,
+      cssHotSwap: true,
+      assetRefresh: true,
+      virtualNoSaveUpdates: true,
+      autoPortFallback: preview.port !== preview.requestedPort
+    }
+  };
+}
+
+async function toolPreviewUpdate(args) {
+  const previewId = String(args.previewId || '');
+  const preview = PREVIEW_REGISTRY.get(previewId);
+  if (!preview) {
+    return { ok: false, reason: 'preview not found', previewId };
+  }
+
+  const changed = [];
+  if (args.html !== undefined) {
+    preview.virtualFiles.set(preview.indexFile, String(args.html));
+    changed.push(preview.indexFile);
+  }
+  if (args.files && typeof args.files === 'object') {
+    for (const [filePath, content] of Object.entries(args.files)) {
+      const normalized = normalizeWebPath(filePath);
+      if (!normalized || isBlockedPreviewPath(normalized)) continue;
+      preview.virtualFiles.set(normalized, String(content));
+      changed.push(normalized);
+    }
+  }
+
+  for (const filePath of changed) {
+    sendPreviewEvent(preview, {
+      path: filePath,
+      kind: getReloadKind(filePath),
+      source: 'virtual'
+    });
+  }
+
+  return {
+    ok: true,
+    previewId,
+    changed,
+    url: preview.url
+  };
+}
+
+async function toolPreviewStop(args) {
+  const previewId = String(args.previewId || '');
+  const preview = PREVIEW_REGISTRY.get(previewId);
+  if (!preview) {
+    return { ok: false, reason: 'preview not found', previewId };
+  }
+
+  clearTimeout(preview.changeTimer);
+  preview.watcher?.close?.();
+  for (const client of preview.clients) {
+    client.end();
+  }
+  await new Promise((resolve) => preview.server.close(resolve));
+  PREVIEW_REGISTRY.delete(previewId);
+
+  return { ok: true, previewId };
+}
+
+async function toolPreviewStatus() {
+  return {
+    ok: true,
+    previews: Array.from(PREVIEW_REGISTRY.values()).map((preview) => ({
+      previewId: preview.id,
+      projectPath: preview.projectPath,
+      rootPath: preview.rootPath,
+      url: preview.url,
+      port: preview.port,
+      indexFile: preview.indexFile,
+      createdAt: preview.createdAt
+    }))
   };
 }
 
@@ -469,7 +1020,7 @@ const TOOLS = [
   },
   {
     name: 'dummyos.project.detect',
-    description: 'Detect project framework and whether Sentry deps are present.',
+    description: 'Detect project framework, including static HTML projects, and whether Sentry deps are present.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -478,6 +1029,80 @@ const TOOLS = [
       additionalProperties: false
     },
     handler: toolProjectDetect
+  },
+  {
+    name: 'dummyos.memory.checkpoint',
+    description: 'Append a fast redacted checkpoint to .dummy/memory/SESSION.md to avoid losing work when sessions expire.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectPath: { type: 'string' },
+        event: { type: 'string' },
+        phase: { type: 'string' },
+        summary: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } },
+        data: { type: 'object' },
+        maxBytes: { type: 'number' }
+      },
+      required: ['event'],
+      additionalProperties: false
+    },
+    handler: toolMemoryCheckpoint
+  },
+  {
+    name: 'dummyos.preview.start',
+    description: 'Start the PreviewBridge live static preview server with soft HTML refresh, CSS hot swap, virtual no-save updates, and automatic port fallback.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectPath: { type: 'string' },
+        root: { type: 'string' },
+        port: { type: 'number' },
+        preferredPort: { type: 'number' },
+        host: { type: 'string' },
+        indexFile: { type: 'string' },
+        reloadDelayMs: { type: 'number' },
+        watch: { type: 'boolean' },
+        html: { type: 'string' },
+        virtualFiles: { type: 'object' }
+      },
+      additionalProperties: false
+    },
+    handler: toolPreviewStart
+  },
+  {
+    name: 'dummyos.preview.update',
+    description: 'Update a running PreviewBridge preview with in-memory files so the browser reflects changes without saving to disk.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        previewId: { type: 'string' },
+        html: { type: 'string' },
+        files: { type: 'object' }
+      },
+      required: ['previewId'],
+      additionalProperties: false
+    },
+    handler: toolPreviewUpdate
+  },
+  {
+    name: 'dummyos.preview.stop',
+    description: 'Stop a running PreviewBridge live preview server.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        previewId: { type: 'string' }
+      },
+      required: ['previewId'],
+      additionalProperties: false
+    },
+    handler: toolPreviewStop
+  },
+  {
+    name: 'dummyos.preview.status',
+    description: 'List running PreviewBridge live preview servers.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    handler: toolPreviewStatus
   },
   {
     name: 'dummyos.sentry.detect',
