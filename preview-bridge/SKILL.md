@@ -59,6 +59,24 @@ execution_policy:
   never_ask_user_to_check_manually: true
   use_runtime_tool_first: true
   prefer_chrome_devtools_mcp_for_browser_evidence: true
+  evidence_budget:
+    goal: "evidencia suficiente com custo minimo; evitar loop alucinado de screenshot"
+    max_browser_sessions_per_task: 1
+    max_screenshots_per_preview: 1
+    screenshot_only_when:
+      - first_validation_for_preview
+      - http_not_ok
+      - blank_page_suspected
+      - console_has_errors
+      - visual_delta_detected
+    prefer_dom_snapshot_over_screenshot_after_first: true
+    dedupe_key: "preview_id + url + dom_hash"
+    max_console_messages: 40
+    max_network_failures: 20
+  token_budget:
+    max_report_chars: 3500
+    never_repeat_full_logs: true
+    summarize_and_clip: true
   support_static_html_without_package_json: true
   support_virtual_no_save_updates: true
   support_css_hot_swap: true
@@ -91,7 +109,7 @@ handoff_targets:
 
 success_criteria:
   - preview_url responde HTTP 200/3xx esperado
-  - browser ou ferramenta equivalente abriu a URL e capturou evidencia visual
+  - browser ou ferramenta equivalente capturou evidencia visual (snapshot/screenshot) dentro do budget
   - HTML/CSS recebem atualizacao viva sem reload completo quando usando runtime estatico
   - porta ocupada foi desviada automaticamente ou processo anterior do mesmo preview foi encerrado
   - erros de console/rede relevantes foram checados
@@ -210,9 +228,11 @@ browser: abrir via browser automation/preview runtime quando permitido; se exigi
 1. Iniciar preview/dev server.
 2. Fazer HTTP fetch da URL.
 3. Abrir no browser automation ou preview runtime disponivel.
-4. Capturar screenshot.
-5. Ler console/runtime errors quando a ferramenta permitir.
-6. Confirmar que a pagina nao esta branca:
+4. Capturar evidencia visual com budget:
+   - Preferir `take_snapshot` (DOM + estado) como evidencia leve
+   - Capturar screenshot apenas se for a primeira validacao do preview OU se houver sinal de falha/delta
+5. Ler console/runtime errors quando a ferramenta permitir (clipar no max_console_messages).
+6. Confirmar que a pagina nao esta branca (sem repetir screenshot se nao houve delta):
    - DOM com conteudo relevante
    - screenshot nao vazio
    - assets essenciais carregaram

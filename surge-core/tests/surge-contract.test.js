@@ -73,6 +73,21 @@ test('surge-core contract requires orchestrator retry loop until complete valida
   assert.match(spec, /required_next_action: replan_and_retry/);
 });
 
+test('surge-core contract includes anti-loop guardrails and evidence/token budgets', () => {
+  const skill = fs.readFileSync(canonicalSkillPath, 'utf8');
+  const spec = fs.readFileSync(canonicalSpecPath, 'utf8');
+
+  assert.match(skill, /anti_loop_guard:/);
+  assert.match(skill, /require_new_signal_or_delta_to_retry: true/);
+  assert.match(skill, /max_total_iterations_per_session: 6/);
+  assert.match(skill, /evidence_budget:/);
+  assert.match(skill, /max_screenshots_per_iteration: 1/);
+  assert.match(skill, /token_budget:/);
+  assert.match(skill, /never_repeat_full_logs: true/);
+  assert.match(spec, /Budget de Evidência e Anti-Loop/);
+  assert.match(spec, /Não repetir a mesma validação sem delta observável/);
+});
+
 test('distribution copy stays identical to canonical surge-core files', () => {
   assert.equal(
     fs.readFileSync(distributionSkillPath, 'utf8'),

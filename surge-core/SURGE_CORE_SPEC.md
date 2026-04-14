@@ -95,6 +95,35 @@ Validação mínima:
 6. Validar UI/runtime com preview/screenshot quando houver interface.
 7. Emitir `validation_report`.
 
+---
+
+## Budget de Evidência e Anti-Loop (Token Safety)
+
+Surge-core precisa ser "sempre ativo" sem virar um loop infinito caro.
+
+Regras duras:
+
+1. Não repetir a mesma validação sem delta observável.
+2. Evidência visual é limitada: no máximo 1 screenshot por iteração; depois disso preferir sinais leves (HTTP + console + snapshot).
+3. Se 3 tentativas do mesmo erro não tiverem progresso, escalar para reorquestração (retry_scope mínimo) em vez de insistir.
+
+Delta observável (pelo menos um):
+- erro mudou (mensagem/hash diferente)
+- arquivos mudaram (fingerprint diferente)
+- comando diferente foi executado
+- console/network sinalizou algo novo
+
+Campos recomendados no report quando um guardrail dispara:
+
+```yaml
+anti_loop_guard:
+  stopped: true
+  reason: "no_progress"
+  repeats: number
+  last_progress_signature: string
+  next_action: "return_to_orchestrator"
+```
+
 Formato obrigatório:
 
 ```yaml

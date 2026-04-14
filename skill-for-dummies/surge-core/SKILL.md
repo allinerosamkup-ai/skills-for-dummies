@@ -51,6 +51,32 @@ optional_inputs:
 execution_policy:
   auto_activate_on_error: true
   max_correction_iterations: 3_per_same_root_cause_without_progress
+  anti_loop_guard:
+    goal: "cortar loop alucinado (repeticao sem novo sinal, excesso de evidencias e gasto de tokens)"
+    require_new_signal_or_delta_to_retry: true
+    progress_signature:
+      - root_cause_label
+      - primary_error_message_hash
+      - files_changed_fingerprint
+      - commands_run_fingerprint
+    max_total_iterations_per_session: 6
+    max_preview_validations_per_iteration: 1
+    cooldown_ms_before_repeating_same_probe: 60000
+    stop_condition_when_no_progress:
+      - same_root_cause_repeated
+      - no_file_change
+      - no_new_error_signal
+      - same_validation_failure
+    action_on_stop: "return_to_orchestrator_with_retry_scope_and_minimal_patch_plan"
+  evidence_budget:
+    max_screenshots_per_iteration: 1
+    prefer_console_and_http_after_first_screenshot: true
+    clip_console_messages: 40
+    clip_network_failures: 20
+  token_budget:
+    max_report_chars: 4500
+    never_repeat_full_logs: true
+    summarize_and_clip: true
   always_verify_after_fix: true
   continuous_app_monitoring: true
   prefer_chrome_devtools_mcp_for_runtime_signals: true

@@ -19,6 +19,9 @@ test('preview-bridge skill defines truly-live runtime as the primary path', () =
   assert.match(skill, /support_css_hot_swap: true/);
   assert.match(skill, /support_soft_html_refresh: true/);
   assert.match(skill, /validate_with_http_and_browser: true/);
+  assert.match(skill, /evidence_budget:/);
+  assert.match(skill, /max_screenshots_per_preview: 1/);
+  assert.match(skill, /token_budget:/);
   assert.match(skill, /Nao declarar "funcionou" com base apenas em terminal/);
 });
 
